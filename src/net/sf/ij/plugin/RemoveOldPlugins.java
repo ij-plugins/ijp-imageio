@@ -29,9 +29,9 @@ import java.util.ArrayList;
 
 /**
  * Plugin for uninstalling JAI Image IO plugin bundle version 1.0.5 or ealier.
- *
+ * 
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class RemoveOldPlugins implements PlugIn {
     private ArrayList foundComponents;
@@ -129,10 +129,12 @@ public class RemoveOldPlugins implements PlugIn {
         }
 
         if (errorBuffer.length() > 0) {
-            IJ.showMessage(CAPTION, "Failed to uninstall following files:\n"
-                    + errorBuffer.toString());
+            IJ.showMessage(CAPTION, "Unable to uninstall following files:\n"
+                    + errorBuffer.toString()
+                    + "Restart ImageJ to complete uninstall.");
         } else {
-            IJ.showMessage(CAPTION, "Uninstall completed successfully.");
+            IJ.showMessage(CAPTION, "Uninstall completed successfully.\n"
+                    + "Please restart ImageJ.");
         }
     }
 
@@ -140,7 +142,7 @@ public class RemoveOldPlugins implements PlugIn {
     /**
      * Look for given file in directory <code>dir</code>. If found, add it to <code>foundComponents</code> list.
      * Directories are ignored to prevent accidental removal.
-     *
+     * 
      * @param dir      directory to search.
      * @param fileName file to look for.
      */
