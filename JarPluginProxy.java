@@ -35,7 +35,7 @@ import net.sf.ij.imageio.JAIReader;
  *
  * @author     Jarek Sacha
  * @created    January 22, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public abstract class JarPluginProxy implements PlugIn {
 
@@ -43,7 +43,7 @@ public abstract class JarPluginProxy implements PlugIn {
        = "This plugin requires Java 1.2 or better.";
   private final static String jarName = "JAIReader.jar";
 
-  private static Object pluginObject = null;
+  private Object pluginObject = null;
 
 
   /**
