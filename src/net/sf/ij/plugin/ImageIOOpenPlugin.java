@@ -37,10 +37,12 @@ import java.util.ArrayList;
  * Opens file chooser dialog and open the image using JAI codec.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 
 public class ImageIOOpenPlugin implements PlugIn {
+
+    private static final String TITLE = "ImageIO Open";
 
     /**
      * Argument passed to <code>run</code> method to use standard Image/J open
@@ -84,7 +86,7 @@ public class ImageIOOpenPlugin implements PlugIn {
                 ex.printStackTrace();
                 String msg = "Error opening file: " + files[i].getName() + ".\n\n";
                 msg += (ex.getMessage() == null) ? ex.toString() : ex.getMessage();
-                IJ.showMessage("JAI Reader", msg);
+                IJ.showMessage(TITLE, msg);
             }
         }
 
@@ -94,7 +96,8 @@ public class ImageIOOpenPlugin implements PlugIn {
                 imageList = null;
                 stackImage.show();
             } else {
-                IJ.showMessage("ERROR", "Unable to combine images into a stack.");
+                IJ.showMessage(TITLE, "Unable to combine images into a stack.\n" +
+                        "Loading each separately.");
                 for (int i = 0; i < imageList.size(); ++i) {
                     ((ImagePlus) imageList.get(i)).show();
                 }
@@ -112,6 +115,7 @@ public class ImageIOOpenPlugin implements PlugIn {
      * @return Combined image if successful, otherwise null.
      */
     private static ImagePlus combineImages(ArrayList imageList) {
+        // TODO: in unable to combine throw exception with error message, do not return null.
         if (imageList == null || imageList.size() < 1)
             return null;
 
@@ -169,7 +173,7 @@ public class ImageIOOpenPlugin implements PlugIn {
             return;
 
         if (files.length > 1) {
-            combineIntoStack = IJ.showMessageWithCancel("JAI Reader",
+            combineIntoStack = IJ.showMessageWithCancel(TITLE,
                     "" + files.length + " files selected.\n"
                     + "Should the images be combined into a stack?");
         }
@@ -206,7 +210,7 @@ public class ImageIOOpenPlugin implements PlugIn {
     private void selectFiles() {
         pageIndex = null;
 
-        OpenDialog openDialog = new OpenDialog("Open...", null);
+        OpenDialog openDialog = new OpenDialog(TITLE, null);
         if (openDialog.getFileName() == null) {
             // No selection
             files = null;
