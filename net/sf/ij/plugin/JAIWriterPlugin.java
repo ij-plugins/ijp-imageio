@@ -32,17 +32,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
-
-import net.sf.ij.imageio.JAIWriter;
-import net.sf.ij.swing.ImageFileChooserFactory;
-import net.sf.ij.swing.JAIFileFilter;
+import net.sf.ij.jaiio.JAIFileFilter;
+import net.sf.ij.jaiio.JAIWriter;
+import net.sf.ij.jaiio.JAIFileChooserFactory;
 
 /**
  *  Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  *
  * @author     Jarek Sacha
  * @created    March 3, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 
 public class JAIWriterPlugin implements PlugIn {
@@ -65,7 +64,7 @@ public class JAIWriterPlugin implements PlugIn {
 
     try {
       if (jaiChooser == null) {
-        jaiChooser = ImageFileChooserFactory.createJAISaveChooser();
+        jaiChooser = JAIFileChooserFactory.createJAISaveChooser();
         jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
       }
 

@@ -28,15 +28,15 @@ import ij.plugin.PlugIn;
 import java.io.File;
 import javax.swing.JFileChooser;
 
-import net.sf.ij.imageio.JAIReader;
-import net.sf.ij.swing.ImageFileChooserFactory;
+import net.sf.ij.jaiio.JAIFileChooserFactory;
+import net.sf.ij.jaiio.JAIReader;
 
 /**
  *  Opens file chooser dialog and open the image using JAI codec.
  *
  * @author     Jarek Sacha
  * @created    February 10, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 
 public class JAIReaderPlugin implements PlugIn {
@@ -84,7 +84,7 @@ public class JAIReaderPlugin implements PlugIn {
    */
   private File[] getFileImagePreview() {
     if (jaiChooser == null) {
-      jaiChooser = ImageFileChooserFactory.createJAIOpenChooser();
+      jaiChooser = JAIFileChooserFactory.createJAIOpenChooser();
       jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
       jaiChooser.setMultiSelectionEnabled(true);
     }
