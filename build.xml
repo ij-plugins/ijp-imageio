@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="IJ JAI IO Distro" default="dist" basedir=".">
+    <!--
+       TODO: Update for new ImageIO directory structure.
+       TODO: Define CVS checkout parameters through 'user.properties' file.
+       TODO: When building from CVS, checkout dependencies from CVS and build them.
+       TODO: Pass 'data' and 'dump' directories to test code throught env variables.
+       TODO: Check if vtk classes are in the path (vtkPanel, vtkVersion), if not fail with error message (for targets that require VTK).
+       TODO: Print VTK version in use.
+       TODO: Fail if vtk.classpath is not set (unless can fing VTK classes)
+       TODO: Read form env vars or complain that do not exist.
+       TODO: Distribute test data separately.
+       TODO: Use test.tolerance to specify max allowed tolerance for difference between baseline and test renderings
+       TODO: Rename TestAll* classes to *TestSuite. Prefix convention may lead to problems if a test class uses internal anonymous classes.
+    -->
+    
+    <!-- In case ant.home is not defined, set default value -->
+    <property name="ant.home" location="/usr/share/ant"/>
+  
+    <!-- Set default properties for this build -->
+    <property name="lib.dir" location="${basedir}/lib"/>
+    <property name="src.dir" location="${basedir}/src"/>
+    <property name="build.dir" location="${basedir}/build"/>
+    <property name="classes.dir" location="${build.dir}/classes"/>
+    <property name="checkout.dir" location="${build.dir}/checkout"/>
+    <property name="output.dir" location="${basedir}/output"/>
+    <property name="dist.dir" location="${basedir}/dist/plugins"/>
+
+
+    <!-- CVS setup -->
+    <property name="cvs.root" value=":ext:jsacha@cvs.ij-plugins.sourceforge.net:/cvsroot/ij-plugins"/>
+    <property name="imageio.cvs.module" value="imageio"/>
+    <property name="non_com.cvs.module" value="Sun_JAI_Sample_IO_Source_Code_v_1_1_1"/>
+
+    <property name="jaicodec.jar" location="../../sun-jai-codec.1.1.1/dist/JAI-codec.1.1.1.jar"/>
+
+    <path id="compile.classpath">
+        <pathelement location="${lib.dir}/ij.jar"/>
+        <pathelement location="${jaicodec.jar}"/>
+    </path>
+
+    <fileset id="resource.files"
+        dir="${src.dir}">
+        <include name="**/*.config"/>
+        <include name="**/*.properties"/>
+    </fileset>
+
+    <!-- ================= -->
+    <!--  Primary targets  -->
+    <!-- ================= -->
+
+    <target name="compile" depends="init" description="Compile all examples">
+        <javac
+            srcdir="${src.dir}"
+            destdir="${classes.dir}">
+            <classpath refid="compile.classpath"/>
+            <exclude name="**/*Test.java"/>
+        </javac>
+
+        <copy todir="${classes.dir}">
+            <fileset refid="resource.files"/>
+        </copy>
+    </target>
+
+    <target name="dist" depends="compile"
+        description="generate the distribution">
+    
+        <!-- Create library jar -->
+        <jar destfile="${dist.dir}/ij_imageio.jar"
+            basedir="${classes.dir}"
+            compress="true"
+            />
+    </target>
+    
+        
+
+
+    <target name="clean" description="Remove internediate files and directories created during build.">
+        <delete dir="${build.dir}"/>
+        <delete dir="${build.dir}"/>
+        <delete dir="${checkout.dir}"/>
+        <!--
+        <delete dir="${dist}/*.zip"/>
+        -->
+    </target>
+
+    <target name="clean-all"
+        depends="clean"
+        description="Remove all files and directories created during build.">
+        <delete dir="${dist.dir}"/>
+    </target>
+
+
+    <!-- ================= -->
+    <!-- Secondary targets -->
+    <!-- ================= -->
+
+    <!-- Initialize  -->
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+    </target>
+
+    <!-- Checkout non_com sources from CVS repository -->
+    <target name="checkout.non_com"
+        depends="init">
+        <!-- Checkout SUN sources of JAI IO -->
+        <cvs cvsRoot="${cvs.root}"
+            command="checkout -P"
+            package="${non_com.cvs.module}"
+            dest="${checkout.dir}"/>
+    </target>
+
+    <!-- Checkout sources drom CVS repository -->
+    <target name="checkout"
+        depends="init">
+        <!-- Checkout wrappers for ImageJ -->
+        <cvs cvsRoot="${cvs.root}"
+            command="checkout -P"
+            package="${imageio.cvs.module}"
+            dest="${checkout.dir}"/>
+    </target>
+
+
+
+    
+    <!-- Target: changelog -->
+    <target name="changelog">
+        <cvschangelog
+            destfile="${output.dir}/changelog.xml"
+            start="3 Sep 2003"
+            />
+        <style
+            in="${output.dir}/changelog.xml"
+            out="${output.dir}/changelog.html"
+            style="${ant.home}/etc/changelog.xsl">
+            <param name="title" expression="JAI-ImageIO ChangeLog"/>
+            <param name="module" expression="imageio"/>
+            <param name="cvsweb" expression="http://cvs.sourceforge.net/viewcvs.py/ij-plugins/"/>
+        </style>
+    </target>
+  
+    <!-- Target: tagdif -->
+    <target name="tagdiff">
+        <cvstagdiff
+            destfile="${output.dir}/tagdiff.xml"
+            package="${imageio.cvs.module}"
+            startTag="ij-jai-imageio_v_1_0_5"
+            endTag="HEAD"
+            compression="true"
+            />
+        <style
+            in="${output.dir}/tagdiff.xml"
+            out="${output.dir}/tagdiff.html"
+            style="${ant.home}/etc/tagdiff.xsl">
+            <param name="title" expression="JAI-ImageIO Tag Diff"/>
+            <param name="module" expression="imageio"/>
+            <param name="cvsweb" expression="http://cvs.sourceforge.net/viewcvs.py/ij-plugins/"/>
+        </style>
+    </target>
+
+
+    <!-- ========================== -->
+    <!-- Targets to be fixed        -->
+    <!-- ========================== -->
+
+
+</project>
