@@ -2,6 +2,17 @@
 CHANGES
 **********************
 ----------------------
+IJ-JAI-ImageIO v.1.1.0
+----------------------
+
+Enhancement: JAI Reader and JAI Writer plugins support scripting through
+             Image/J macros; both work well with Macro Recorder (tested
+	     with Image/J 1.29x).
+	     
+Enhancement: JAI Reader with Preview plugin can combine multiple files 
+             into a stack.	     
+
+----------------------
 IJ-JAI-ImageIO v.1.0.5
 ----------------------
 
