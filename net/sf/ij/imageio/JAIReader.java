@@ -56,7 +56,7 @@ import javax.swing.ImageIcon;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.5 $
+ * @version    $Revision: 1.6 $
  */
 public class JAIReader {
 
@@ -247,7 +247,7 @@ public class JAIReader {
     }
 
     if (db.getNumBanks() > 1 ||
-        (cm != null && cm.getColorSpace().getNumComponents() != 1)) {
+        (cm != null && !(cm instanceof IndexColorModel))) {
       // If image has multiple banks or multiple color components, assume that it
       // is a color image and relay on AWT for proper decoding.
       BufferedImage bi = new BufferedImage(cm, r, false, null);
