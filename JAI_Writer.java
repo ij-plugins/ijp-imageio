@@ -37,79 +37,18 @@ import net.sf.ij.swing.ImageFileChooserFactory;
 import net.sf.ij.swing.JAIFileFilter;
 
 /**
- *  Opens file chooser dialog and open the image using JAI codec.
+ *  A proxy plugin to save an image using JAI codecs.
+ *  (http://developer.java.sun.com/developer/sampsource/jai/).
  *
  * @author     Jarek Sacha
- * @created    February 10, 2002
- * @version    $Revision: 1.1 $
+ * @created    March 2, 2002
+ * @version    $Revision: 1.2 $
+ * @see        net.sf.ij.plugin.JAIWriterPlugin
  */
 
-public class JAI_Writer implements PlugInFilter {
+public class JAI_Writer extends JarPluginProxy {
 
-  private static JFileChooser jaiChooser;
-
-
-  /**
-   *  Description of the Method
-   *
-   * @param  arg  Description of Parameter
-   * @param  imp  Description of Parameter
-   * @return      Description of the Returned Value
-   */
-  public int setup(String arg, ImagePlus imp) {
-    return DOES_ALL | NO_CHANGES;
-  }
-
-
-  /**
-   *  Main processing method for the JAIReaderPlugin object
-   *
-   * @param  ip  Description of Parameter
-   */
-  public void run(ImageProcessor ip) {
-    File file = null;
-    ImagePlus imp = WindowManager.getCurrentImage();
-    if (imp == null) {
-      IJ.showMessage("JAI Writer", "No images are open.");
-      return;
-    }
-
-    try {
-      if (jaiChooser == null) {
-        jaiChooser = ImageFileChooserFactory.createJAIImageChooser();
-        jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
-        jaiChooser.setMultiSelectionEnabled(false);
-        jaiChooser.setAccessory(null);
-      }
-
-      if (jaiChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-        FileFilter fileFilter = jaiChooser.getFileFilter();
-        String codecName = null;
-        if (fileFilter instanceof JAIFileFilter) {
-          JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
-          codecName = jaiFileFilter.getCodecName();
-        }
-
-        if (codecName == null) {
-          IJ.showMessage("JAI Writer", "File format not selected. File not saved.");
-          return;
-        }
-
-        JAIWriter jaiWriter = new JAIWriter();
-        jaiWriter.setFormatName(codecName);
-        file = jaiChooser.getSelectedFile();
-        jaiWriter.write(file.getAbsolutePath(), imp);
-      }
-    }
-//    catch(FileNotFoundException ex) {
-//    }
-//    catch(IOException ex) {
-//    }
-    catch(Exception ex) {
-      ex.printStackTrace();
-      String msg = "Error writing file: " + file.getName() + ".\n\n";
-      msg += (ex.getMessage() == null) ? ex.toString() : ex.getMessage();
-      IJ.showMessage("JAI Writer", msg);
-    }
+  protected String getPluginClassName() {
+    return "net.sf.ij.plugin.JAIWriterPlugin";
   }
 }

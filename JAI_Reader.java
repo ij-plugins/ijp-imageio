@@ -35,76 +35,17 @@ import net.sf.ij.imageio.JAIReader;
  *
  * @author     Jarek Sacha
  * @created    January 22, 2002
- * @version    $Revision: 1.5 $
+ * @version    $Revision: 1.6 $
+ * @see net.sf.ij.plugin.JAIReaderPlugin
  */
-public class JAI_Reader implements PlugIn {
+public class JAI_Reader extends JarPluginProxy {
 
-  private final static String caption = "JAI Reader";
-  private final static String requirementMsg = "This plugin requires Java 1.2 or better.";
-  private final static String jaiReaderJarName = "JAIReader.jar";
-  private final static String jaiReaderClassName = "net.sf.ij.plugin.JAIReaderPlugin";
-
-  private static Object jaiReader = null;
-
-  protected String jaiReaderPluginArg = "simple";
+  protected String getPluginClassName() {
+    return "net.sf.ij.plugin.JAIReaderPlugin";
+  }
 
 
-  /**
-   *  Main processing method for the JAI_Reader object
-   *
-   * @param  arg  (not used)
-   */
-  public void run(String arg) {
-
-    if (jaiReader == null) {
-      // Verify Java version
-      IJ.showStatus("Verifying Java version.");
-      String javaVersion = System.getProperty("java.version");
-      if (javaVersion == null) {
-        IJ.showMessage(caption, "Unable to verify Java version.\n"
-             + requirementMsg);
-        return;
-      }
-      if (javaVersion.compareTo("1.2") < 0) {
-        IJ.showMessage(caption, "Detected Java version " + javaVersion + ".\n"
-             + requirementMsg);
-        return;
-      }
-
-      // Load JAIReader class
-      IJ.showStatus("Loading JAI Reader classes..");
-      Class jaiReaderClass = null;
-      try {
-        JarClassLoader jarClassLoader = new JarClassLoader(
-            Menus.getPlugInsPath() + jaiReaderJarName);
-        jaiReaderClass = jarClassLoader.loadClass(jaiReaderClassName);
-      }
-      catch (Exception ex) {
-        IJ.showMessage("JAI Reader", "This plugin requires "
-             + jaiReaderJarName + " available from "
-             + "\"http://sourceforge.net/projects/ij-plugins/\".\n\n"
-             + ex.getMessage());
-        return;
-      }
-
-      //  Create instance of JAIReader
-      try {
-        jaiReader = jaiReaderClass.newInstance();
-      }
-      catch (Exception ex) {
-        IJ.showMessage("JAI Reader",
-            "Failed to instantiate class JAIReader.\n\n" + ex.toString());
-      }
-      IJ.showStatus("");
-    }
-
-    // Run JAIReader as plugin
-    try {
-      ((PlugIn) jaiReader).run(jaiReaderPluginArg);
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      IJ.showMessage("JAI Reader", ex.toString());
-    }
+  protected String getPluginArg() {
+    return "simple";
   }
 }

@@ -36,12 +36,11 @@ import net.sf.ij.imageio.JAIReader;
  *
  * @author     Jarek Sacha
  * @created    January 22, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class JAI_Reader_with_Preview extends JAI_Reader {
 
-  public JAI_Reader_with_Preview() {
-    jaiReaderPluginArg = "image preview";
+  protected String getPluginArg() {
+    return "image preview";
   }
-
 }
