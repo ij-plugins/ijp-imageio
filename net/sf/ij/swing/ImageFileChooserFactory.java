@@ -31,7 +31,7 @@ import javax.swing.JFileChooser;
 /**
  * @author     Jarek Sacha
  * @created    February 2, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 
 public class ImageFileChooserFactory {
@@ -65,7 +65,7 @@ public class ImageFileChooserFactory {
     JAIFileFilter allSupportedFileFilter = new JAIFileFilter();
     chooser.addChoosableFileFilter(allSupportedFileFilter);
 
-    // Set filters corrsponding to each available codec
+    // Set filters corresponding to each available codec
     Enumeration codecs = ImageCodec.getCodecs();
 
     // Sort codec names
@@ -84,7 +84,7 @@ public class ImageFileChooserFactory {
       }
     }
 
-    // Set seleced filter
+    // Set selected filter
     chooser.setFileFilter(allSupportedFileFilter);
 
     JAIFilePreviewer previewer = new JAIFilePreviewer(chooser);
@@ -103,7 +103,7 @@ public class ImageFileChooserFactory {
     JFileChooser chooser = new JFileChooser();
     chooser.setCurrentDirectory(new File(".").getAbsoluteFile());
 
-    // Set filters corrsponding to each available codec
+    // Set filters corresponding to each available codec
     Enumeration codecs = ImageCodec.getCodecs();
 
     // Sort codec names

@@ -51,7 +51,7 @@ import non_com.media.jai.codec.TIFFImageDecoder;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.9 $
+ * @version    $Revision: 1.10 $
  */
 public class JAIReader {
 
@@ -124,7 +124,7 @@ public class JAIReader {
     // Create decoder
     ImageDecoder decoder = ImageCodec.createImageDecoder(decoderName, fss, null);
 
-    // Get number of subimages
+    // Get number of sub images
     int nbPages = decoder.getNumPages();
     if (nbPages < 1) {
       throw new Exception("Image decoding problem. "
@@ -193,7 +193,7 @@ public class JAIReader {
             if (resolutionUnitField != null) {
               int resolutionUnit = resolutionUnitField.getAsInt(0);
               if (resolutionUnit == 1 && c.getUnit() == null) {
-                // no meningful units
+                // no meaningful units
                 c.setUnit(" ");
               }
               else if (resolutionUnit == 2) {
