@@ -40,7 +40,7 @@ import java.util.List;
  * Helper class that for reading images using javax.imageio into ImageJ representation.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class IJImageIO {
     /**
@@ -108,7 +108,7 @@ public class IJImageIO {
                 }
 
                 // If images on the list are ofr the same type and size combine them into a stack.
-                final ImagePlus imp = attemptTocombineImages(images);
+                final ImagePlus imp = attemptToCombineImages(images);
 
                 // Pepare output image array 'imps'.
                 final ImagePlus[] imps = imp != null
@@ -133,7 +133,7 @@ public class IJImageIO {
      * @param imageList List of images to combine into a stack.
      * @return Combined image if successful, otherwise <code>null</code>.
      */
-    private static ImagePlus attemptTocombineImages(final List imageList) {
+    private static ImagePlus attemptToCombineImages(final List imageList) {
         if (imageList == null || imageList.size() < 1)
             return null;
 
