@@ -33,7 +33,7 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    February 2, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 
 public class JAIFileChooserFactory {
@@ -47,6 +47,9 @@ public class JAIFileChooserFactory {
   public static JFileChooser createJAIOpenChooser() {
     JFileChooser chooser = new JFileChooser();
     chooser.setCurrentDirectory(new File(".").getAbsoluteFile());
+
+    JAIFilePreviewer previewer = new JAIFilePreviewer(chooser);
+    chooser.setAccessory(previewer);
 
     // Add filter for all supported image types
     JAIFileFilter allSupportedFileFilter = new JAIFileFilter();
@@ -73,9 +76,7 @@ public class JAIFileChooserFactory {
 
     // Set selected filter
     chooser.setFileFilter(allSupportedFileFilter);
-
-    JAIFilePreviewer previewer = new JAIFilePreviewer(chooser);
-    chooser.setAccessory(previewer);
+//    chooser.setFileFilter(chooser.getAcceptAllFileFilter());
 
     return chooser;
   }
