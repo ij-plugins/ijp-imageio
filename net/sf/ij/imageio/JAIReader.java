@@ -30,11 +30,11 @@ import SimpleRenderedImage;
 //import com.sun.media.jai.codec.ImageDecoder;
 
 import ij.*;
-import ij.process.*;
 import ij.io.OpenDialog;
+import ij.measure.Calibration;
 
 import ij.plugin.PlugIn;
-import ij.measure.Calibration;
+import ij.process.*;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -48,7 +48,7 @@ import java.util.ArrayList;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.1.1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class JAIReader implements PlugIn {
 
@@ -58,68 +58,13 @@ public class JAIReader implements PlugIn {
 
 
   /**
-   *  Sets the DebugMode attribute of the JAIOpener object
+   *  Description of the Method
    *
-   * @param  debugMode  The new DebugMode value
+   * @param  file           Description of Parameter
+   * @return                Description of the Returned Value
+   * @exception  Exception  Description of Exception
    */
-  public void setDebugMode(boolean debugMode) {
-    this.debugMode = debugMode;
-  }
-
-
-  /**
-   *  Gets the DebugMode attribute of the JAIOpener object
-   *
-   * @return    The DebugMode value
-   */
-  public boolean isDebugMode() {
-    return debugMode;
-  }
-
-
-  /**
-   *  Convenience method that simplifies execution from within Image/J.
-   *  Implementation of the method in ij.plogin.PlugIn interface.
-   *
-   * @param  arg  Not used, required by the interface specification.
-   */
-  public void run(String arg) {
-
-    OpenDialog openDialog = new OpenDialog("Open...", null);
-    if (openDialog.getFileName() == null) {
-      // No selection
-      return;
-    }
-
-    File file = new File(openDialog.getDirectory(), openDialog.getFileName());
-    IJ.showStatus("Opening: " + file.getName());
-
-    try {
-      ImagePlus[] images = read(file);
-      if (images != null) {
-        for (int i = 0; i < images.length; ++i) {
-          images[i].show();
-        }
-      }
-    }
-    catch (Exception ex) {
-      IJ.showMessage("JAIReader", "Error opening file: "
-           + openDialog.getFileName() + ".\n\n" + ex.toString());
-    }
-  }
-
-
-  /**
-   *  Open image in the file using registered codecs. A file may contain
-   *  multiple images. If all images in the file are of the same type and size
-   *  they will be combines into single stack within ImagesPlus object returned
-   *  as the first an only element of the image array.
-   *
-   * @param  file           File to open image from.
-   * @return                Array of images contained in the file.
-   * @exception  Exception  when unable to read image from the specified file.
-   */
-  public ImagePlus[] read(File file) throws Exception {
+  public static BufferedImage readFirstAsBufferedImage(File file) throws Exception {
 
     // Find matching decoders
     FileSeekableStream fss = new FileSeekableStream(file);
@@ -132,75 +77,20 @@ public class JAIReader implements PlugIn {
     // Create decoder
     ImageDecoder decoder = ImageCodec.createImageDecoder(decoders[0], fss, null);
 
-    // Get number of subimages
-    int nbPages = decoder.getNumPages();
-    if (nbPages < 1) {
-      throw new Exception("Image decoding problem. "
-           + "Image file has less then 1 page. Nothing to decode.");
-    }
+    RenderedImage renderedImage = decoder.decodeAsRenderedImage();
+//    WritableRaster writableRaster = forceTileUpdate(renderedImage);
 
-    // Iterate through pages
-    IJ.showProgress(0);
-    ArrayList imageList = new ArrayList();
-    for (int i = 0; i < nbPages; ++i) {
-      RenderedImage ri = decoder.decodeAsRenderedImage(i);
-      if (debugMode) {
-        printInfo(ri);
-      }
-      WritableRaster wr = forceTileUpdate(ri);
-
-      ImagePlus im = createImagePlus(wr, ri.getColorModel());
-      im.setTitle(file.getName() + "[" + (i + 1) + "/" + nbPages + "]");
-
-      imageList.add(im);
-      IJ.showProgress((double) (i + 1) / nbPages);
-    }
-    IJ.showProgress(1);
-
-    ImagePlus[] images = (ImagePlus[]) imageList.toArray(
-        new ImagePlus[imageList.size()]);
-
-    if (nbPages == 1) {
-      // Do not use page numbers in image name
-      images[0].setTitle(file.getName());
+    Raster raster = renderedImage.getData();
+    WritableRaster writableRaster = null;
+    if (raster instanceof WritableRaster) {
+      writableRaster = (WritableRaster) raster;
     }
     else {
-      // Attempt to combine images into a single stack.
-      ImagePlus im = combineImages(images);
-      if (im != null) {
-        im.setTitle(file.getName());
-        images = new ImagePlus[1];
-        images[0] = im;
-      }
+      writableRaster = raster.createCompatibleWritableRaster();
     }
 
-    return images;
-  }
-
-
-  /**
-   *  Force Rendered image to set all the tails that it may have. In multi-tile
-   *  images not all tiles may be updated when a RenderedImage is created.
-   *
-   * @param  ri  image that may need tile update.
-   * @return     Description of the Returned Value
-   */
-  private WritableRaster forceTileUpdate(RenderedImage ri) {
-    Raster r = ri.getData();
-    if (!(r instanceof WritableRaster)) {
-      r = r.createWritableRaster(r.getSampleModel(), r.getDataBuffer(), null);
-    }
-
-    WritableRaster wr = (WritableRaster) r;
-    int xTiles = ri.getNumXTiles();
-    int yTiles = ri.getNumYTiles();
-    for (int ty = 0; ty < yTiles; ++ty) {
-      for (int tx = 0; tx < xTiles; ++tx) {
-        wr.setRect(ri.getTile(tx, ty));
-      }
-    }
-
-    return wr;
+    return new BufferedImage(renderedImage.getColorModel(), writableRaster,
+        false, null);
   }
 
 
@@ -421,5 +311,164 @@ public class JAIReader implements PlugIn {
 
     images[0].setStack(images[0].getTitle(), stack);
     return images[0];
+  }
+
+
+  /**
+   *  Sets the DebugMode attribute of the JAIOpener object
+   *
+   * @param  debugMode  The new DebugMode value
+   */
+  public void setDebugMode(boolean debugMode) {
+    this.debugMode = debugMode;
+  }
+
+
+  /**
+   *  Gets the DebugMode attribute of the JAIOpener object
+   *
+   * @return    The DebugMode value
+   */
+  public boolean isDebugMode() {
+    return debugMode;
+  }
+
+
+  /**
+   *  Convenience method that simplifies execution from within Image/J.
+   *  Implementation of the method in ij.plogin.PlugIn interface.
+   *
+   * @param  arg  Not used, required by the interface specification.
+   */
+  public void run(String arg) {
+
+    OpenDialog openDialog = new OpenDialog("Open...", null);
+    if (openDialog.getFileName() == null) {
+      // No selection
+      return;
+    }
+
+    File file = new File(openDialog.getDirectory(), openDialog.getFileName());
+    IJ.showStatus("Opening: " + file.getName());
+
+    try {
+      ImagePlus[] images = read(file);
+      if (images != null) {
+        for (int i = 0; i < images.length; ++i) {
+          images[i].show();
+        }
+      }
+    }
+    catch (Exception ex) {
+      ex.printStackTrace();
+      IJ.showMessage("JAIReader", "Error opening file: "
+           + openDialog.getFileName() + ".\n\n" + ex.getMessage());
+    }
+  }
+
+
+  /**
+   *  Open image in the file using registered codecs. A file may contain
+   *  multiple images. If all images in the file are of the same type and size
+   *  they will be combines into single stack within ImagesPlus object returned
+   *  as the first an only element of the image array.
+   *
+   * @param  file           File to open image from.
+   * @return                Array of images contained in the file.
+   * @exception  Exception  when unable to read image from the specified file.
+   */
+  public ImagePlus[] read(File file) throws Exception {
+
+    // Find matching decoders
+    FileSeekableStream fss = new FileSeekableStream(file);
+    String[] decoders = ImageCodec.getDecoderNames(fss);
+    if (decoders == null || decoders.length == 0) {
+      throw new Exception("Unsupported file format. "
+           + "Cannot find decoder capable of reading: " + file.getName());
+    }
+
+    // Create decoder
+    ImageDecoder decoder = ImageCodec.createImageDecoder(decoders[0], fss, null);
+
+    // Get number of subimages
+    int nbPages = decoder.getNumPages();
+    if (nbPages < 1) {
+      throw new Exception("Image decoding problem. "
+           + "Image file has less then 1 page. Nothing to decode.");
+    }
+
+    // Iterate through pages
+    IJ.showProgress(0);
+    ArrayList imageList = new ArrayList();
+    for (int i = 0; i < nbPages; ++i) {
+      RenderedImage ri = null;
+      try {
+        ri = decoder.decodeAsRenderedImage(i);
+      }
+      catch (Exception ex) {
+        ex.printStackTrace();
+        String msg = ex.getMessage();
+        if (msg == null || msg.trim().length() < 1) {
+          msg = "Error decoding rendered image.";
+        }
+        throw new Exception(msg);
+      }
+      if (debugMode) {
+        printInfo(ri);
+      }
+      WritableRaster wr = forceTileUpdate(ri);
+
+      ImagePlus im = createImagePlus(wr, ri.getColorModel());
+      im.setTitle(file.getName() + " [" + (i + 1) + "/" + nbPages + "]");
+
+      imageList.add(im);
+      IJ.showProgress((double) (i + 1) / nbPages);
+    }
+    IJ.showProgress(1);
+
+    ImagePlus[] images = (ImagePlus[]) imageList.toArray(
+        new ImagePlus[imageList.size()]);
+
+    if (nbPages == 1) {
+      // Do not use page numbers in image name
+      images[0].setTitle(file.getName());
+    }
+    else {
+      // Attempt to combine images into a single stack.
+      ImagePlus im = combineImages(images);
+      if (im != null) {
+        im.setTitle(file.getName());
+        images = new ImagePlus[1];
+        images[0] = im;
+      }
+    }
+
+    return images;
+  }
+
+
+  /**
+   *  Force Rendered image to set all the tails that it may have. In multi-tile
+   *  images not all tiles may be updated when a RenderedImage is created.
+   *
+   * @param  ri  image that may need tile update.
+   * @return     Description of the Returned Value
+   */
+  private static WritableRaster forceTileUpdate(RenderedImage ri) {
+    Raster r = ri.getData();
+    if (!(r instanceof WritableRaster)) {
+      r = r.createWritableRaster(r.getSampleModel(), r.getDataBuffer(), null);
+    }
+
+    WritableRaster wr = (WritableRaster) r;
+    int xTiles = ri.getNumXTiles();
+    int yTiles = ri.getNumYTiles();
+    for (int ty = 0; ty < yTiles; ++ty) {
+      for (int tx = 0; tx < xTiles; ++tx) {
+        wr.setRect(ri.getTile(tx, ty));
+      }
+    }
+
+    return wr;
   }
 }
