@@ -22,6 +22,7 @@ package net.sf.ij_plugins.imageio;
 
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.IJ;
 import net.sf.ij.jaiio.ImagePlusCreator;
 import net.sf.ij.jaiio.UnsupportedImageModelException;
 
@@ -39,7 +40,7 @@ import java.util.List;
  * Helper class that for reading images using javax.imageio into ImageJ representation.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IJImageIO {
 
@@ -48,17 +49,17 @@ public class IJImageIO {
     }
 
     /**
-         * Read image from file using using javax.imageio and convert it to ImageJ representation. All
-         * images contained in the file ill be read.
-         *
-         * @param file input image file.
-         * @return Array of images read from the file. If images are of the same type and size they will
-         *         be combined into a stack and the returned ImagePlus array will have a single elemnt
-         *         with stack size equal to the number of images in the input file.
-         * @throws IOException
-         * @throws IJImageIOException
-         * @throws UnsupportedImageModelException
-         */
+     * Read image from file using using javax.imageio and convert it to ImageJ representation. All
+     * images contained in the file ill be read.
+     *
+     * @param file input image file.
+     * @return Array of images read from the file. If images are of the same type and size they will
+     *         be combined into a stack and the returned ImagePlus array will have a single elemnt
+     *         with stack size equal to the number of images in the input file.
+     * @throws IOException
+     * @throws IJImageIOException
+     * @throws UnsupportedImageModelException
+     */
     static public ImagePlus[] read(final File file)
             throws IOException, IJImageIOException, UnsupportedImageModelException {
 
@@ -77,33 +78,47 @@ public class IJImageIO {
             throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.");
         }
 
-        // Use first available reader.
-        final ImageReader reader = (ImageReader) readerList.get(0);
-        reader.setInput(iis, false, false);
+        StringBuffer errorBuffer = new StringBuffer();
+        for (int i = 0; i < readerList.size(); i++) {
+            final ImageReader reader = (ImageReader) readerList.get(i);
+            if (IJ.debugMode) {
+                IJ.log("Using reader: "+reader.getClass().getName());
+            }
+            try {
+//                iis.reset();
+                iis.seek(0);
+                reader.setInput(iis, false, false);
 
-        // How many images are in the file and what is the first image index
-        final int numImages = reader.getNumImages(true);
-        final int minIndex = reader.getMinIndex();
+                // How many images are in the file and what is the first image index
+                final int numImages = reader.getNumImages(true);
+                final int minIndex = reader.getMinIndex();
 
-        // Read each image and add it to list 'images'
-        final List images = new ArrayList(numImages);
-        for (int i = minIndex; i < numImages + minIndex; i++) {
-            // Read using javax.imageio
-            final BufferedImage bi = reader.read(i);
-            // Convert to ImageJ representation
-            final ImagePlus imp = ImagePlusCreator.create(file.getName(), bi.getRaster(), bi.getColorModel());
-            // Add converted to the list
-            images.add(imp);
+                // Read each image and add it to list 'images'
+                final List images = new ArrayList(numImages);
+                for (int j = minIndex; j < numImages + minIndex; j++) {
+                    // Read using javax.imageio
+                    final BufferedImage bi = reader.read(j);
+                    // Convert to ImageJ representation
+                    final ImagePlus imp = ImagePlusCreator.create(file.getName(), bi.getRaster(), bi.getColorModel());
+                    // Add converted to the list
+                    images.add(imp);
+                }
+
+                // If images on the list are ofr the same type and size combine them into a stack.
+                final ImagePlus imp = attemptTocombineImages(images);
+
+                // Pepare output image array 'imps'.
+                final ImagePlus[] imps = imp != null
+                        ? new ImagePlus[]{imp}
+                        : (ImagePlus[]) images.toArray(new ImagePlus[numImages]);
+                return imps;
+            } catch (Exception ex) {
+                errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage()+"\n");
+            }
         }
 
-        // If images on the list are ofr the same type and size combine them into a stack.
-        final ImagePlus imp = attemptTocombineImages(images);
-
-        // Pepare output image array 'imps'.
-        final ImagePlus[] imps = imp != null
-                ? new ImagePlus[]{imp}
-                : (ImagePlus[]) images.toArray(new ImagePlus[numImages]);
-        return imps;
+        throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.\n"
+                +errorBuffer.toString());
 
     }
 
