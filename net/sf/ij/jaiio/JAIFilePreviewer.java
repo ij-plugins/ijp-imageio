@@ -35,22 +35,17 @@ import net.sf.ij.swing.IconCanvas;
 public class JAIFilePreviewer extends JPanel
      implements PropertyChangeListener {
 
-  final static String FILE_SIZE_PREFIX = "File Size: ";
+//  final static String FILE_SIZE_PREFIX = "File Size: ";
+  final static String FILE_SIZE_PREFIX = "";
   final static long SIZE_KB = 1024;
   final static long SIZE_MB = SIZE_KB * 1024;
   final static long SIZE_GB = SIZE_MB * 1024;
 
-  /**
-   *  Description of the Field
-   */
+  /**  Description of the Field */
   protected File file;
-  /**
-   *  Description of the Field
-   */
+  /**  Description of the Field */
   protected int iconSizeX = 200;
-  /**
-   *  Description of the Field
-   */
+  /**  Description of the Field */
   protected int iconSizeY = 150;
 
   private JPanel infoPanel = new JPanel();
@@ -60,9 +55,7 @@ public class JAIFilePreviewer extends JPanel
   private JLabel ImageIconLabel = new JLabel();
 
 
-  /**
-   *  Constructor for the FilePreviewer object
-   */
+  /**  Constructor for the FilePreviewer object */
   public JAIFilePreviewer() {
     try {
       jbInit();
@@ -92,19 +85,76 @@ public class JAIFilePreviewer extends JPanel
 
 
   /**
+   * @param  e
    */
-  public void loadImage() {
+  public void propertyChange(PropertyChangeEvent e) {
+    String prop = e.getPropertyName();
+    if (prop == JFileChooser.SELECTED_FILE_CHANGED_PROPERTY) {
+      file = (File) e.getNewValue();
+      if (isShowing()) {
+        loadImage();
+        repaint();
+      }
+    }
+  }
+
+
+  private String getFileSizeString(long fileSize) {
+    String fileSizeString = null;
+    if (fileSize < SIZE_KB) {
+      fileSizeString = FILE_SIZE_PREFIX + fileSize;
+    }
+    else if (fileSize < SIZE_MB) {
+      fileSizeString = FILE_SIZE_PREFIX +
+          (int) ((double) fileSize / SIZE_KB + 0.5) + "KB";
+    }
+    else if (fileSize < SIZE_GB) {
+      fileSizeString = FILE_SIZE_PREFIX +
+          (int) ((double) fileSize / SIZE_MB + 0.5) + "MB";
+    }
+    else {
+      fileSizeString = FILE_SIZE_PREFIX +
+          (int) ((double) fileSize / SIZE_GB + 0.5) + "GB";
+    }
+
+    return fileSizeString;
+  }
+
+
+  /**
+   *  Load first image in the file.
+   *
+   * @return    image info.
+   */
+  private JAIReader.ImageInfo loadImage() {
     if (file == null || file.isDirectory()) {
       ImageIconLabel.setIcon(null);
 //      iconCanvas1.setImageIcon(null);
       fileSizeLabel.setText(" ");
-      return;
+      return null;
     }
 
     try {
-      showFileSize(file.length());
 
-      Image image = JAIReader.readFirstAsImage(file);
+      JAIReader.ImageInfo imageInfo = JAIReader.readFirstImageAndInfo(file);
+      Image image = imageInfo.previewImage;
+
+      // Set image size label
+      StringBuffer label = new StringBuffer(getFileSizeString(file.length()));
+      if (image != null) {
+        int w = image.getWidth(null);
+        int h = image.getHeight(null);
+        if (w > 0 && h > 0) {
+          label.append("  [" + w + "x" + h);
+          if (imageInfo.numberOfPages > 1) {
+            label.append("x" + imageInfo.numberOfPages + "]");
+          }
+          else {
+            label.append("]");
+          }
+        }
+      }
+      fileSizeLabel.setText(label.toString());
 
       int xSizeBuffered = image.getWidth(null);
       int ySizeBuffered = image.getHeight(null);
@@ -123,52 +173,13 @@ public class JAIFilePreviewer extends JPanel
 
       ImageIcon imageIcon = new ImageIcon(image);
       ImageIconLabel.setIcon(imageIcon);
-//      iconCanvas1.setImageIcon(imageIcon);
-//      iconCanvas1.repaint();
+
+      return imageInfo;
     }
     catch (Throwable t) {
-//      t.printStackTrace();
       ImageIconLabel.setIcon(null);
-//      iconCanvas1.setImageIcon(null);
-//      iconCanvas1.repaint();
+      return null;
     }
-  }
-
-
-  /**
-   * @param  e
-   */
-  public void propertyChange(PropertyChangeEvent e) {
-    String prop = e.getPropertyName();
-    if (prop == JFileChooser.SELECTED_FILE_CHANGED_PROPERTY) {
-      file = (File) e.getNewValue();
-      if (isShowing()) {
-        loadImage();
-        repaint();
-      }
-    }
-  }
-
-
-  private void showFileSize(long fileSize) {
-    String fileSizeString = null;
-    if (fileSize < SIZE_KB) {
-      fileSizeString = FILE_SIZE_PREFIX + fileSize;
-    }
-    else if (fileSize < SIZE_MB) {
-      fileSizeString = FILE_SIZE_PREFIX +
-          (int) ((double) fileSize / SIZE_KB + 0.5) + "K";
-    }
-    else if (fileSize < SIZE_GB) {
-      fileSizeString = FILE_SIZE_PREFIX +
-          (int) ((double) fileSize / SIZE_MB + 0.5) + "M";
-    }
-    else {
-      fileSizeString = FILE_SIZE_PREFIX +
-          (int) ((double) fileSize / SIZE_GB + 0.5) + "G";
-    }
-
-    fileSizeLabel.setText(fileSizeString);
   }
 
 
@@ -180,11 +191,11 @@ public class JAIFilePreviewer extends JPanel
     infoPanel.setLayout(borderLayout1);
     ImageIconLabel.setPreferredSize(new Dimension(200, 150));
     ImageIconLabel.setHorizontalAlignment(SwingConstants.CENTER);
-    this.add(infoPanel,   new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+    this.add(infoPanel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0
+        , GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
     infoPanel.add(fileSizeLabel, BorderLayout.CENTER);
-    this.add(ImageIconLabel,   new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
-            ,GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+    this.add(ImageIconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
+        , GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
   }
 }
 
