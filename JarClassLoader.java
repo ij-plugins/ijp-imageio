@@ -27,11 +27,12 @@ import java.io.FileInputStream;
  *
  * @author     Jarek Sacha
  * @created    January 26, 2002
- * @version    $Revision: 1.1.1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class JarClassLoader extends ClassLoader {
 
   private String jarFileName;
+
   private final static int BUFFER_SIZE = 0xFFFF;
 
 
