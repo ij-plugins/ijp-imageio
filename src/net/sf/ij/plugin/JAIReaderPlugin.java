@@ -40,8 +40,7 @@ import net.sf.ij.jaiio.JAIReader;
  *  Opens file chooser dialog and open the image using JAI codec.
  *
  * @author     Jarek Sacha
- * @created    February 10, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 
 public class JAIReaderPlugin implements PlugIn {

@@ -32,8 +32,7 @@ import javax.swing.*;
  *  and image dimensions.
  *
  * @author     Jarek Sacha
- * @created    January 9, 2001
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class JAIFilePreviewer extends JPanel
      implements PropertyChangeListener {

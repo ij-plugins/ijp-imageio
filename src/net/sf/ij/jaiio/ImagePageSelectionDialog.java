@@ -28,8 +28,7 @@ import javax.swing.*;
  *  Dialog for selecting pages in multi-image files.
  *
  * @author     Jarek Sacha
- * @created    June 16, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 
 public class ImagePageSelectionDialog extends JDialog {

@@ -40,8 +40,7 @@ import non_com.media.jai.codec.*;
  *  saved.
  *
  * @author     Jarek Sacha
- * @created    February 18, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class JAIWriter {
 

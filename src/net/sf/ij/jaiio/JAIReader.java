@@ -53,8 +53,7 @@ import non_com.media.jai.codec.TIFFImageDecoder;
  *  to Image/J representation.
  *
  * @author     Jarek Sacha
- * @created    January 11, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class JAIReader {
 

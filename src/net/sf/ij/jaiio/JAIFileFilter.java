@@ -35,7 +35,7 @@ import non_com.media.jai.codec.ImageCodec;
  *  extension.
  *
  * @author     Jarek Sacha
- * @created    November 6, 2000
+ * @version    $Revision: 1.2 $
  */
 
 public class JAIFileFilter extends FileFilter {

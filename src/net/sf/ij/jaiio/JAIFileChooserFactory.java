@@ -20,46 +20,40 @@
  */
 package net.sf.ij.jaiio;
 
+import javax.swing.*;
 import java.io.File;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.TreeSet;
-import javax.swing.JFileChooser;
-
-import non_com.media.jai.codec.ImageCodec;
 
 /**
- *  Factory for creation of JAI IO customized file choosers.
- *
- * @author     Jarek Sacha
- * @created    February 2, 2002
- * @version    $Revision: 1.1 $
+ * Factory for creation of JAI IO customized file choosers.
+ * 
+ * @author Jarek Sacha
+ * @version $Revision: 1.2 $
  */
 
 public class JAIFileChooserFactory {
 
-  /**
-   *  Creates an image file open chooser with an image preview. File filters
-   *  correspond to registered JAI decoders.
-   *
-   * @return    Description of the Returned Value
-   */
-  public static ImageFileChooser createJAIOpenChooser() {
-    ImageFileChooser chooser = new ImageFileChooser(new File(".").getAbsoluteFile());
+    /**
+     * Creates an image file open chooser with an image preview. File filters
+     * correspond to registered JAI decoders.
+     * 
+     * @return Description of the Returned Value
+     */
+    public static ImageFileChooser createJAIOpenChooser() {
+        ImageFileChooser chooser = new ImageFileChooser(new File(".").getAbsoluteFile());
 
-    return chooser;
-  }
+        return chooser;
+    }
 
 
-  /**
-   *  Creates file save chooser with file filters corresponding to JAI codecs
-   *  supporting writing (encoders).
-   *
-   * @return    Description of the Returned Value
-   */
-  public static JFileChooser createJAISaveChooser() {
-    JFileChooser chooser = new SaveImageFileChooser(new File(".").getAbsoluteFile());
+    /**
+     * Creates file save chooser with file filters corresponding to JAI codecs
+     * supporting writing (encoders).
+     * 
+     * @return Description of the Returned Value
+     */
+    public static JFileChooser createJAISaveChooser() {
+        JFileChooser chooser = new SaveImageFileChooser(new File(".").getAbsoluteFile());
 
-    return chooser;
-  }
+        return chooser;
+    }
 }

@@ -53,8 +53,7 @@ import non_com.media.jai.codec.ImageCodec;
  *  ImagePlus. All Image/J image types are supported.
  *
  * @author     Jarek Sacha
- * @created    February 18, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class BufferedImageCreator {
 
