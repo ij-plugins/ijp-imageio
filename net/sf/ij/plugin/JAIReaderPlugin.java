@@ -37,7 +37,7 @@ import net.sf.ij.jaiio.JAIReader;
  *
  * @author     Jarek Sacha
  * @created    February 10, 2002
- * @version    $Revision: 1.6 $
+ * @version    $Revision: 1.7 $
  */
 
 public class JAIReaderPlugin implements PlugIn {
@@ -140,6 +140,7 @@ public class JAIReaderPlugin implements PlugIn {
     if (openDialog.getFileName() == null) {
       // No selection
       files = null;
+      return;
     }
 
     if (files == null || files.length != 1) {
