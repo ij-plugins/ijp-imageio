@@ -37,6 +37,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
 
+import non_com.media.jai.FloatDoubleColorModel;
 import non_com.media.jai.codec.FileSeekableStream;
 import non_com.media.jai.codec.ImageCodec;
 import non_com.media.jai.codec.ImageDecoder;
@@ -52,7 +53,7 @@ import non_com.media.jai.codec.TIFFImageDecoder;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 public class JAIReader {
 
@@ -60,7 +61,7 @@ public class JAIReader {
    *  Read only the first image in the <code>file</code>.
    *
    * @param  file           Image file.
-   * @return                Image decoded as BufferedImage.
+   * @return                ImageInfo object.
    * @exception  Exception  If file is not in a supported image format or in
    *      case of I/O error.
    */
@@ -84,13 +85,11 @@ public class JAIReader {
     imageInfo.codecName = decoders[0];
 
     if (renderedImage instanceof Image) {
-      System.out.println("renderedImage instanceof Image");
-      System.out.println(renderedImage.getClass().getName());
       imageInfo.previewImage = (Image) renderedImage;
     }
     else {
       ColorModel cm = renderedImage.getColorModel();
-      if (cm == null) {
+      if (cm == null || cm instanceof FloatDoubleColorModel) {
         WritableRaster writableRaster
              = ImagePlusCreator.forceTileUpdate(renderedImage);
         ImagePlus imagePlus = ImagePlusCreator.create(writableRaster, null);
@@ -119,7 +118,9 @@ public class JAIReader {
    *  Open image in the file using registered codecs. A file may contain
    *  multiple images. If all images in the file are of the same type and size
    *  they will be combines into single stack within ImagesPlus object returned
-   *  as the first an only element of the image array.
+   *  as the first an only element of the image array. If reading from TIFF
+   *  files, image resolution and Image/J's description string containing
+   *  calibration information are decoded.
    *
    * @param  file           File to open image from.
    * @return                Array of images contained in the file.
@@ -205,7 +206,7 @@ public class JAIReader {
                   DescriptionStringCoder.decode(
                       descriptionField.getAsString(0), im);
                 }
-                catch(Exception ex) {
+                catch (Exception ex) {
                   ex.printStackTrace();
                 }
               }
@@ -328,7 +329,7 @@ public class JAIReader {
 
 
   /*
-   *  Basic image information.
+   *  Basic image information including first image in the file.
    */
   public static class ImageInfo {
     public Image previewImage;
