@@ -240,6 +240,11 @@
             <param name="jar.dir" location="${dist.dir}"/>
         </antcall>
 
+        <!-- ZIP binaries -->
+        <zip basedir="${jar.dir}"
+            includes="${package.name}_.jar"
+            destfile="${dist.dir}/${package.name}_bin_${DSTAMP}.zip"/>
+
         <!-- Cleanup -->
         <!--
         <delete dir="{cvs.imageio.dir}"/>
