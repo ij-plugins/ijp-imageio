@@ -23,18 +23,17 @@ import ij.Menus;
 import ij.plugin.PlugIn;
 
 /**
- *  Read image files using JAI image I/O codec
- *  (http://developer.java.sun.com/developer/sampsource/jai/).
+ *  A utility class for creation of proxies to plugins stored in JAR files. All
+ *  classes used by the plugin need to be in the JAR file or current class path.
  *
  * @author     Jarek Sacha
  * @created    January 22, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 public abstract class JarPluginProxy implements PlugIn {
 
   private final static String requirementMsg
        = "This plugin requires Java 1.2 or better.";
-  private final static String jarName = "ij-jai-imageio.jar";
 
   private Object pluginObject = null;
 
@@ -53,11 +52,13 @@ public abstract class JarPluginProxy implements PlugIn {
       if (javaVersion == null) {
         IJ.showMessage(getPluginName(), "Unable to verify Java version.\n"
             + requirementMsg);
+        IJ.showStatus("");
         return;
       }
       if (javaVersion.compareTo("1.2") < 0) {
         IJ.showMessage(getPluginName(), "Detected Java version "
             + javaVersion + ".\n" + requirementMsg);
+        IJ.showStatus("");
         return;
       }
 
@@ -66,14 +67,15 @@ public abstract class JarPluginProxy implements PlugIn {
       Class pluginClass = null;
       try {
         JarClassLoader jarClassLoader = new JarClassLoader(
-            Menus.getPlugInsPath() + jarName);
+            Menus.getPlugInsPath() + getJarFilePath());
         pluginClass = jarClassLoader.loadClass(getPluginClassName());
       }
       catch (Exception ex) {
         IJ.showMessage(getPluginName(), "This plugin requires "
-            + jarName + " available from "
+            + getJarFilePath() + " available from "
             + "\"http://sourceforge.net/projects/ij-plugins/\".\n\n"
             + ex.getMessage());
+        IJ.showStatus("");
         return;
       }
 
@@ -101,11 +103,21 @@ public abstract class JarPluginProxy implements PlugIn {
 
 
   /**
-   *  Gets the PluginClassName attribute of the JarPluginProxy object
+   *  Override this method to return name of the actual class containing a plugin
+   *  to which this class is a proxy.
    *
-   * @return    The PluginClassName value
+   * @return    Actual plugin class name.
    */
   protected abstract String getPluginClassName();
+
+
+  /**
+   *  Override this method to return path to the JAR file containing the actual
+   *  plugin. The path is relative to the ImageJ's plugin folder.
+   *
+   * @return    Relative path to the JAR containing the actual plugin.
+   */
+  protected abstract String getJarFilePath();
 
 
   /**
