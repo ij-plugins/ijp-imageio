@@ -20,18 +20,18 @@
  */
 package net.sf.ij.jaiio;
 
-import non_com.media.jai.codec.ImageCodec;
-
 import java.io.File;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeSet;
 import javax.swing.JFileChooser;
 
+import non_com.media.jai.codec.ImageCodec;
+
 /**
  * @author     Jarek Sacha
  * @created    February 2, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 
 public class JAIFileChooserFactory {
@@ -94,7 +94,12 @@ public class JAIFileChooserFactory {
     TreeSet codecSet = new TreeSet();
     while (codecs.hasMoreElements()) {
       ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
-      codecSet.add(thisCodec.getFormatName());
+      String formatName = thisCodec.getFormatName();
+      // GIF and FPX  are not supported
+      if (formatName.compareToIgnoreCase("GIF") != 0
+          && formatName.compareToIgnoreCase("FPX") != 0) {
+        codecSet.add(formatName);
+      }
     }
 
     JAIFileFilter defaultFilter = null;
