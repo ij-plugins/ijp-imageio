@@ -20,8 +20,12 @@
  */
 package net.sf.ij.jaiio;
 
-import java.io.File;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+
 import javax.swing.filechooser.FileFilter;
+
 import non_com.media.jai.codec.FileSeekableStream;
 import non_com.media.jai.codec.ImageCodec;
 
@@ -37,14 +41,18 @@ import non_com.media.jai.codec.ImageCodec;
 public class JAIFileFilter extends FileFilter {
 
   /**  Files smaller then min size are ignored by the filter. */
-  public final static int MIN_IMAGE_FILE_SIZE = 5;
+  public final static int MIN_IMAGE_FILE_SIZE = 8;
 
   private String codecName = null;
   private String decription = "All Supported Images";
+  private ImageCodec activeCodecs[] = null;
+  private int maxHeaderSize = 0;
+  private byte[] headerBytes = null;
 
 
   /**  Create file filter accepting all images supported by registered JAI codecs. */
   public JAIFileFilter() {
+    setupFilter(null);
   }
 
 
@@ -54,9 +62,27 @@ public class JAIFileFilter extends FileFilter {
    * @param  codecName  Codec name.
    */
   public JAIFileFilter(String codecName) {
-    if (codecName != null && codecName.length() > 0) {
-      this.codecName = codecName;
-      this.decription = codecName.toUpperCase();
+    setupFilter(codecName);
+  }
+
+
+  /*
+   *
+   */
+  private static void readHeaderSample(File file, byte[] headerBytes)
+       throws Exception {
+    FileInputStream fis = null;
+    try {
+      fis = new FileInputStream(file);
+      fis.read(headerBytes);
+    }
+    catch (Exception ex) {
+      throw ex;
+    }
+    finally {
+      if (fis != null) {
+        fis.close();
+      }
     }
   }
 
@@ -90,7 +116,7 @@ public class JAIFileFilter extends FileFilter {
    *      associated codec.
    */
   public boolean accept(File file) {
-    if (file == null || !file.canRead()) {
+    if (file == null || !file.exists() || !file.canRead()) {
       return false;
     }
     if (file.isDirectory()) {
@@ -100,43 +126,78 @@ public class JAIFileFilter extends FileFilter {
       return false;
     }
 
-    // Find matching decoders
-    FileSeekableStream fss = null;
-    String[] decoders = null;
+    // Read file header
     try {
-      fss = new FileSeekableStream(file);
-      decoders = ImageCodec.getDecoderNames(fss);
+      readHeaderSample(file, headerBytes);
     }
-    catch (Throwable t) {
-      return false;
-    }
-    finally {
-      if (fss != null) {
-        try {
-          fss.close();
-        }
-        catch (Throwable t) {
-          return false;
-        }
-      }
-    }
-
-    if (decoders == null || decoders.length == 0) {
+    catch (Exception ex) {
       return false;
     }
 
-    if (codecName == null) {
-      // File is one of the supported image type.
-      return true;
-    }
-
-    for (int i = 0; i < decoders.length; ++i) {
-      if (codecName.equals(decoders[i])) {
+    // Look for decoder
+    for (int i = 0; i < activeCodecs.length; ++i) {
+      if (activeCodecs[i].isFormatRecognized(headerBytes)) {
         return true;
       }
     }
 
     return false;
+  }
+
+
+  /*
+   *
+   */
+  private void setupFilter(String codecName) {
+    this.codecName = codecName;
+    decription = "All Supported Images";
+    activeCodecs = null;
+
+    // Get handles filter codecs
+    if (codecName == null) {
+      // All suported formats.
+      Enumeration codecEnumeration = ImageCodec.getCodecs();
+      ArrayList codecArray = new ArrayList();
+      while (codecEnumeration.hasMoreElements()) {
+        codecArray.add(codecEnumeration.nextElement());
+      }
+      activeCodecs = (ImageCodec[]) codecArray.toArray(
+          new ImageCodec[codecArray.size()]);
+    }
+    else {
+      ImageCodec codec = ImageCodec.getCodec(codecName);
+      if (codec != null) {
+        activeCodecs = new ImageCodec[1];
+        activeCodecs[0] = codec;
+        this.codecName = codecName;
+        decription = codecName.toUpperCase();
+      }
+    }
+
+    if (activeCodecs == null) {
+      throw new RuntimeException("Unable to find codecs for: " + codecName);
+    }
+
+    // Find how large header size is needed for file type detection.
+    for (int i = 0; i < activeCodecs.length; ++i) {
+      int h = activeCodecs[i].getNumHeaderBytes();
+      if (h == 0) {
+        throw new RuntimeException("Codec "
+            + activeCodecs[i].getFormatName()
+            + " unable to recognize its files by header.");
+      }
+      if (h > maxHeaderSize) {
+        maxHeaderSize = h;
+      }
+    }
+
+    if (maxHeaderSize > MIN_IMAGE_FILE_SIZE) {
+      throw new RuntimeException(
+          "MIN_IMAGE_FILE_SIZE set too low, need to be at least "
+          + maxHeaderSize);
+    }
+
+    headerBytes = new byte[maxHeaderSize];
   }
 }
 
