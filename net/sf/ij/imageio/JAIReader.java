@@ -56,9 +56,9 @@ import javax.swing.ImageIcon;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
-public class JAIReader implements PlugIn {
+public class JAIReader {
 
   /**
    */
@@ -376,39 +376,6 @@ public class JAIReader implements PlugIn {
 
 
   /**
-   *  Convenience method that simplifies execution from within Image/J.
-   *  Implementation of the method in ij.plogin.PlugIn interface.
-   *
-   * @param  arg  Not used, required by the interface specification.
-   */
-  public void run(String arg) {
-
-    OpenDialog openDialog = new OpenDialog("Open...", null);
-    if (openDialog.getFileName() == null) {
-      // No selection
-      return;
-    }
-
-    File file = new File(openDialog.getDirectory(), openDialog.getFileName());
-    IJ.showStatus("Opening: " + file.getName());
-
-    try {
-      ImagePlus[] images = read(file);
-      if (images != null) {
-        for (int i = 0; i < images.length; ++i) {
-          images[i].show();
-        }
-      }
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      IJ.showMessage("JAIReader", "Error opening file: "
-           + openDialog.getFileName() + ".\n\n" + ex.getMessage());
-    }
-  }
-
-
-  /**
    *  Open image in the file using registered codecs. A file may contain
    *  multiple images. If all images in the file are of the same type and size
    *  they will be combines into single stack within ImagesPlus object returned
@@ -465,46 +432,51 @@ public class JAIReader implements PlugIn {
       // Extract TIFF tags
       if (ri instanceof TIFFImage) {
         TIFFImage ti = (TIFFImage) ri;
-        TIFFDirectory dir = ti.getPrivateIFD(8);
+        try {
+          TIFFDirectory dir = ti.getPrivateIFD(8);
+          Calibration c = im.getCalibration();
+          if (c == null) {
+            c = new Calibration(im);
+          }
 
-        Calibration c = im.getCalibration();
-        if (c == null) {
-          c = new Calibration(im);
+          TIFFField xResField = dir.getField(TIFFImageDecoder.TIFF_X_RESOLUTION);
+          if (xResField != null) {
+            double xRes = xResField.getAsDouble(0);
+            if (xRes != 0) {
+              c.pixelWidth = 1 / xRes;
+            }
+          }
+
+          TIFFField yResField = dir.getField(TIFFImageDecoder.TIFF_Y_RESOLUTION);
+          if (yResField != null) {
+            double yRes = yResField.getAsDouble(0);
+            if (yRes != 0) {
+              c.pixelHeight = 1 / yRes;
+            }
+          }
+
+          TIFFField resolutionUnitField = dir.getField(
+              TIFFImageDecoder.TIFF_RESOLUTION_UNIT);
+          if (resolutionUnitField != null) {
+            int resolutionUnit = resolutionUnitField.getAsInt(0);
+            if (resolutionUnit == 1 && c.getUnit() == null) {
+              // no meningful units
+              c.setUnit(" ");
+            }
+            else if (resolutionUnit == 2) {
+              c.setUnit("inch");
+            }
+            else if (resolutionUnit == 3) {
+              c.setUnit("cm");
+            }
+          }
+
+          im.setCalibration(c);
         }
-
-        TIFFField xResField = dir.getField(TIFFImageDecoder.TIFF_X_RESOLUTION);
-        if (xResField != null) {
-          double xRes = xResField.getAsDouble(0);
-          if (xRes != 0) {
-            c.pixelWidth = 1 / xRes;
-          }
+        catch (NegativeArraySizeException ex) {
+          // my be thrown by ti.getPrivateIFD(8)
+          ex.printStackTrace();
         }
-
-        TIFFField yResField = dir.getField(TIFFImageDecoder.TIFF_Y_RESOLUTION);
-        if (yResField != null) {
-          double yRes = yResField.getAsDouble(0);
-          if (yRes != 0) {
-            c.pixelHeight = 1 / yRes;
-          }
-        }
-
-        TIFFField resolutionUnitField = dir.getField(
-            TIFFImageDecoder.TIFF_RESOLUTION_UNIT);
-        if (resolutionUnitField != null) {
-          int resolutionUnit = resolutionUnitField.getAsInt(0);
-          if (resolutionUnit == 1 && c.getUnit() == null) {
-            // no meningful units
-            c.setUnit(" ");
-          }
-          else if (resolutionUnit == 2) {
-            c.setUnit("inch");
-          }
-          else if (resolutionUnit == 3) {
-            c.setUnit("cm");
-          }
-        }
-
-        im.setCalibration(c);
       }
 
       imageList.add(im);
