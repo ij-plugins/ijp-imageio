@@ -20,15 +20,15 @@
  */
 package net.sf.ij.plugin;
 
-import ij.plugin.PlugIn;
 import ij.IJ;
+import ij.plugin.PlugIn;
 
 /**
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class AboutImageIO implements PlugIn {
-    
+
     private static final String TITLE = "About Image IO Plugin Bundle";
     private static final String MESAGE =
             "ij-ImageIO plugins add to ImageJ support for additional image\n" +
@@ -39,20 +39,24 @@ public class AboutImageIO implements PlugIn {
             "http://ij-plugins.sf.net/plugins/imageio";
 
     public void run(String string) {
+
         try {
-        HelpPanel.showHelpWindow(false);
-        }
-        catch(RuntimeException e) {
-            String msg = MESAGE +"\n"+
-                    "*****************************************************************\n"+
-                    "Regular Image IO help failed to load content from HTML resource.\n"+
-                    "This may be a problem with the installation of current version\n"+
-                    "of ImageJ. Check Image IO home page (see below) for more details,\n"+
+            IJ.showStatus("Starting \""+TITLE+"\" plugin...");
+            HelpPanel.showHelpWindow(false);
+        } catch (RuntimeException e) {
+            String msg = MESAGE + "\n" +
+                    "*****************************************************************\n" +
+                    "Regular Image IO help failed to load content from HTML resource.\n" +
+                    "This may be a problem with the installation of current version\n" +
+                    "of ImageJ. Check Image IO home page (see below) for more details,\n" +
                     "look for section \"Known Issues\"\n" +
-                    "________________________________________________________________\n"+
+                    "________________________________________________________________\n" +
                     "Original error message:\n" + e;
             IJ.showMessage(TITLE, msg);
+        } finally {
+            IJ.showStatus("");
         }
+
     }
 
 }

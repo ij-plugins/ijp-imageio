@@ -41,7 +41,7 @@ import java.io.IOException;
  * Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 
 public class ImageIOSaveAsPlugin implements PlugIn {
@@ -66,127 +66,136 @@ public class ImageIOSaveAsPlugin implements PlugIn {
      * @param arg Not used.
      */
     public void run(String arg) {
-        ImagePlus imp = WindowManager.getCurrentImage();
-        if (imp == null) {
-            IJ.showMessage(TITLE, "No images are open.");
-            return;
-        }
 
-        String fileName = null;
-        String codecName = null;
-        ImageEncodeParam encodeParam = null;
-        
+        IJ.showStatus("Starting \""+TITLE+"\" plugin...");
 
-        // Check with ImageJ if macro options are present
-        String macroOptions = Macro.getOptions();
-        if (macroOptions != null) {
-            fileName = Macro.getValue(macroOptions, MACRO_OPTION_FILENAME, fileName);
-            codecName = Macro.getValue(macroOptions, MACRO_OPTION_CODECNAME, codecName);
-
-            // Sanity checks
-            if (fileName != null && codecName == null) {
-                IJ.showMessage(TITLE,
-                        "Macro option '" + MACRO_OPTION_CODECNAME + "' is missing");
-                Macro.abort();
-                return;
-            } else if (fileName == null && codecName != null) {
-                IJ.showMessage(TITLE,
-                        "Macro option '" + MACRO_OPTION_FILENAME + "' is missing");
-                Macro.abort();
+        try {
+            ImagePlus imp = WindowManager.getCurrentImage();
+            if (imp == null) {
+                IJ.showMessage(TITLE, "No images are open.");
                 return;
             }
-        } else {
-            if (arg.equalsIgnoreCase(JPEG)) {
-                codecName = JPEG;
-            } else if (arg.equalsIgnoreCase(PNG)) {
-                codecName = PNG;
-            } else if (arg.equalsIgnoreCase(PNM)) {
-                codecName = PNM;
-            } else if (arg.equalsIgnoreCase(TIFF)) {
-                codecName = TIFF;
-            }
 
-            if (codecName != null) {
-                Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
+            String fileName = null;
+            String codecName = null;
+            ImageEncodeParam encodeParam = null;
 
-                SaveDialog saveDialog = new SaveDialog("Save As " + codecName + "...", imp.getTitle(),
-                        "." + getFileExtension(codecName));
-                fileName = saveDialog.getDirectory() + File.separator
-                        + saveDialog.getFileName();
-                if (fileName == null) {
+
+            // Check with ImageJ if macro options are present
+            String macroOptions = Macro.getOptions();
+            if (macroOptions != null) {
+                fileName = Macro.getValue(macroOptions, MACRO_OPTION_FILENAME, fileName);
+                codecName = Macro.getValue(macroOptions, MACRO_OPTION_CODECNAME, codecName);
+
+                // Sanity checks
+                if (fileName != null && codecName == null) {
+                    IJ.showMessage(TITLE,
+                            "Macro option '" + MACRO_OPTION_CODECNAME + "' is missing");
+                    Macro.abort();
+                    return;
+                } else if (fileName == null && codecName != null) {
+                    IJ.showMessage(TITLE,
+                            "Macro option '" + MACRO_OPTION_FILENAME + "' is missing");
                     Macro.abort();
                     return;
                 }
+            } else {
+                if (arg.equalsIgnoreCase(JPEG)) {
+                    codecName = JPEG;
+                } else if (arg.equalsIgnoreCase(PNG)) {
+                    codecName = PNG;
+                } else if (arg.equalsIgnoreCase(PNM)) {
+                    codecName = PNM;
+                } else if (arg.equalsIgnoreCase(TIFF)) {
+                    codecName = TIFF;
+                }
+
+                if (codecName != null) {
+                    Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
+
+                    SaveDialog saveDialog = new SaveDialog("Save As " + codecName + "...", imp.getTitle(),
+                            "." + getFileExtension(codecName));
+                    fileName = saveDialog.getDirectory() + File.separator
+                            + saveDialog.getFileName();
+                    if (fileName == null) {
+                        Macro.abort();
+                        return;
+                    }
 //                Recorder.recordOption(MACRO_OPTION_FILENAME, fileName);
-            }
-        }
-
-
-        if (fileName == null && codecName == null) {
-            // Get fileName and codecName showing save dialog
-            if (jaiChooser == null) {
-                jaiChooser = JAIFileChooserFactory.createJAISaveChooser();
-                jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
+                }
             }
 
-            File file = new File(imp.getTitle());
-            jaiChooser.setSelectedFile(file);
 
-            if (jaiChooser.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
+            if (fileName == null && codecName == null) {
+                // Get fileName and codecName showing save dialog
+                if (jaiChooser == null) {
+                    jaiChooser = JAIFileChooserFactory.createJAISaveChooser();
+                    jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
+                }
+
+                File file = new File(imp.getTitle());
+                jaiChooser.setSelectedFile(file);
+
+                if (jaiChooser.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
+                    Macro.abort();
+                    return;
+                }
+
+                FileFilter fileFilter = jaiChooser.getFileFilter();
+                if (fileFilter instanceof JAIFileFilter) {
+                    JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
+                    codecName = jaiFileFilter.getCodecName();
+                    Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
+                }
+
+                if (codecName == null) {
+                    IJ.showMessage(TITLE, "File format not selected. File not saved.");
+                    Macro.abort();
+                    return;
+                }
+
+                file = jaiChooser.getSelectedFile();
+                if (file.getName().indexOf(".") < 0) {
+                    file = new File(file.getParent(),
+                            file.getName() + "." + getFileExtension(codecName));
+                }
+                fileName = file.getAbsolutePath();
+                Recorder.recordOption(MACRO_OPTION_FILENAME, fileName);
+            }
+
+            // Ask for file options
+            if (codecName.equalsIgnoreCase(TIFF)) {
+                // TODO: detect if image is binary and give an option to save as 1bit compressed image
+                if (paramDialog == null) {
+                    paramDialog = new EncoderParamDialog();
+                }
+                JaiioUtil.centerOnScreen(paramDialog, false);
+                paramDialog.show();
+                if (!paramDialog.isAccepted()) {
+                    Macro.abort();
+                    IJ.showMessage(TITLE, "Option dialog cancelled, image not saved.");
+                    return;
+                }
+
+                encodeParam = paramDialog.getImageEncodeParam(JaiioUtil.isBinary(imp.getProcessor()));
+            }
+
+            //
+            // Now ready to write the image to a file
+            //
+            try {
+                IJ.showStatus("Writing image as "+codecName.toUpperCase()
+                        +" to "+fileName);
+                write(imp, fileName, codecName, encodeParam);
+            } catch (IOException e) {
+                e.printStackTrace();
                 Macro.abort();
-                return;
+                String msg = "Error writing file: " + fileName + ".\n\n";
+                msg += (e.getMessage() == null) ? e.toString() : e.getMessage();
+                IJ.showMessage(TITLE, msg);
             }
-
-            FileFilter fileFilter = jaiChooser.getFileFilter();
-            if (fileFilter instanceof JAIFileFilter) {
-                JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
-                codecName = jaiFileFilter.getCodecName();
-                Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
-            }
-
-            if (codecName == null) {
-                IJ.showMessage(TITLE, "File format not selected. File not saved.");
-                Macro.abort();
-                return;
-            }
-
-            file = jaiChooser.getSelectedFile();
-            if (file.getName().indexOf(".") < 0) {
-                file = new File(file.getParent(),
-                        file.getName() + "." + getFileExtension(codecName));
-            }
-            fileName = file.getAbsolutePath();
-            Recorder.recordOption(MACRO_OPTION_FILENAME, fileName);
-        }
-
-        // Ask for file options
-        if (codecName.equalsIgnoreCase(TIFF)) {
-            // TODO: detect if image is binary and give an option to save as 1bit compressed image
-            if (paramDialog == null) {
-                paramDialog = new EncoderParamDialog();
-            }
-            JaiioUtil.centerOnScreen(paramDialog, false);
-            paramDialog.show();
-            if (!paramDialog.isAccepted()) {
-                Macro.abort();
-                IJ.showMessage(TITLE, "Option dialog cancelled, image not saved.");
-                return;
-            }
-
-            encodeParam = paramDialog.getImageEncodeParam(JaiioUtil.isBinary(imp.getProcessor()));
-        }
-
-        //
-        // Now ready to write the image to a file
-        //
-        try {
-            write(imp, fileName, codecName, encodeParam);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Macro.abort();
-            String msg = "Error writing file: " + fileName + ".\n\n";
-            msg += (e.getMessage() == null) ? e.toString() : e.getMessage();
-            IJ.showMessage(TITLE, msg);
+        } finally {
+            IJ.showStatus("");
         }
     }
 

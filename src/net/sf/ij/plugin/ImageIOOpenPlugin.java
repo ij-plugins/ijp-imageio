@@ -37,12 +37,12 @@ import java.util.ArrayList;
  * Opens file chooser dialog and open the image using JAI codec.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 
 public class ImageIOOpenPlugin implements PlugIn {
 
-    private static final String TITLE = "ImageIO Open";
+    private static final String TITLE = "Image IO Open";
 
     /**
      * Argument passed to <code>run</code> method to use standard Image/J open
@@ -159,6 +159,9 @@ public class ImageIOOpenPlugin implements PlugIn {
      * @param arg Can be user to specify type of the open dialog.
      */
     public void run(String arg) {
+
+        IJ.showStatus("Starting \""+TITLE+"\" plugin...");
+
         String type = (arg == null) ? ARG_SIMPLE : arg.trim().toLowerCase();
 
         files = null;
@@ -179,8 +182,11 @@ public class ImageIOOpenPlugin implements PlugIn {
         }
 
         if (files != null) {
+            IJ.showStatus("Opening seleced image file...");
             open(files, pageIndex);
         }
+
+        IJ.showStatus("");
     }
 
 
@@ -190,7 +196,9 @@ public class ImageIOOpenPlugin implements PlugIn {
     private void selectFilesWithImagePreview() {
         if (jaiChooser == null) {
             jaiChooser = JAIFileChooserFactory.createJAIOpenChooser();
-            jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
+            final String dirName = OpenDialog.getDefaultDirectory();
+            final File dirFile = new File(dirName);
+            jaiChooser.setCurrentDirectory(dirFile);
             jaiChooser.setMultiSelectionEnabled(true);
         }
 
