@@ -54,7 +54,7 @@ import non_com.media.jai.FloatDoubleColorModel;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class ImagePlusCreator {
 
@@ -125,8 +125,6 @@ public class ImagePlusCreator {
       }
       case DataBuffer.TYPE_DOUBLE:
         return new FloatProcessor(w, h, ((DataBufferDouble) buffer).getData());
-//        throw new Exception("Unsupported pixel type: "
-//             + getDataTypeAsString(buffer.getDataType()));
       case DataBuffer.TYPE_UNDEFINED:
         throw new Exception("Pixel type is undefined.");
       default:
@@ -158,14 +156,7 @@ public class ImagePlusCreator {
 
     SampleModel sm = r.getSampleModel();
     int dbType = db.getDataType();
-    if (db.getNumBanks() > 1
-        || sm.getNumBands() > 1
-//         || (cm != null
-//         && !(cm instanceof IndexColorModel)
-//         && !(cm instanceof FloatDoubleColorModel)
-//         && dbType != DataBuffer.TYPE_BYTE
-//         && dbType != DataBuffer.TYPE_SHORT
-//         && dbType != DataBuffer.TYPE_USHORT)
+    if (numBanks > 1 || sm.getNumBands() > 1
         ) {
       // If image has multiple banks or multiple color components, assume that it
       // is a color image and relay on AWT for proper decoding.
@@ -193,13 +184,14 @@ public class ImagePlusCreator {
         cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
         im.setCalibration(cal);
       }
-
-      Calibration cal = im.getCalibration();
-      im.setCalibration(null);
-      ImageStatistics stats = im.getStatistics();
-      im.setCalibration(cal);
-      ip.setMinAndMax(stats.min, stats.max);
-      im.updateImage();
+      else if (cm == null) {
+        Calibration cal = im.getCalibration();
+        im.setCalibration(null);
+        ImageStatistics stats = im.getStatistics();
+        im.setCalibration(cal);
+        ip.setMinAndMax(stats.min, stats.max);
+        im.updateImage();
+      }
 
       return im;
     }
