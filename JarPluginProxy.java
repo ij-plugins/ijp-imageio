@@ -19,15 +19,8 @@
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
 import ij.IJ;
-import ij.ImagePlus;
 import ij.Menus;
-import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
-
-import java.io.File;
-import java.lang.reflect.Method;
-
-import net.sf.ij.imageio.JAIReader;
 
 /**
  *  Read image files using JAI image I/O codec
@@ -35,7 +28,7 @@ import net.sf.ij.imageio.JAIReader;
  *
  * @author     Jarek Sacha
  * @created    January 22, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 public abstract class JarPluginProxy implements PlugIn {
 
@@ -44,6 +37,67 @@ public abstract class JarPluginProxy implements PlugIn {
   private final static String jarName = "ij-jai-imageio.jar";
 
   private Object pluginObject = null;
+
+
+  /**
+   *  Main processing method for the JAI_Reader object
+   *
+   * @param  arg  (not used)
+   */
+  public final void run(String arg) {
+
+    if (pluginObject == null) {
+      // Verify Java version
+      IJ.showStatus("Verifying Java version.");
+      String javaVersion = System.getProperty("java.version");
+      if (javaVersion == null) {
+        IJ.showMessage(getPluginName(), "Unable to verify Java version.\n"
+            + requirementMsg);
+        return;
+      }
+      if (javaVersion.compareTo("1.2") < 0) {
+        IJ.showMessage(getPluginName(), "Detected Java version "
+            + javaVersion + ".\n" + requirementMsg);
+        return;
+      }
+
+      // Load plugin class
+      IJ.showStatus("Loading " + getPluginName() + " classes..");
+      Class pluginClass = null;
+      try {
+        JarClassLoader jarClassLoader = new JarClassLoader(
+            Menus.getPlugInsPath() + jarName);
+        pluginClass = jarClassLoader.loadClass(getPluginClassName());
+      }
+      catch (Exception ex) {
+        IJ.showMessage(getPluginName(), "This plugin requires "
+            + jarName + " available from "
+            + "\"http://sourceforge.net/projects/ij-plugins/\".\n\n"
+            + ex.getMessage());
+        return;
+      }
+
+      //  Create instance of the plugin
+      try {
+        pluginObject = pluginClass.newInstance();
+      }
+      catch (Exception ex) {
+        IJ.showMessage(getPluginName(),
+            "Failed to instantiate class " + getPluginClassName() + ".\n\n"
+            + ex.toString());
+      }
+      IJ.showStatus("");
+    }
+
+    // Run the plugin
+    try {
+      ((PlugIn) pluginObject).run(getPluginArg());
+    }
+    catch (Exception ex) {
+      ex.printStackTrace();
+      IJ.showMessage(getPluginName(), ex.toString());
+    }
+  }
 
 
   /**
@@ -64,67 +118,6 @@ public abstract class JarPluginProxy implements PlugIn {
    */
   protected String getPluginArg() {
     return null;
-  }
-
-
-  /**
-   *  Main processing method for the JAI_Reader object
-   *
-   * @param  arg  (not used)
-   */
-  public final void run(String arg) {
-
-    if (pluginObject == null) {
-      // Verify Java version
-      IJ.showStatus("Verifying Java version.");
-      String javaVersion = System.getProperty("java.version");
-      if (javaVersion == null) {
-        IJ.showMessage(getPluginName(), "Unable to verify Java version.\n"
-             + requirementMsg);
-        return;
-      }
-      if (javaVersion.compareTo("1.2") < 0) {
-        IJ.showMessage(getPluginName(), "Detected Java version "
-             + javaVersion + ".\n" + requirementMsg);
-        return;
-      }
-
-      // Load plugin class
-      IJ.showStatus("Loading " + getPluginName() + " classes..");
-      Class pluginClass = null;
-      try {
-        JarClassLoader jarClassLoader = new JarClassLoader(
-            Menus.getPlugInsPath() + jarName);
-        pluginClass = jarClassLoader.loadClass(getPluginClassName());
-      }
-      catch (Exception ex) {
-        IJ.showMessage(getPluginName(), "This plugin requires "
-             + jarName + " available from "
-             + "\"http://sourceforge.net/projects/ij-plugins/\".\n\n"
-             + ex.getMessage());
-        return;
-      }
-
-      //  Create instance of the plugin
-      try {
-        pluginObject = pluginClass.newInstance();
-      }
-      catch (Exception ex) {
-        IJ.showMessage(getPluginName(),
-            "Failed to instantiate class " + getPluginClassName() + ".\n\n"
-             + ex.toString());
-      }
-      IJ.showStatus("");
-    }
-
-    // Run the plugin
-    try {
-      ((PlugIn) pluginObject).run(getPluginArg());
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      IJ.showMessage(getPluginName(), ex.toString());
-    }
   }
 
 

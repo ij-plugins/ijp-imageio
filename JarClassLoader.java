@@ -21,15 +21,16 @@
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.net.URL;
-import java.util.*;
-import java.util.jar.*;
+import java.util.Enumeration;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  *  Loads classes from a JAR file.
  *
  * @author     Jarek Sacha
  * @created    January 26, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 public class JarClassLoader extends ClassLoader {
   private final static int BUFFER_SIZE = 0xFFFF;
@@ -148,12 +149,12 @@ public class JarClassLoader extends ClassLoader {
     catch (Exception ex) {
       throw new ClassNotFoundException(
           "Unable to load class " + name + " from "
-           + file.getAbsolutePath() + ". Exception: " + ex.toString());
+          + file.getAbsolutePath() + ". Exception: " + ex.toString());
     }
 
     throw new ClassNotFoundException(
         "Unable to load class " + name + " from "
-         + file.getAbsolutePath() +
+        + file.getAbsolutePath() +
         ". Class entry not found in the JAR file.");
   }
 }
