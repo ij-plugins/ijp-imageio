@@ -33,7 +33,7 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    February 2, 2002
- * @version    $Revision: 1.6 $
+ * @version    $Revision: 1.7 $
  */
 
 public class JAIFileChooserFactory {
@@ -59,45 +59,8 @@ public class JAIFileChooserFactory {
    * @return    Description of the Returned Value
    */
   public static JFileChooser createJAISaveChooser() {
-    JFileChooser chooser = new JFileChooser();
+    JFileChooser chooser = new SaveImageFileChooser();
     chooser.setCurrentDirectory(new File(".").getAbsoluteFile());
-
-    // Set filters corresponding to each available codec
-    Enumeration codecs = ImageCodec.getCodecs();
-
-    // Sort codec names
-    TreeSet codecSet = new TreeSet();
-    while (codecs.hasMoreElements()) {
-      ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
-      String formatName = thisCodec.getFormatName();
-      // GIF and FPX  are not supported
-      if (formatName.compareToIgnoreCase("GIF") != 0
-          && formatName.compareToIgnoreCase("FPX") != 0) {
-        codecSet.add(formatName);
-      }
-    }
-
-    JAIFileFilter defaultFilter = null;
-    for (Iterator i = codecSet.iterator(); i.hasNext(); ) {
-      try {
-        String cadecName = (String) i.next();
-        JAIFileFilter jaiFileFilter = new JAIFileFilter(cadecName);
-        chooser.addChoosableFileFilter(jaiFileFilter);
-        if (cadecName.toUpperCase().indexOf("TIFF") > -1) {
-          defaultFilter = jaiFileFilter;
-        }
-      }
-      catch (Throwable t) {
-        t.printStackTrace();
-      }
-    }
-
-    if (defaultFilter != null) {
-      chooser.setFileFilter(defaultFilter);
-    }
-
-    chooser.setMultiSelectionEnabled(false);
-    chooser.setDialogType(JFileChooser.SAVE_DIALOG);
 
     return chooser;
   }
