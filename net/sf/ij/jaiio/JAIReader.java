@@ -51,7 +51,7 @@ import non_com.media.jai.codec.TIFFImageDecoder;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class JAIReader {
 
@@ -63,7 +63,7 @@ public class JAIReader {
    * @exception  Exception  If file is not in a supported image format or in
    *      case of I/O error.
    */
-  public static Image readFirstAsImage(File file) throws Exception {
+  public static ImageInfo readFirstImageAndInfo(File file) throws Exception {
 
     // Find matching decoders
     FileSeekableStream fss = new FileSeekableStream(file);
@@ -78,24 +78,39 @@ public class JAIReader {
 
     RenderedImage renderedImage = decoder.decodeAsRenderedImage();
 
-    ColorModel cm = renderedImage.getColorModel();
-    if (cm == null) {
-      WritableRaster writableRaster = ImagePlusCreator.forceTileUpdate(renderedImage);
-      ImagePlus imagePlus = ImagePlusCreator.create(writableRaster, null);
-      return imagePlus.getImage();
+    ImageInfo imageInfo = new ImageInfo();
+    imageInfo.numberOfPages = decoder.getNumPages();
+    imageInfo.codecName = decoders[0];
+
+    if (renderedImage instanceof Image) {
+      System.out.println("renderedImage instanceof Image");
+      System.out.println(renderedImage.getClass().getName());
+      imageInfo.previewImage = (Image) renderedImage;
     }
     else {
-      Raster raster = renderedImage.getData();
-      WritableRaster writableRaster = null;
-      if (raster instanceof WritableRaster) {
-        writableRaster = (WritableRaster) raster;
+
+      ColorModel cm = renderedImage.getColorModel();
+      if (cm == null) {
+        WritableRaster writableRaster = ImagePlusCreator.forceTileUpdate(renderedImage);
+        ImagePlus imagePlus = ImagePlusCreator.create(writableRaster, null);
+        imageInfo.previewImage = imagePlus.getImage();
       }
       else {
-        writableRaster = raster.createCompatibleWritableRaster();
-      }
+        Raster raster = renderedImage.getData();
+        WritableRaster writableRaster = null;
+        if (raster instanceof WritableRaster) {
+          writableRaster = (WritableRaster) raster;
+        }
+        else {
+          writableRaster = raster.createCompatibleWritableRaster();
+        }
 
-      return new BufferedImage(cm, writableRaster, false, null);
+        imageInfo.previewImage = new BufferedImage(cm, writableRaster, false,
+            null);
+      }
     }
+
+    return imageInfo;
   }
 
 
@@ -291,5 +306,15 @@ public class JAIReader {
 
     images[0].setStack(images[0].getTitle(), stack);
     return images[0];
+  }
+
+
+  /*
+   *  Basic image information.
+   */
+  public static class ImageInfo {
+    public Image previewImage;
+    public int numberOfPages;
+    public String codecName;
   }
 }
