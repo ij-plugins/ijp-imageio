@@ -18,22 +18,23 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
-import java.util.jar.*;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.net.URL;
-import java.io.FileInputStream;
+import java.util.*;
+import java.util.jar.*;
 
 /**
  *  Loads classes from a JAR file.
  *
  * @author     Jarek Sacha
  * @created    January 26, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 public class JarClassLoader extends ClassLoader {
+  private final static int BUFFER_SIZE = 0xFFFF;
 
   private String jarFileName;
-  private final static int BUFFER_SIZE = 0xFFFF;
 
 
   /**
@@ -77,8 +78,8 @@ public class JarClassLoader extends ClassLoader {
    *  Finds the resource with the given name.
    *
    * @param  name  The resource name.
-   * @return       A URL for reading the resource, or null  if the resource
-   *               could not be found.
+   * @return       A URL for reading the resource, or null if the resource could
+   *      not be found.
    */
   public URL findResource(String name) {
     try {
@@ -104,55 +105,55 @@ public class JarClassLoader extends ClassLoader {
   }
 
 
-
   /*
    *
    */
   private byte[] loadClassData(String name) throws ClassNotFoundException {
-    File f = new File(jarFileName);
-    if (!f.exists()) {
+    File file = new File(jarFileName);
+    if (!file.exists()) {
       throw new ClassNotFoundException("Unable to load class " + name +
-          " from " + f.getAbsolutePath() + ". JAR file does not exist.");
+          " from " + file.getAbsolutePath() + ". JAR file does not exist.");
     }
 
     String className = name + ".class";
     try {
-      JarInputStream jarInputStream = new JarInputStream(new FileInputStream(f));
-      JarEntry entry = jarInputStream.getNextJarEntry();
-      while (entry != null) {
+      JarFile jarFile = new JarFile(file);
+      // Look for an entry corresponding to requested class
+      Enumeration entries = jarFile.entries();
+      while (entries.hasMoreElements()) {
+        JarEntry entry = (JarEntry) entries.nextElement();
         String entryName = entry.getName().replace('/', '.');
         if (entryName.equals(className)) {
+          // Load class
+          BufferedInputStream bis = new BufferedInputStream(
+              jarFile.getInputStream(entry));
           byte[] buffer = new byte[BUFFER_SIZE];
           int totalBytesRead = 0;
           int bytesReadThisTime = 0;
           while (bytesReadThisTime != -1) {
-            bytesReadThisTime = jarInputStream.read(
-                buffer, totalBytesRead, buffer.length - totalBytesRead);
+            bytesReadThisTime = bis.read(buffer, totalBytesRead,
+                buffer.length - totalBytesRead);
             if (bytesReadThisTime != -1) {
               totalBytesRead += bytesReadThisTime;
             }
           }
-          jarInputStream.close();
+          bis.close();
 
           byte[] data = new byte[totalBytesRead];
           System.arraycopy(buffer, 0, data, 0, data.length);
           return data;
         }
-        else {
-          entry = jarInputStream.getNextJarEntry();
-        }
       }
-      jarInputStream.close();
     }
     catch (Exception ex) {
       throw new ClassNotFoundException(
           "Unable to load class " + name + " from "
-           + f.getAbsolutePath() + ". Exception: " + ex.toString());
+           + file.getAbsolutePath() + ". Exception: " + ex.toString());
     }
 
     throw new ClassNotFoundException(
         "Unable to load class " + name + " from "
-         + f.getAbsolutePath() +
+         + file.getAbsolutePath() +
         ". Class entry not found in the JAR file.");
   }
 }
