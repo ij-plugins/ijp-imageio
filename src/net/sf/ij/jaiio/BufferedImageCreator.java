@@ -35,7 +35,7 @@ import java.awt.image.*;
  * image types are supported.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class BufferedImageCreator {
 
@@ -59,7 +59,7 @@ public class BufferedImageCreator {
         // Get slice image processor
         int oldSliceNb = src.getCurrentSlice();
         src.setSlice(sliceNb + 1);
-        ImageProcessor ip = src.getProcessor();
+        ImageProcessor ip = src.getProcessor().duplicate();
         src.setSlice(oldSliceNb);
 
         // Convert image processor
