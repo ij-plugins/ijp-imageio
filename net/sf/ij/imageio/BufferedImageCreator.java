@@ -37,24 +37,26 @@ import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
 /**
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
-
 public class BufferedImageCreator {
 
+  /*
+   *  Made private to prevent subclassing.
+   */
   private BufferedImageCreator() {
   }
 
 
   /**
-   *  Create BufferedImage from a slice in image <code>src</code>. New image has
-   *  a copy of pixels in the source image.
+   *  Create BufferedImage from a slice <code>sliceNb</code> in image <code>src</code>
+   *  . Indexing starts at 0. New image has a copy of pixels in the source
+   *  image.
    *
    * @param  src      Source image.
    * @param  sliceNb  Slice number, numbering starts at 0.
@@ -75,7 +77,13 @@ public class BufferedImageCreator {
           ip = ip.duplicate();
           ip.invert();
         }
-        return create((ByteProcessor) ip);
+        ColorModel cm = ip.getColorModel();
+        if (cm != null && (cm instanceof IndexColorModel)) {
+          return create((ByteProcessor) ip, (IndexColorModel) cm);
+        }
+        else {
+          return create((ByteProcessor) ip);
+        }
       case ImagePlus.GRAY16:
         return create((ShortProcessor) ip);
       case ImagePlus.GRAY32:
@@ -124,14 +132,15 @@ public class BufferedImageCreator {
    * @return      BufferedImage.
    */
   public static BufferedImage create(ByteProcessor src) {
-    BufferedImage bufferedImage = new BufferedImage(
-        src.getWidth(), src.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
-    Raster raster = bufferedImage.getData();
-    DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
-    System.arraycopy(src.getPixels(), 0, dataBuffer.getData(), 0,
-        dataBuffer.getData().length);
+    byte[] r = new byte[256];
+    byte[] g = new byte[256];
+    byte[] b = new byte[256];
+    for (int i = 0; i < 256; ++i) {
+      r[i] = g[i] = b[i] = (byte) (i & 0xff);
+    }
+    IndexColorModel icm = new IndexColorModel(8, 256, r, g, b);
 
-    return bufferedImage;
+    return create(src, icm);
   }
 
 
@@ -143,12 +152,14 @@ public class BufferedImageCreator {
    * @return      BufferedImage.
    */
   public static BufferedImage create(ByteProcessor src, IndexColorModel icm) {
-    BufferedImage bufferedImage = new BufferedImage(
-        src.getWidth(), src.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, icm);
-    Raster raster = bufferedImage.getData();
-    DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
-    System.arraycopy(src.getPixels(), 0, dataBuffer.getData(), 0,
-        dataBuffer.getData().length);
+    WritableRaster wr = icm.createCompatibleWritableRaster(src.getWidth(),
+        src.getHeight());
+    DataBufferByte dataBuffer = (DataBufferByte) wr.getDataBuffer();
+    byte[] srcPixels = (byte[]) src.getPixels();
+    byte[] destPixels = dataBuffer.getData();
+    System.arraycopy(srcPixels, 0, destPixels, 0, destPixels.length);
+
+    BufferedImage bufferedImage = new BufferedImage(icm, wr, false, null);
 
     return bufferedImage;
   }
@@ -172,6 +183,7 @@ public class BufferedImageCreator {
     return bufferedImage;
   }
 
+
   /**
    *  Create BufferedImage from ShortProcessor. Pixel values are assumed to be
    *  unsigned short integers.
@@ -183,7 +195,7 @@ public class BufferedImageCreator {
     ColorModel cm = src.getColorModel();
     WritableRaster raster = cm.createCompatibleWritableRaster(src.getWidth(),
         src.getHeight());
-    DataBufferUShort dataBuffer = (DataBufferUShort) raster.getDataBuffer();
+    DataBufferInt dataBuffer = (DataBufferInt) raster.getDataBuffer();
     System.arraycopy(src.getPixels(), 0, dataBuffer.getData(), 0,
         dataBuffer.getData().length);
 
