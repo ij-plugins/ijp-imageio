@@ -37,7 +37,7 @@ import net.sf.ij.imageio.JAIReader;
  *
  * @author     Jarek Sacha
  * @created    January 22, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 public class JAI_Reader implements PlugIn {
 
@@ -49,7 +49,7 @@ public class JAI_Reader implements PlugIn {
   /**
    *  Main processing method for the JAI_Reader object
    *
-   * @param  arg  Not used. Required by PlugIn interface.
+   * @param  arg  (not used)
    */
   public void run(String arg) {
 
