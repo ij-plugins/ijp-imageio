@@ -2,7 +2,7 @@
 IJ-JAI-ImageIO v.1.0.3
 ----------------------
 
-JAI Reader with Preview  now offer option to open only select pages (images)
+JAI Reader with Preview  now offers option to open only selected pages (images)
 for files containing multiple pages (images).
 
 ----------------------
