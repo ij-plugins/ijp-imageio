@@ -32,7 +32,7 @@ import java.awt.image.*;
  * Creates/converts Image/J's image objects from Java2D/JAI representation.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ImagePlusCreator {
 
@@ -143,7 +143,7 @@ public class ImagePlusCreator {
         } else if (sm.getSampleSize(0) < 8) {
             // Temporary fix for less then 8 bit images
             final BufferedImage bi = new BufferedImage(cm, r, false, null);
-            return new ImagePlus(null, new ByteProcessor(bi));
+            return new ImagePlus(title, new ByteProcessor(bi));
         } else {
             if (!(cm instanceof IndexColorModel)) {
                 // Image/J (as of version 1.26r) can not properly deal with non color
