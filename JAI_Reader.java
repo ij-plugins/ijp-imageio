@@ -18,16 +18,15 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
-import java.io.File;
-import java.lang.reflect.Method;
 
 import ij.IJ;
-import ij.Menus;
 import ij.ImagePlus;
-import ij.plugin.PlugIn;
+import ij.Menus;
 import ij.io.OpenDialog;
+import ij.plugin.PlugIn;
 
 import java.io.File;
+import java.lang.reflect.Method;
 
 import net.sf.ij.imageio.JAIReader;
 
@@ -37,12 +36,15 @@ import net.sf.ij.imageio.JAIReader;
  *
  * @author     Jarek Sacha
  * @created    January 22, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 public class JAI_Reader implements PlugIn {
 
+  private final static String caption = "JAI Reader";
+  private final static String requirementMsg = "This plugin requires Java 1.2 or better.";
   private final static String jaiReaderJarName = "JAIReader.jar";
   private final static String jaiReaderClassName = "net.sf.ij.imageio.JAIReader";
+
   private static Object jaiReader = null;
 
 
@@ -54,7 +56,22 @@ public class JAI_Reader implements PlugIn {
   public void run(String arg) {
 
     if (jaiReader == null) {
+      // Verify Java version
+      IJ.showStatus("Verifying Java version.");
+      String javaVersion = System.getProperty("java.version");
+      if (javaVersion == null) {
+        IJ.showMessage(caption, "Unable to verify Java version.\n"
+             + requirementMsg);
+        return;
+      }
+      if (javaVersion.compareTo("1.2") < 0) {
+        IJ.showMessage(caption, "Detected Java version " + javaVersion + ".\n"
+             + requirementMsg);
+        return;
+      }
+
       // Load JAIReader class
+      IJ.showStatus("Loading JAI Reader classes..");
       Class jaiReaderClass = null;
       try {
         JarClassLoader jarClassLoader = new JarClassLoader(
@@ -77,6 +94,7 @@ public class JAI_Reader implements PlugIn {
         IJ.showMessage("JAI Reader",
             "Failed to instantiate class JAIReader.\n\n" + ex.toString());
       }
+      IJ.showStatus("");
     }
 
     // Run JAIReader as plugin
