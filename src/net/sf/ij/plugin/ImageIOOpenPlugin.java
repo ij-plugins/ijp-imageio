@@ -37,10 +37,10 @@ import java.util.ArrayList;
  * Opens file chooser dialog and open the image using JAI codec.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.1 $
  */
 
-public class JAIReaderPlugin implements PlugIn {
+public class ImageIOOpenPlugin implements PlugIn {
 
     /**
      * Argument passed to <code>run</code> method to use standard Image/J open
@@ -147,7 +147,7 @@ public class JAIReaderPlugin implements PlugIn {
 
 
     /**
-     * Main processing method for the JAIReaderPlugin object. Type of the file
+     * Main processing method for the ImageIOOpenPlugin object. Type of the file
      * dialog is determined by value of <code>arg</code>. If it is equal <code>ARG_IMAGE_PREVIEW</code>
      * then file chooser with image preview will be used. By default standard
      * Image/J's open dialog is used.
