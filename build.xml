@@ -171,6 +171,24 @@
         <delete dir="${dist.dir}"/>
     </target>
 
+    <target name="jdepend"
+        depends="compile"
+        description="Perform JDepend analysis and generate design quality metrics">
+        <jdepend
+            format="xml"
+            outputfile="${build.dir}/jdepend-report.xml">
+
+            <sourcespath>
+                <pathelement location="${build.classes.dir}"/>
+            </sourcespath>
+            <classpath location="${build.classes.dir}"/>
+        </jdepend>
+
+        <style basedir="${build.dir}" destdir="${build.dir}"
+            includes="jdepend-report.xml"
+            style="${ant.home}/etc/jdepend.xsl"/>
+
+    </target>
 
     <!-- ================= -->
     <!-- Secondary targets -->
@@ -249,7 +267,7 @@
     </target>
 
     <!-- Target: changelog -->
-    <target name="changelog" depends="init" >
+    <target name="changelog" depends="init">
         <cvschangelog
             dir="${base.dir}"
             destfile="${dist.dir}/changelog.xml"
