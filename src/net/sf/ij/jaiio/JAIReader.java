@@ -41,7 +41,7 @@ import java.util.ArrayList;
  * to Image/J representation.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class JAIReader {
 
@@ -93,7 +93,7 @@ public class JAIReader {
             if (cm == null || cm instanceof FloatDoubleColorModel) {
                 WritableRaster writableRaster
                         = ImagePlusCreator.forceTileUpdate(renderedImage);
-                ImagePlus imagePlus = ImagePlusCreator.create(writableRaster, null);
+                ImagePlus imagePlus = ImagePlusCreator.create(file.getName(), writableRaster, null);
                 imageInfo.previewImage = imagePlus.getImage();
             } else {
                 Raster raster = renderedImage.getData();
@@ -302,8 +302,8 @@ public class JAIReader {
                 Opener.convertGrayJpegTo8Bits(im);
             }
         } else {
-            im = ImagePlusCreator.create(wr, ri.getColorModel());
-            im.setTitle(file.getName() + " [" + (pageNb + 1) + "/" + getNumPages() + "]");
+            final String title = file.getName() + " [" + (pageNb + 1) + "/" + getNumPages() + "]";
+            im = ImagePlusCreator.create(title, wr, ri.getColorModel());
 
             if (im.getType() == ImagePlus.COLOR_RGB) {
                 // Convert RGB to gray if all bands are equal

@@ -32,7 +32,7 @@ import java.awt.image.*;
  * Creates/converts Image/J's image objects from Java2D/JAI representation.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ImagePlusCreator {
 
@@ -114,35 +114,35 @@ public class ImagePlusCreator {
 
     /**
      * Create instance of ImagePlus from WritableRaster r and ColorModel cm.
-     * 
+     *
+     * @param title name of the output image.
      * @param r  Raster containing pixel data.
      * @param cm Image color model (can be null).
      * @return ImagePlus object created from WritableRaster r and
      *         ColorModel cm
      * @throws UnsupportedImageModelException when enable to create ImagePlus.
      */
-    public static ImagePlus create(WritableRaster r, ColorModel cm)
+    public static ImagePlus create(final String title, final WritableRaster r, ColorModel cm)
             throws UnsupportedImageModelException {
 
-        DataBuffer db = r.getDataBuffer();
+        final DataBuffer db = r.getDataBuffer();
 
-        int numBanks = db.getNumBanks();
+        final int numBanks = db.getNumBanks();
         if (numBanks > 1 && cm == null) {
             throw new UnsupportedImageModelException("Don't know what to do with image with no " +
                     "color model and multiple banks.");
         }
 
-        SampleModel sm = r.getSampleModel();
-        int dbType = db.getDataType();
+        final SampleModel sm = r.getSampleModel();
         if (numBanks > 1 || sm.getNumBands() > 1
         ) {
             // If image has multiple banks or multiple color components, assume that it
             // is a color image and relay on AWT for proper decoding.
-            BufferedImage bi = new BufferedImage(cm, r, false, null);
-            return new ImagePlus(null, new ColorProcessor(bi));
+            final BufferedImage bi = new BufferedImage(cm, r, false, null);
+            return new ImagePlus(title, new ColorProcessor(bi));
         } else if (sm.getSampleSize(0) < 8) {
             // Temporary fix for less then 8 bit images
-            BufferedImage bi = new BufferedImage(cm, r, false, null);
+            final BufferedImage bi = new BufferedImage(cm, r, false, null);
             return new ImagePlus(null, new ByteProcessor(bi));
         } else {
             if (!(cm instanceof IndexColorModel)) {
@@ -151,21 +151,21 @@ public class ImagePlusCreator {
                 cm = null;
             }
 
-            ImageProcessor ip = createProcessor(r.getWidth(), r.getHeight(),
+            final ImageProcessor ip = createProcessor(r.getWidth(), r.getHeight(),
                     r.getDataBuffer(), cm);
-            ImagePlus im = new ImagePlus(null, ip);
+            final ImagePlus im = new ImagePlus(title, ip);
 
             // Add calibration function for 'short' pixels
             if (db.getDataType() == DataBuffer.TYPE_SHORT) {
 
-                Calibration cal = new Calibration(im);
+                final Calibration cal = new Calibration(im);
                 double[] coeff = new double[2];
                 coeff[0] = -32768.0;
                 coeff[1] = 1.0;
                 cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
                 im.setCalibration(cal);
             } else if (cm == null) {
-                Calibration cal = im.getCalibration();
+                final Calibration cal = im.getCalibration();
                 im.setCalibration(null);
                 ImageStatistics stats = im.getStatistics();
                 im.setCalibration(cal);
