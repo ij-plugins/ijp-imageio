@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="IJ ImageIO" default="run" basedir=".">
-    <!--
-       TODO: Define CVS checkout parameters through 'user.properties' file.
-       TODO: When building from CVS, checkout dependencies from CVS and build them.
-       TODO: Pass 'data' and 'dump' directories to test code throught env variables.
-       TODO: Check if vtk classes are in the path (vtkPanel, vtkVersion), if not fail with error message (for targets that require VTK).
-       TODO: Print VTK version in use.
-       TODO: Fail if vtk.classpath is not set (unless can fing VTK classes)
-       TODO: Read form env vars or complain that do not exist.
-       TODO: Distribute test data separately.
-       TODO: Use test.tolerance to specify max allowed tolerance for difference between baseline and test renderings
-       TODO: Rename TestAll* classes to *TestSuite. Prefix convention may lead to problems if a test class uses internal anonymous classes.
-    -->
+<project name="ij-ImageIO" default="run" basedir=".">
+    <description>
+        ij-ImageIO plugins add to ImageJ support for additional image
+        file formats and their variants, including BMP, PNG, PNM, JPEG,
+        TIFF. Added support provides for handling of compressed, tiled,
+        1bit, 16bit, and 32bit images. For more detailed informations
+        see subdirectory 'docs' of ij-ImageIO home page at:
+        http://ij-plugins.sf.net/plugins/imageio
+    </description>
 
     <property name="package.name" value="ij-ImageIO"/>
     <property name="package.version" value="1.2.0"/>
@@ -204,6 +200,8 @@
         <delete dir="${cvs.imageio.dir}"/>
         <!-- Fresh checkout from CVS -->
         <antcall target="checkout" inheritall="false"/>
+        <!-- Include JAI jar to simplify remove need of rebuilding from source -->
+        <copy todir="${lib.dir}" file="${jaicodec.jar}"/>
         <!-- ZIP source -->
         <zip basedir="${cvs.imageio.dir}"
             destfile="${dist.dir}/${package.name}_src_${DSTAMP}.zip"/>
