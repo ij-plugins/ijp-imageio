@@ -26,10 +26,7 @@ import ij.measure.Calibration;
 import non_com.media.jai.codec.*;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
@@ -40,7 +37,7 @@ import java.util.Enumeration;
  * saved.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class JAIWriter {
 
@@ -120,7 +117,8 @@ public class JAIWriter {
      */
     public void write(String fileName, ImagePlus im)
             throws FileNotFoundException, IOException, IllegalArgumentException {
-        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(fileName));
+        File imageFile = new File(fileName);
+        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(imageFile));
         try {
             ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
                     outputStream, null);
@@ -194,6 +192,8 @@ public class JAIWriter {
             }
         } finally {
             outputStream.close();
+            // Attempt to remove incorrect file fragment
+            imageFile.delete();
         }
     }
 
