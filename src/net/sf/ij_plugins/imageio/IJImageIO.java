@@ -20,9 +20,9 @@
  */
 package net.sf.ij_plugins.imageio;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.IJ;
 import net.sf.ij.jaiio.ImagePlusCreator;
 import net.sf.ij.jaiio.UnsupportedImageModelException;
 
@@ -40,11 +40,12 @@ import java.util.List;
  * Helper class that for reading images using javax.imageio into ImageJ representation.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class IJImageIO {
-
-    // Default constructor intentionaly made private to prevent instantiation of the class.
+    /**
+     * Default constructor intentionaly made private to prevent instantiation of the class.
+     */
     private IJImageIO() {
     }
 
@@ -63,6 +64,10 @@ public class IJImageIO {
     static public ImagePlus[] read(final File file)
             throws IOException, IJImageIOException, UnsupportedImageModelException {
 
+        if (file == null) {
+            throw new IllegalArgumentException("Argument 'file' cannot be null.");
+        }
+
         final ImageInputStream iis = ImageIO.createImageInputStream(file);
 
         // Locate all available readers
@@ -78,14 +83,12 @@ public class IJImageIO {
             throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.");
         }
 
-        StringBuffer errorBuffer = new StringBuffer();
+        final StringBuffer errorBuffer = new StringBuffer();
         for (int i = 0; i < readerList.size(); i++) {
             final ImageReader reader = (ImageReader) readerList.get(i);
-            if (IJ.debugMode) {
-                IJ.log("Using reader: "+reader.getClass().getName());
-            }
+            IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
             try {
-//                iis.reset();
+                //                iis.reset();
                 iis.seek(0);
                 reader.setInput(iis, false, false);
 
@@ -113,22 +116,22 @@ public class IJImageIO {
                         : (ImagePlus[]) images.toArray(new ImagePlus[numImages]);
                 return imps;
             } catch (Exception ex) {
-                errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage()+"\n");
+                errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage() + "\n");
             }
         }
 
         throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.\n"
-                +errorBuffer.toString());
+                + errorBuffer.toString());
 
     }
 
     /**
      * Attempts to combine images on the list into a stack. If successful return the combined image,
      * otherwise return null. Images cannot be combined if they are of different types,  different
-     * sizes, or have more then single slice.
+     * sizes, or have more then single slice. Can return <code>null</code>.
      *
      * @param imageList List of images to combine into a stack.
-     * @return Combined image if successful, otherwise null.
+     * @return Combined image if successful, otherwise <code>null</code>.
      */
     private static ImagePlus attemptTocombineImages(final List imageList) {
         if (imageList == null || imageList.size() < 1)
@@ -148,7 +151,7 @@ public class IJImageIO {
         final int h = firstImage.getHeight();
         final ImageStack stack = firstImage.getStack();
         for (int i = 1; i < imageList.size(); ++i) {
-            ImagePlus im = (ImagePlus) imageList.get(i);
+            final ImagePlus im = (ImagePlus) imageList.get(i);
             if (im.getStackSize() != 1) {
                 return null;
             }
@@ -162,6 +165,16 @@ public class IJImageIO {
 
         firstImage.setStack(firstImage.getTitle(), stack);
         return firstImage;
+    }
+
+    /**
+     * Helper method to print log message using {@link ij.IJ#log} when {@link ij.IJ#debugMode} is
+     * set to <code>true</code>.
+     */
+    static void logDebug(final String message) {
+        if (IJ.debugMode) {
+            IJ.log(message);
+        }
     }
 
 }

@@ -23,19 +23,18 @@ package net.sf.ij_plugins.imageio;
 import ij.IJ;
 import ij.plugin.PlugIn;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriter;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.IIOServiceProvider;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.spi.ImageWriterSpi;
-import java.io.IOException;
 import java.util.Iterator;
 
 /**
+ * Displays information about available javax.imageio image reader and image writer service
+ * providers.
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IJImageIOInfoPlugin implements PlugIn {
     public void run(String arg) {
@@ -46,60 +45,11 @@ public class IJImageIOInfoPlugin implements PlugIn {
                 + serviceProviderInfo(ImageWriterSpi.class, false)
                 + "--------------------------------------------\n";
 
-        //        ClassLoader loader = new ij.io.PluginClassLoader(Menus.getPlugInsPath());
-        //        Iterator providers = IIORegistry.lookupProviders(ImageReaderSpi.class, loader);
-        //        int count = 0;
-        //        while (providers.hasNext()) {
-        //            Object o = providers.next();
-        //            message += o.toString() + "\n";
-        //            ++count;
-        //        }
-        //        message += count;
-
         IJ.showMessage("ImageIO readers & writers", message);
     }
 
-    public String readerInfo() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("ImageIO readers (format:class):\n");
-        final String[] readerMIMETypes = ImageIO.getReaderMIMETypes();
 
-        for (int i = 0; i < readerMIMETypes.length; i++) {
-            String readerMIMEType = readerMIMETypes[i];
-            Iterator iterator = ImageIO.getImageReadersByMIMEType(readerMIMEType);
-            while (iterator.hasNext()) {
-                ImageReader reader = (ImageReader) iterator.next();
-                try {
-                    buf.append("  ").append(reader.getFormatName());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                buf.append(": ").append(reader.getClass().getName()).append("\n");
-            }
-        }
-
-        return buf.toString();
-    }
-
-    public String writersInfo() {
-        StringBuffer buf = new StringBuffer();
-        buf.append("ImageIO writers (format:class):\n");
-        final String[] writerMIMETypes = ImageIO.getWriterMIMETypes();
-
-        for (int i = 0; i < writerMIMETypes.length; i++) {
-            String writerMIMEType = writerMIMETypes[i];
-            Iterator iterator = ImageIO.getImageWritersByMIMEType(writerMIMEType);
-            while (iterator.hasNext()) {
-                ImageWriter writer = (ImageWriter) iterator.next();
-                buf.append("  ").append(writerMIMEType);
-                buf.append(": ").append(writer.getClass().getName()).append("\n");
-            }
-        }
-
-        return buf.toString();
-    }
-
-    public static String serviceProviderInfo(Class category, boolean useOrdering) {
+    private static String serviceProviderInfo(Class category, boolean useOrdering) {
         final Iterator categories = IIORegistry.getDefaultInstance().getServiceProviders(category, useOrdering);
         final StringBuffer buf = new StringBuffer();
         while (categories.hasNext()) {
