@@ -6,11 +6,6 @@ import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 
 /**
- * Created by IntelliJ IDEA.
- * User: jarek
- * Date: Jan 29, 2003
- * Time: 9:57:46 PM
- * To change this template use Options | File Templates.
  */
 public class JaiioUtil {
     private JaiioUtil() {
