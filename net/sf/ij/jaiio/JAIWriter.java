@@ -1,4 +1,4 @@
-/*
+/***
  * Image/J Plugins
  * Copyright (C) 2002 Jarek Sacha
  *
@@ -46,7 +46,7 @@ import non_com.media.jai.codec.TIFFImageEncoder;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 public class JAIWriter {
 
@@ -58,8 +58,7 @@ public class JAIWriter {
 
 
   /**  Constructor for the JAIWriter object */
-  public JAIWriter() {
-  }
+  public JAIWriter() { }
 
 
   /**
@@ -176,9 +175,9 @@ public class JAIWriter {
           }
 
           if (unitCode > 0) {
-            short[] unit = {unitCode};
+            int[] unit = {(int) unitCode};
             extraTags.add(new TIFFField(TIFFImageDecoder.TIFF_RESOLUTION_UNIT,
-                TIFFField.TIFF_SHORT, 1, unit));
+                TIFFField.TIFF_SHORT, 1, intsToChars(unit)));
           }
         }
 
@@ -202,4 +201,22 @@ public class JAIWriter {
       outputStream.close();
     }
   }
+
+
+  /**
+   *  This is a copy of a private method of TIFFImageEncoder. Here it is used to
+   *  convert USHORT to TIFFImageEncoder representation.
+   *
+   * @param  intArray  Integer array representing unsigned short values.
+   * @return           Input array represented as char (16 bit).
+   */
+  private final static char[] intsToChars(int[] intArray) {
+    int arrayLength = intArray.length;
+    char[] charArray = new char[arrayLength];
+    for (int i = 0; i < arrayLength; i++) {
+      charArray[i] = (char) (intArray[i] & 0x0000ffff);
+    }
+    return charArray;
+  }
+
 }
