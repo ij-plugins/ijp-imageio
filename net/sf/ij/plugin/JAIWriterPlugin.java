@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002,2003 Jarek Sacha
+ * Copyright (C) 2002-2004 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -35,16 +35,15 @@ import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 
-import net.sf.ij.jaiio.JAIFileChooserFactory;
-import net.sf.ij.jaiio.JAIFileFilter;
-import net.sf.ij.jaiio.JAIWriter;
+import net.sf.ij.jaiio.*;
+import non_com.media.jai.codec.ImageEncodeParam;
 
 /**
  *  Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  *
  * @author     Jarek Sacha
  * @created    March 3, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 
 public class JAIWriterPlugin implements PlugIn {
@@ -53,6 +52,7 @@ public class JAIWriterPlugin implements PlugIn {
   private static final String MACRO_OPTION_CODECNAME = "JAIWriter.codecName";
 
   private static JFileChooser jaiChooser;
+  private EncoderParamDialog paramDialog;
 
 
   /**
@@ -90,7 +90,7 @@ public class JAIWriterPlugin implements PlugIn {
       return;
     }
 
-
+    ImageEncodeParam encodeParam = null;
     if (fileName == null && codecName == null) {
       // Get fileName and codecName showing save dialog
 //        try {
@@ -120,6 +120,20 @@ public class JAIWriterPlugin implements PlugIn {
         return;
       }
 
+      // Ask for file options
+      if(codecName.equals("tiff")) {
+        if(paramDialog == null)
+          paramDialog = new EncoderParamDialog();
+        paramDialog.show();
+        if(!paramDialog.isAccepted()) {
+          Macro.abort();
+          IJ.showMessage("JAI Writer", "Option dialog cancelled, image not saved.");
+          return;
+        }
+
+        encodeParam = paramDialog.getImageEncodeParam(JaiioUtil.isBinary(imp.getProcessor()));
+      }
+
       file = jaiChooser.getSelectedFile();
       if (file.getName().indexOf(".") < 0) {
         file = new File(file.getParent(),
@@ -134,7 +148,7 @@ public class JAIWriterPlugin implements PlugIn {
     // Now ready to write the image to a file
     //
     try {
-      write(imp, fileName, codecName);
+      write(imp, fileName, codecName, encodeParam);
     } catch (IOException e) {
       e.printStackTrace();
       Macro.abort();
@@ -153,10 +167,14 @@ public class JAIWriterPlugin implements PlugIn {
    * @throws IOException
    * @throws FileNotFoundException
    */
-  private static void write(ImagePlus imp, String fileName, String codecName)
+  private static void write(ImagePlus imp,
+                            String fileName,
+                            String codecName,
+                            ImageEncodeParam encodeParam)
       throws IOException, FileNotFoundException {
     JAIWriter jaiWriter = new JAIWriter();
     jaiWriter.setFormatName(codecName);
+    jaiWriter.setImageEncodeParam(encodeParam);
     jaiWriter.write(fileName, imp);
   }
 

@@ -1,6 +1,6 @@
 /***
  * Image/J Plugins
- * Copyright (C) 2002,2003 Jarek Sacha
+ * Copyright (C) 2002-2004 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,7 +33,7 @@ import javax.swing.*;
  *
  * @author     Jarek Sacha
  * @created    January 9, 2001
- * @version    $Revision: 1.7 $
+ * @version    $Revision: 1.8 $
  */
 public class JAIFilePreviewer extends JPanel
      implements PropertyChangeListener {

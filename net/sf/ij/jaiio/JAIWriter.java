@@ -1,6 +1,6 @@
 /***
  * Image/J Plugins
- * Copyright (C) 2002,2003 Jarek Sacha
+ * Copyright (C) 2002-2004 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,12 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
-import non_com.media.jai.codec.ImageCodec;
-import non_com.media.jai.codec.ImageEncoder;
-import non_com.media.jai.codec.TIFFEncodeParam;
-import non_com.media.jai.codec.TIFFField;
-import non_com.media.jai.codec.TIFFImageDecoder;
-import non_com.media.jai.codec.TIFFImageEncoder;
+import non_com.media.jai.codec.*;
 
 /**
  *  Writes images to files using <a href="http://developer.java.sun.com/developer/sampsource/jai/">
@@ -46,7 +41,7 @@ import non_com.media.jai.codec.TIFFImageEncoder;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.6 $
+ * @version    $Revision: 1.7 $
  */
 public class JAIWriter {
 
@@ -55,10 +50,12 @@ public class JAIWriter {
   private final static String DEFAULT_FORMAT_NAME = TIFF_FORMAT_NAME;
 
   private String formatName = DEFAULT_FORMAT_NAME;
+  private ImageEncodeParam encodeParam;
 
 
   /**  Constructor for the JAIWriter object */
-  public JAIWriter() { }
+  public JAIWriter() {
+  }
 
 
   /**
@@ -82,8 +79,8 @@ public class JAIWriter {
    */
   private static long[][] toRational(double x) {
     long[][] r = {{
-        (long) (TIFF_RATIONAL_SCALE * x),
-        (long) TIFF_RATIONAL_SCALE}};
+      (long) (TIFF_RATIONAL_SCALE * x),
+      (long) TIFF_RATIONAL_SCALE}};
     return r;
   }
 
@@ -121,14 +118,16 @@ public class JAIWriter {
    *      slices using file format different then TIFF.
    */
   public void write(String fileName, ImagePlus im)
-       throws FileNotFoundException, IOException, IllegalArgumentException {
+      throws FileNotFoundException, IOException, IllegalArgumentException {
     FileOutputStream outputStream = new FileOutputStream(fileName);
     try {
       ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
           outputStream, null);
 
       if (imageEncoder instanceof TIFFImageEncoder) {
-        TIFFEncodeParam param = (TIFFEncodeParam) imageEncoder.getParam();
+        TIFFEncodeParam param = (TIFFEncodeParam)
+            ((encodeParam instanceof TIFFEncodeParam)
+            ? encodeParam : null); //imageEncoder.getParam());
         if (param == null) {
           param = new TIFFEncodeParam();
         }
@@ -170,11 +169,9 @@ public class JAIWriter {
           if (unitName == null || unitName.trim().length() == 0) {
             // no meaningful units
             unitCode = 1;
-          }
-          else if (unitName.compareToIgnoreCase("inch") == 0) {
+          } else if (unitName.compareToIgnoreCase("inch") == 0) {
             unitCode = 2;
-          }
-          else if (unitName.compareToIgnoreCase("cm") == 0) {
+          } else if (unitName.compareToIgnoreCase("cm") == 0) {
             unitCode = 3;
           }
 
@@ -190,8 +187,7 @@ public class JAIWriter {
 
         imageEncoder.setParam(param);
         imageEncoder.encode(bi);
-      }
-      else {
+      } else {
         if (im.getStackSize() > 1) {
           throw new IllegalArgumentException(formatName.toUpperCase()
               + " format does not support multi-image files. "
@@ -200,8 +196,7 @@ public class JAIWriter {
         BufferedImage bi = BufferedImageCreator.create(im, 0);
         imageEncoder.encode(bi);
       }
-    }
-    finally {
+    } finally {
       outputStream.close();
     }
   }
@@ -221,6 +216,10 @@ public class JAIWriter {
       charArray[i] = (char) (intArray[i] & 0x0000ffff);
     }
     return charArray;
+  }
+
+  public void setImageEncodeParam(ImageEncodeParam encodeParam) {
+    this.encodeParam = encodeParam;
   }
 
 }

@@ -1,6 +1,6 @@
 /***
  * Image/J Plugins
- * Copyright (C) 2002,2003 Jarek Sacha
+ * Copyright (C) 2002-2004 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,7 +33,7 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    February 2, 2002
- * @version    $Revision: 1.8 $
+ * @version    $Revision: 1.9 $
  */
 
 public class JAIFileChooserFactory {

@@ -1,6 +1,6 @@
 /***
  * Image/J Plugins
- * Copyright (C) 2002,2003 Jarek Sacha
+ * Copyright (C) 2002-2004 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,7 +42,7 @@ import non_com.media.jai.codec.ImageEncoder;
  *
  * @author     Jarek Sacha
  * @created    June 16, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 
 public class SaveImageFileChooser
