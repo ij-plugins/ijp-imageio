@@ -33,7 +33,7 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    February 2, 2002
- * @version    $Revision: 1.9 $
+ * @version    $Revision: 1.1 $
  */
 
 public class JAIFileChooserFactory {

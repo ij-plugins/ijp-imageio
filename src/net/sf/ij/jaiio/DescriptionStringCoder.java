@@ -34,7 +34,7 @@ import java.util.Properties;
  *
  * @author     Jarek Sacha
  * @created    March 23, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.1 $
  */
 
 public class DescriptionStringCoder {

@@ -52,7 +52,7 @@ import non_com.media.jai.FloatDoubleColorModel;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.6 $
+ * @version    $Revision: 1.1 $
  */
 public class ImagePlusCreator {
 

@@ -33,7 +33,7 @@ import javax.swing.*;
  *
  * @author     Jarek Sacha
  * @created    January 9, 2001
- * @version    $Revision: 1.8 $
+ * @version    $Revision: 1.1 $
  */
 public class JAIFilePreviewer extends JPanel
      implements PropertyChangeListener {

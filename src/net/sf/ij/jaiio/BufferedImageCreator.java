@@ -54,7 +54,7 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.8 $
+ * @version    $Revision: 1.1 $
  */
 public class BufferedImageCreator {
 

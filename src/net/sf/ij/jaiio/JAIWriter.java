@@ -41,7 +41,7 @@ import non_com.media.jai.codec.*;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.7 $
+ * @version    $Revision: 1.1 $
  */
 public class JAIWriter {
 

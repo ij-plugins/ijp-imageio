@@ -41,7 +41,7 @@ import net.sf.ij.jaiio.JAIReader;
  *
  * @author     Jarek Sacha
  * @created    February 10, 2002
- * @version    $Revision: 1.9 $
+ * @version    $Revision: 1.1 $
  */
 
 public class JAIReaderPlugin implements PlugIn {

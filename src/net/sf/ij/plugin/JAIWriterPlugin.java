@@ -43,7 +43,7 @@ import non_com.media.jai.codec.ImageEncodeParam;
  *
  * @author     Jarek Sacha
  * @created    March 3, 2002
- * @version    $Revision: 1.5 $
+ * @version    $Revision: 1.1 $
  */
 
 public class JAIWriterPlugin implements PlugIn {

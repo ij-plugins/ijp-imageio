@@ -42,7 +42,7 @@ import non_com.media.jai.codec.ImageEncoder;
  *
  * @author     Jarek Sacha
  * @created    June 16, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.1 $
  */
 
 public class SaveImageFileChooser
