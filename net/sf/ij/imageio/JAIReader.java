@@ -40,6 +40,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.File;
 import java.util.ArrayList;
+import javax.swing.ImageIcon;
 
 /**
  *  Read image files using JAI image I/O codec
@@ -48,7 +49,7 @@ import java.util.ArrayList;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 public class JAIReader implements PlugIn {
 
@@ -58,13 +59,14 @@ public class JAIReader implements PlugIn {
 
 
   /**
-   *  Description of the Method
+   *  Read only the first image in the <code>file</code>.
    *
-   * @param  file           Description of Parameter
-   * @return                Description of the Returned Value
-   * @exception  Exception  Description of Exception
+   * @param  file           Image file.
+   * @return                Image decoded as BufferedImage.
+   * @exception  Exception  If file is not in a supported image format or in
+   *      case of I/O error.
    */
-  public static BufferedImage readFirstAsBufferedImage(File file) throws Exception {
+  public static Image readFirstAsImage(File file) throws Exception {
 
     // Find matching decoders
     FileSeekableStream fss = new FileSeekableStream(file);
@@ -78,19 +80,25 @@ public class JAIReader implements PlugIn {
     ImageDecoder decoder = ImageCodec.createImageDecoder(decoders[0], fss, null);
 
     RenderedImage renderedImage = decoder.decodeAsRenderedImage();
-//    WritableRaster writableRaster = forceTileUpdate(renderedImage);
 
-    Raster raster = renderedImage.getData();
-    WritableRaster writableRaster = null;
-    if (raster instanceof WritableRaster) {
-      writableRaster = (WritableRaster) raster;
+    ColorModel cm = renderedImage.getColorModel();
+    if (cm == null) {
+      WritableRaster writableRaster = forceTileUpdate(renderedImage);
+      ImagePlus imagePlus = createImagePlus(writableRaster, null);
+      return imagePlus.getImage();
     }
     else {
-      writableRaster = raster.createCompatibleWritableRaster();
-    }
+      Raster raster = renderedImage.getData();
+      WritableRaster writableRaster = null;
+      if (raster instanceof WritableRaster) {
+        writableRaster = (WritableRaster) raster;
+      }
+      else {
+        writableRaster = raster.createCompatibleWritableRaster();
+      }
 
-    return new BufferedImage(renderedImage.getColorModel(), writableRaster,
-        false, null);
+      return new BufferedImage(cm, writableRaster, false, null);
+    }
   }
 
 
@@ -315,6 +323,32 @@ public class JAIReader implements PlugIn {
 
 
   /**
+   *  Force Rendered image to set all the tails that it may have. In multi-tile
+   *  images not all tiles may be updated when a RenderedImage is created.
+   *
+   * @param  ri  image that may need tile update.
+   * @return     Description of the Returned Value
+   */
+  private static WritableRaster forceTileUpdate(RenderedImage ri) {
+    Raster r = ri.getData();
+    if (!(r instanceof WritableRaster)) {
+      r = r.createWritableRaster(r.getSampleModel(), r.getDataBuffer(), null);
+    }
+
+    WritableRaster wr = (WritableRaster) r;
+    int xTiles = ri.getNumXTiles();
+    int yTiles = ri.getNumYTiles();
+    for (int ty = 0; ty < yTiles; ++ty) {
+      for (int tx = 0; tx < xTiles; ++tx) {
+        wr.setRect(ri.getTile(tx, ty));
+      }
+    }
+
+    return wr;
+  }
+
+
+  /**
    *  Sets the DebugMode attribute of the JAIOpener object
    *
    * @param  debugMode  The new DebugMode value
@@ -444,31 +478,5 @@ public class JAIReader implements PlugIn {
     }
 
     return images;
-  }
-
-
-  /**
-   *  Force Rendered image to set all the tails that it may have. In multi-tile
-   *  images not all tiles may be updated when a RenderedImage is created.
-   *
-   * @param  ri  image that may need tile update.
-   * @return     Description of the Returned Value
-   */
-  private static WritableRaster forceTileUpdate(RenderedImage ri) {
-    Raster r = ri.getData();
-    if (!(r instanceof WritableRaster)) {
-      r = r.createWritableRaster(r.getSampleModel(), r.getDataBuffer(), null);
-    }
-
-    WritableRaster wr = (WritableRaster) r;
-    int xTiles = ri.getNumXTiles();
-    int yTiles = ri.getNumYTiles();
-    for (int ty = 0; ty < yTiles; ++ty) {
-      for (int tx = 0; tx < xTiles; ++tx) {
-        wr.setRect(ri.getTile(tx, ty));
-      }
-    }
-
-    return wr;
   }
 }
