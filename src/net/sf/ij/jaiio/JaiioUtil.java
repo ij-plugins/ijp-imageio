@@ -26,36 +26,4 @@ public class JaiioUtil {
 
         return false;
     }
-
-    /**
-     * Center window on screen.
-     *
-     * @param window
-     * @param packFrame if <code>true</code> call window's <code>pack()</code>
-     *                  method before centering.
-     */
-    public static void centerOnScreen(Window window, boolean packFrame) {
-        //Validate frames that have preset sizes
-        //Pack frames that have useful preferred size info, e.g. from their layout
-        if (packFrame) {
-            window.pack();
-        } else {
-            window.validate();
-        }
-
-        //Center the frame window
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        Dimension frameSize = window.getSize();
-
-        if (frameSize.height > screenSize.height) {
-            frameSize.height = screenSize.height;
-        }
-
-        if (frameSize.width > screenSize.width) {
-            frameSize.width = screenSize.width;
-        }
-
-        window.setLocation((screenSize.width - frameSize.width) / 2,
-                (screenSize.height - frameSize.height) / 2);
-    }
 }
