@@ -14,12 +14,17 @@
     -->
 
     <property name="package.name" value="ij-ImageIO"/>
+    <property name="package.version" value="1.2.0"/>
+
+    <property file="build.properties"/>
 
     <!-- In case ant.home is not defined, set default value -->
     <property name="ant.home" location="/usr/share/ant"/>
     
+    <property name="jaicodec.jar" location="lib/JAI-codec.1.1.1.jar"/>
+
     <!-- CVS setup -->
-    <property name="cvs.root" value=":ext:jsacha@cvs.ij-plugins.sourceforge.net:/cvsroot/ij-plugins"/>
+    <property name="cvs.root" value=":pserver:anonymous@cvs.sourceforge.net:/cvsroot/ij-plugins"/>
     <property name="imageio.cvs.module" value="imageio"/>
     <property name="non_com.cvs.module" value="Sun_JAI_Sample_IO_Source_Code_v_1_1_1"/>
 
@@ -28,6 +33,7 @@
     <property name="base.dir" location="${basedir}"/>
     <property name="lib.dir" location="${base.dir}/lib"/>
     <property name="src.dir" location="${base.dir}/src"/>
+    <property name="docs.dir" location="${base.dir}/docs"/>
 
     <!-- Generated directories -->
     <property name="build.dir" location="${base.dir}/build"/>
@@ -43,17 +49,22 @@
     <property name="main.class" value="net.sf.ij.plugin.HelpPanel"/>
 
 
-    <property name="jaicodec.jar" location="../../sun-jai-codec.1.1.1/dist/JAI-codec.1.1.1.jar"/>
-
     <path id="compile.classpath">
         <pathelement location="${lib.dir}/ij.jar"/>
         <pathelement location="${jaicodec.jar}"/>
     </path>
 
-    <fileset id="resource.files"
+    <fileset id="config.files"
         dir="${src.dir}">
         <include name="**/*.config"/>
-        <include name="**/*.properties"/>
+    </fileset>
+    <fileset id="resource.files"
+        dir="${src.dir}">
+        <include name="**/*.png"/>
+        <include name="**/*.gif"/>
+    </fileset>
+    <fileset id="docs.files"
+        dir="${docs.dir}">
         <include name="**/*.html"/>
         <include name="**/*.css"/>
         <include name="**/*.png"/>
@@ -93,8 +104,18 @@
             <exclude name="**/*Test.java"/>
         </javac>
 
+        <copy todir="${build.classes.dir}" overwrite="true">
+            <fileset refid="config.files"/>
+            <filterset>
+                <filter token="BUILD_DATE" value="${DSTAMP}"/>
+                <filter token="BUILD_VERSION" value="${package.version}"/>
+            </filterset>
+        </copy>
         <copy todir="${build.classes.dir}">
             <fileset refid="resource.files"/>
+        </copy>
+        <copy todir="${build.classes.dir}/docs">
+            <fileset refid="docs.files"/>
         </copy>
     </target>
 
@@ -159,6 +180,7 @@
     <!-- Initialize  -->
     <target name="init">
         <echo message="Building ${ant.project.name}"/>
+        <echoproperties/>
         <!-- Create the time stamp -->
         <tstamp/>
         <!-- Create the build directory structure used by compile -->
