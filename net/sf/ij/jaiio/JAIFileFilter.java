@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002 Jarek Sacha
+ * Copyright (C) 2002,2003 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -199,5 +199,13 @@ public class JAIFileFilter extends FileFilter {
 
     headerBytes = new byte[maxHeaderSize];
   }
+
+//  public String[] getExpectedNameExtensions() {
+//    if( activeCodecs == null )
+//      return null;
+//    for(int i=0; i<activeCodecs.length; ++i) {
+//      activeCodecs[0].
+//    }
+//  }
 }
 

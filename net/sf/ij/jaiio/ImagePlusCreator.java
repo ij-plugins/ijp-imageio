@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002 Jarek Sacha
+ * Copyright (C) 2002,2003 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -52,7 +52,7 @@ import non_com.media.jai.FloatDoubleColorModel;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 public class ImagePlusCreator {
 

@@ -1,6 +1,6 @@
 /*
  *  Image/J Plugins
- *  Copyright (C) 2002 Jarek Sacha
+ *  Copyright (C) 2002,2003 Jarek Sacha
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,7 @@
  *
  * @author     Jarek Sacha
  * @created    March 2, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  * @see        net.sf.ij.plugin.JAIWriterPlugin
  */
 public class JAI_Writer extends JarPluginProxy {

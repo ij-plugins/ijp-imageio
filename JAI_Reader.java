@@ -1,6 +1,6 @@
 /*
  *  Image/J Plugins
- *  Copyright (C) 2002 Jarek Sacha
+ *  Copyright (C) 2002,2003 Jarek Sacha
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,7 @@
  *
  * @author     Jarek Sacha
  * @created    January 22, 2002
- * @version    $Revision: 1.8 $
+ * @version    $Revision: 1.9 $
  * @see        net.sf.ij.plugin.JAIReaderPlugin
  */
 public class JAI_Reader extends JarPluginProxy {

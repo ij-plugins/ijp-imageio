@@ -1,6 +1,6 @@
 /***
  * Image/J Plugins
- * Copyright (C) 2002 Jarek Sacha
+ * Copyright (C) 2002,2003 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,7 +46,7 @@ import non_com.media.jai.codec.TIFFImageEncoder;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.5 $
+ * @version    $Revision: 1.6 $
  */
 public class JAIWriter {
 
@@ -132,6 +132,10 @@ public class JAIWriter {
         if (param == null) {
           param = new TIFFEncodeParam();
         }
+//        param.setCompression(TIFFEncodeParam.COMPRESSION_GROUP4);
+//        param.setCompression(TIFFEncodeParam.COMPRESSION_JPEG_TTN2);
+//        param.setCompression(TIFFEncodeParam.COMPRESSION_DEFLATE);
+//        param.setDeflateLevel(9);
 
         // Create list of extra images in the file
         BufferedImage bi = BufferedImageCreator.create(im, 0);

@@ -97,7 +97,7 @@ Webpage: http://ij-plugins.sourceforge.net/
 
 LICENSE
 
-Copyright (C) 2002 Jarek Sacha
+Copyright (C) 2002,2003 Jarek Sacha
 
 This library is free software; you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by
