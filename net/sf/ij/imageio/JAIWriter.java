@@ -39,12 +39,10 @@ import non_com.media.jai.codec.TIFFImageEncoder;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 
 public class JAIWriter {
-
-  private final static boolean DEBUG = true;
 
   private final static String TIFF_FORMAT_NAME = "tiff";
   private final static String DEFAULT_FORMAT_NAME = TIFF_FORMAT_NAME;
@@ -115,9 +113,6 @@ public class JAIWriter {
           outputStream, null);
       if (imageEncoder instanceof TIFFImageEncoder) {
         BufferedImage bi = BufferedImageCreator.create(im, 0);
-        if (DEBUG) {
-          new ImagePlus("BufferedImage", bi).show();
-        }
         ArrayList list = new ArrayList();
         for (int i = 1; i < im.getStackSize(); ++i) {
           list.add(BufferedImageCreator.create(im, i));
@@ -141,9 +136,6 @@ public class JAIWriter {
                + "Image was not saved.");
         }
         BufferedImage bi = BufferedImageCreator.create(im, 0);
-        if (DEBUG) {
-          new ImagePlus("BufferedImage", bi).show();
-        }
         imageEncoder.encode(bi);
       }
     }
