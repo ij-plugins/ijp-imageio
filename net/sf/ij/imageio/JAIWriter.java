@@ -29,7 +29,7 @@ import TIFFImageEncoder;
 
 import ij.ImagePlus;
 
-import java.awt.image.RenderedImage;
+import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -41,10 +41,12 @@ import java.util.Enumeration;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 
 public class JAIWriter {
+
+  private final static boolean DEBUG = true;
 
   private final static String TIFF_FORMAT_NAME = "tiff";
   private final static String DEFAULT_FORMAT_NAME = TIFF_FORMAT_NAME;
@@ -114,8 +116,10 @@ public class JAIWriter {
       ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
           outputStream, null);
       if (imageEncoder instanceof TIFFImageEncoder) {
-        RenderedImage ri = BufferedImageCreator.create(im, 0);
-
+        BufferedImage bi = BufferedImageCreator.create(im, 0);
+        if (DEBUG) {
+          new ImagePlus("BufferedImage", bi).show();
+        }
         ArrayList list = new ArrayList();
         for (int i = 1; i < im.getStackSize(); ++i) {
           list.add(BufferedImageCreator.create(im, i));
@@ -125,10 +129,12 @@ public class JAIWriter {
         if (param == null) {
           param = new TIFFEncodeParam();
         }
-        param.setExtraImages(list.iterator());
-        imageEncoder.setParam(param);
+        if (list.size() > 0) {
+          param.setExtraImages(list.iterator());
+          imageEncoder.setParam(param);
+        }
 
-        imageEncoder.encode(ri);
+        imageEncoder.encode(bi);
       }
       else {
         if (im.getStackSize() > 1) {
@@ -136,8 +142,11 @@ public class JAIWriter {
                + " format does not support multi-image files. "
                + "Image was not saved.");
         }
-        RenderedImage ri = BufferedImageCreator.create(im, 0);
-        imageEncoder.encode(ri);
+        BufferedImage bi = BufferedImageCreator.create(im, 0);
+        if (DEBUG) {
+          new ImagePlus("BufferedImage", bi).show();
+        }
+        imageEncoder.encode(bi);
       }
     }
     finally {
