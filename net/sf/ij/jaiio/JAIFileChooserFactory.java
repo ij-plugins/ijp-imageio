@@ -33,7 +33,7 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    February 2, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 
 public class JAIFileChooserFactory {
@@ -44,39 +44,9 @@ public class JAIFileChooserFactory {
    *
    * @return    Description of the Returned Value
    */
-  public static JFileChooser createJAIOpenChooser() {
-    JFileChooser chooser = new JFileChooser();
+  public static ImageFileChooser createJAIOpenChooser() {
+    ImageFileChooser chooser = new ImageFileChooser();
     chooser.setCurrentDirectory(new File(".").getAbsoluteFile());
-
-    JAIFilePreviewer previewer = new JAIFilePreviewer(chooser);
-    chooser.setAccessory(previewer);
-
-    // Add filter for all supported image types
-    JAIFileFilter allSupportedFileFilter = new JAIFileFilter();
-    chooser.addChoosableFileFilter(allSupportedFileFilter);
-
-    // Set filters corresponding to each available codec
-    Enumeration codecs = ImageCodec.getCodecs();
-
-    // Sort codec names
-    TreeSet codecSet = new TreeSet();
-    while (codecs.hasMoreElements()) {
-      ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
-      codecSet.add(thisCodec.getFormatName());
-    }
-
-    for (Iterator i = codecSet.iterator(); i.hasNext(); ) {
-      try {
-        chooser.addChoosableFileFilter(new JAIFileFilter((String) i.next()));
-      }
-      catch (Throwable t) {
-        t.printStackTrace();
-      }
-    }
-
-    // Set selected filter
-    chooser.setFileFilter(allSupportedFileFilter);
-//    chooser.setFileFilter(chooser.getAcceptAllFileFilter());
 
     return chooser;
   }
