@@ -22,8 +22,15 @@ package net.sf.ij.imageio;
 
 import FileSeekableStream;
 import ImageCodec;
+import ImageDecodeParam;
 import ImageDecoder;
+import ImageDecoderImpl;
 import SimpleRenderedImage;
+import TIFFDecodeParam;
+import TIFFDirectory;
+import TIFFField;
+import TIFFImage;
+import TIFFImageDecoder;
 
 //import com.sun.media.jai.codec.FileSeekableStream;
 //import com.sun.media.jai.codec.ImageCodec;
@@ -49,7 +56,7 @@ import javax.swing.ImageIcon;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 public class JAIReader implements PlugIn {
 
@@ -454,6 +461,51 @@ public class JAIReader implements PlugIn {
 
       ImagePlus im = createImagePlus(wr, ri.getColorModel());
       im.setTitle(file.getName() + " [" + (i + 1) + "/" + nbPages + "]");
+
+      // Extract TIFF tags
+      if (ri instanceof TIFFImage) {
+        TIFFImage ti = (TIFFImage) ri;
+        TIFFDirectory dir = ti.getPrivateIFD(8);
+
+        Calibration c = im.getCalibration();
+        if (c == null) {
+          c = new Calibration(im);
+        }
+
+        TIFFField xResField = dir.getField(TIFFImageDecoder.TIFF_X_RESOLUTION);
+        if (xResField != null) {
+          double xRes = xResField.getAsDouble(0);
+          if (xRes != 0) {
+            c.pixelWidth = 1 / xRes;
+          }
+        }
+
+        TIFFField yResField = dir.getField(TIFFImageDecoder.TIFF_Y_RESOLUTION);
+        if (yResField != null) {
+          double yRes = yResField.getAsDouble(0);
+          if (yRes != 0) {
+            c.pixelHeight = 1 / yRes;
+          }
+        }
+
+        TIFFField resolutionUnitField = dir.getField(
+            TIFFImageDecoder.TIFF_RESOLUTION_UNIT);
+        if (resolutionUnitField != null) {
+          int resolutionUnit = resolutionUnitField.getAsInt(0);
+          if (resolutionUnit == 1 && c.getUnit() == null) {
+            // no meningful units
+            c.setUnit(" ");
+          }
+          else if (resolutionUnit == 2) {
+            c.setUnit("inch");
+          }
+          else if (resolutionUnit == 3) {
+            c.setUnit("cm");
+          }
+        }
+
+        im.setCalibration(c);
+      }
 
       imageList.add(im);
       IJ.showProgress((double) (i + 1) / nbPages);
