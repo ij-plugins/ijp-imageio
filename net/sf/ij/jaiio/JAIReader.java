@@ -1,4 +1,4 @@
-/*
+/***
  * Image/J Plugins
  * Copyright (C) 2002 Jarek Sacha
  *
@@ -35,6 +35,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import non_com.media.jai.FloatDoubleColorModel;
@@ -53,9 +54,18 @@ import non_com.media.jai.codec.TIFFImageDecoder;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.5 $
+ * @version    $Revision: 1.6 $
  */
 public class JAIReader {
+
+  private ImageDecoder decoder = null;
+  private String decoderName = null;
+  private File file = null;
+
+
+  private JAIReader() {
+  }
+
 
   /**
    *  Read only the first image in the <code>file</code>.
@@ -127,144 +137,58 @@ public class JAIReader {
    * @exception  Exception  when unable to read image from the specified file.
    */
   public static ImagePlus[] read(File file) throws Exception {
+    return read(file, null);
+  }
 
-    // Find matching decoders
-    FileSeekableStream fss = new FileSeekableStream(file);
-    String[] decoders = ImageCodec.getDecoderNames(fss);
-    if (decoders == null || decoders.length == 0) {
-      throw new Exception("Unsupported file format. "
-          + "Cannot find decoder capable of reading: " + file.getName());
-    }
 
-    String decoderName = decoders[0];
+  /**
+   *  Open image in the file using registered codecs. A file may contain
+   *  multiple images. If all images in the file are of the same type and size
+   *  they will be combines into single stack within ImagesPlus object returned
+   *  as the first an only element of the image array. If reading from TIFF
+   *  files, image resolution and Image/J's description string containing
+   *  calibration information are decoded.
+   *
+   * @param  file           File to open image from.
+   * @param  pageIndex      Description of Parameter
+   * @return                Array of images contained in the file.
+   * @exception  Exception  when unable to read image from the specified file.
+   */
+  public static ImagePlus[] read(File file, int[] pageIndex) throws Exception {
 
-    // Create decoder
-    ImageDecoder decoder = ImageCodec.createImageDecoder(decoderName, fss, null);
+    JAIReader reader = new JAIReader();
+
+    reader.open(file);
 
     // Get number of sub images
-    int nbPages = decoder.getNumPages();
+    int nbPages = reader.getNumPages();
     if (nbPages < 1) {
       throw new Exception("Image decoding problem. "
           + "Image file has less then 1 page. Nothing to decode.");
     }
 
+    if (pageIndex == null) {
+      pageIndex = new int[nbPages];
+      for (int i = 0; i < nbPages; ++i) {
+        pageIndex[i] = i;
+      }
+    }
+
     // Iterate through pages
     IJ.showProgress(0);
     ArrayList imageList = new ArrayList();
-    for (int i = 0; i < nbPages; ++i) {
-      if (i != 0) {
-        IJ.showStatus("Reading page " + i);
-      }
-      RenderedImage ri = null;
-      try {
-        ri = decoder.decodeAsRenderedImage(i);
-      }
-      catch (Exception ex) {
-        ex.printStackTrace();
-        String msg = ex.getMessage();
-        if (msg == null || msg.trim().length() < 1) {
-          msg = "Error decoding rendered image.";
-        }
-        throw new Exception(msg);
+    for (int i = 0; i < pageIndex.length; ++i) {
+      if (pageIndex[i] != 0) {
+        IJ.showStatus("Reading page " + pageIndex[i]);
       }
 
-      WritableRaster wr = ImagePlusCreator.forceTileUpdate(ri);
-
-      ImagePlus im = null;
-      if (decoderName.equalsIgnoreCase("GIF")
-          || decoderName.equalsIgnoreCase("JPEG")) {
-        // Convert the way ImageJ does (ij.io.Opener.openJpegOrGif())
-        BufferedImage bi = new BufferedImage(ri.getColorModel(), wr, false, null);
-        im = new ImagePlus(file.getName(), bi);
-        if (im.getType() == ImagePlus.COLOR_RGB) {
-          // Convert RGB to gray if all bands are equal
-          Opener.convertGrayJpegTo8Bits(im);
-        }
-      }
-      else {
-        im = ImagePlusCreator.create(wr, ri.getColorModel());
-        im.setTitle(file.getName() + " [" + (i + 1) + "/" + nbPages + "]");
-
-        if (im.getType() == ImagePlus.COLOR_RGB) {
-          // Convert RGB to gray if all bands are equal
-          Opener.convertGrayJpegTo8Bits(im);
-        }
-
-        // Extract TIFF tags
-        if (ri instanceof TIFFImage) {
-          TIFFImage ti = (TIFFImage) ri;
-          try {
-            Object o = ti.getProperty("tiff_directory");
-            if (o instanceof TIFFDirectory) {
-              TIFFDirectory dir = (TIFFDirectory) o;
-
-              // ImageJ description string
-              TIFFField descriptionField
-                   = dir.getField(TiffDecoder.IMAGE_DESCRIPTION);
-              if (descriptionField != null) {
-                try {
-                  DescriptionStringCoder.decode(
-                      descriptionField.getAsString(0), im);
-                }
-                catch (Exception ex) {
-                  ex.printStackTrace();
-                }
-              }
-
-              Calibration c = im.getCalibration();
-              if (c == null) {
-                c = new Calibration(im);
-              }
-
-              // X resolution
-              TIFFField xResField = dir.getField(TIFFImageDecoder.TIFF_X_RESOLUTION);
-              if (xResField != null) {
-                double xRes = xResField.getAsDouble(0);
-                if (xRes != 0) {
-                  c.pixelWidth = 1 / xRes;
-                }
-              }
-
-              // Y resolution
-              TIFFField yResField = dir.getField(TIFFImageDecoder.TIFF_Y_RESOLUTION);
-              if (yResField != null) {
-                double yRes = yResField.getAsDouble(0);
-                if (yRes != 0) {
-                  c.pixelHeight = 1 / yRes;
-                }
-              }
-
-              // Resolution unit
-              TIFFField resolutionUnitField = dir.getField(
-                  TIFFImageDecoder.TIFF_RESOLUTION_UNIT);
-              if (resolutionUnitField != null) {
-                int resolutionUnit = resolutionUnitField.getAsInt(0);
-                if (resolutionUnit == 1 && c.getUnit() == null) {
-                  // no meaningful units
-                  c.setUnit(" ");
-                }
-                else if (resolutionUnit == 2) {
-                  c.setUnit("inch");
-                }
-                else if (resolutionUnit == 3) {
-                  c.setUnit("cm");
-                }
-              }
-
-              im.setCalibration(c);
-            }
-          }
-          catch (NegativeArraySizeException ex) {
-            // my be thrown by ti.getPrivateIFD(8)
-            ex.printStackTrace();
-          }
-        }
-      }
-
-      imageList.add(im);
-      IJ.showProgress((double) (i + 1) / nbPages);
+      imageList.add(reader.read(pageIndex[i]));
+      IJ.showProgress((double) (i + 1) / pageIndex.length);
     }
     IJ.showProgress(1);
+
+    reader.close();
+    reader = null;
 
     ImagePlus[] images = (ImagePlus[]) imageList.toArray(
         new ImagePlus[imageList.size()]);
@@ -325,6 +249,162 @@ public class JAIReader {
 
     images[0].setStack(images[0].getTitle(), stack);
     return images[0];
+  }
+
+
+  /**
+   * @return                  The NumPages value
+   * @exception  IOException  Description of Exception
+   */
+  private int getNumPages() throws IOException {
+    return decoder.getNumPages();
+  }
+
+
+  /**
+   *  Create image decoder to read the image file.
+   *
+   * @param  file           Image file name.
+   * @exception  Exception  Description of Exception
+   */
+  private void open(File file) throws Exception {
+    this.file = file;
+
+    // Find matching decoders
+    FileSeekableStream fss = new FileSeekableStream(file);
+    String[] decoders = ImageCodec.getDecoderNames(fss);
+    if (decoders == null || decoders.length == 0) {
+      throw new Exception("Unsupported file format. "
+          + "Cannot find decoder capable of reading: " + file.getName());
+    }
+
+    this.decoderName = decoders[0];
+
+    // Create decoder
+    this.decoder = ImageCodec.createImageDecoder(decoderName, fss, null);
+  }
+
+
+  /**
+   * @param  pageNb         Description of Parameter
+   * @return                Description of the Returned Value
+   * @exception  Exception  Description of Exception
+   */
+  private ImagePlus read(int pageNb) throws Exception {
+    RenderedImage ri = null;
+    try {
+      ri = decoder.decodeAsRenderedImage(pageNb);
+    }
+    catch (Exception ex) {
+      ex.printStackTrace();
+      String msg = ex.getMessage();
+      if (msg == null || msg.trim().length() < 1) {
+        msg = "Error decoding rendered image.";
+      }
+      throw new Exception(msg);
+    }
+
+    WritableRaster wr = ImagePlusCreator.forceTileUpdate(ri);
+
+    ImagePlus im = null;
+    if (decoderName.equalsIgnoreCase("GIF")
+        || decoderName.equalsIgnoreCase("JPEG")) {
+      // Convert the way ImageJ does (ij.io.Opener.openJpegOrGif())
+      BufferedImage bi = new BufferedImage(ri.getColorModel(), wr, false, null);
+      im = new ImagePlus(file.getName(), bi);
+      if (im.getType() == ImagePlus.COLOR_RGB) {
+        // Convert RGB to gray if all bands are equal
+        Opener.convertGrayJpegTo8Bits(im);
+      }
+    }
+    else {
+      im = ImagePlusCreator.create(wr, ri.getColorModel());
+      im.setTitle(file.getName() + " [" + (pageNb + 1) + "/" + getNumPages() + "]");
+
+      if (im.getType() == ImagePlus.COLOR_RGB) {
+        // Convert RGB to gray if all bands are equal
+        Opener.convertGrayJpegTo8Bits(im);
+      }
+
+      // Extract TIFF tags
+      if (ri instanceof TIFFImage) {
+        TIFFImage ti = (TIFFImage) ri;
+        try {
+          Object o = ti.getProperty("tiff_directory");
+          if (o instanceof TIFFDirectory) {
+            TIFFDirectory dir = (TIFFDirectory) o;
+
+            // ImageJ description string
+            TIFFField descriptionField
+                 = dir.getField(TiffDecoder.IMAGE_DESCRIPTION);
+            if (descriptionField != null) {
+              try {
+                DescriptionStringCoder.decode(
+                    descriptionField.getAsString(0), im);
+              }
+              catch (Exception ex) {
+                ex.printStackTrace();
+              }
+            }
+
+            Calibration c = im.getCalibration();
+            if (c == null) {
+              c = new Calibration(im);
+            }
+
+            // X resolution
+            TIFFField xResField = dir.getField(TIFFImageDecoder.TIFF_X_RESOLUTION);
+            if (xResField != null) {
+              double xRes = xResField.getAsDouble(0);
+              if (xRes != 0) {
+                c.pixelWidth = 1 / xRes;
+              }
+            }
+
+            // Y resolution
+            TIFFField yResField = dir.getField(TIFFImageDecoder.TIFF_Y_RESOLUTION);
+            if (yResField != null) {
+              double yRes = yResField.getAsDouble(0);
+              if (yRes != 0) {
+                c.pixelHeight = 1 / yRes;
+              }
+            }
+
+            // Resolution unit
+            TIFFField resolutionUnitField = dir.getField(
+                TIFFImageDecoder.TIFF_RESOLUTION_UNIT);
+            if (resolutionUnitField != null) {
+              int resolutionUnit = resolutionUnitField.getAsInt(0);
+              if (resolutionUnit == 1 && c.getUnit() == null) {
+                // no meaningful units
+                c.setUnit(" ");
+              }
+              else if (resolutionUnit == 2) {
+                c.setUnit("inch");
+              }
+              else if (resolutionUnit == 3) {
+                c.setUnit("cm");
+              }
+            }
+
+            im.setCalibration(c);
+          }
+        }
+        catch (NegativeArraySizeException ex) {
+          // my be thrown by ti.getPrivateIFD(8)
+          ex.printStackTrace();
+        }
+      }
+    }
+
+    return im;
+  }
+
+
+  private void close() {
+    decoder = null;
+    decoderName = null;
+    file = null;
   }
 
 

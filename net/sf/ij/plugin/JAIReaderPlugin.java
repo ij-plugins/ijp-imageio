@@ -1,4 +1,4 @@
-/*
+/***
  * Image/J Plugins
  * Copyright (C) 2002 Jarek Sacha
  *
@@ -27,6 +27,7 @@ import ij.plugin.PlugIn;
 
 import java.io.File;
 import javax.swing.JFileChooser;
+import net.sf.ij.jaiio.ImageFileChooser;
 
 import net.sf.ij.jaiio.JAIFileChooserFactory;
 import net.sf.ij.jaiio.JAIReader;
@@ -36,7 +37,7 @@ import net.sf.ij.jaiio.JAIReader;
  *
  * @author     Jarek Sacha
  * @created    February 10, 2002
- * @version    $Revision: 1.5 $
+ * @version    $Revision: 1.6 $
  */
 
 public class JAIReaderPlugin implements PlugIn {
@@ -52,7 +53,32 @@ public class JAIReaderPlugin implements PlugIn {
    */
   public final static String ARG_IMAGE_PREVIEW = "image preview";
 
-  private static JFileChooser jaiChooser;
+  private static ImageFileChooser jaiChooser;
+  private int[] pageIndex;
+  private File[] files;
+
+
+  /*
+   *
+   */
+  private static void open(File file, int[] pageIndex) {
+    IJ.showStatus("Opening: " + file.getName());
+
+    try {
+      ImagePlus[] images = JAIReader.read(file, pageIndex);
+      if (images != null) {
+        for (int i = 0; i < images.length; ++i) {
+          images[i].show();
+        }
+      }
+    }
+    catch (Exception ex) {
+      ex.printStackTrace();
+      String msg = "Error opening file: " + file.getName() + ".\n\n";
+      msg += (ex.getMessage() == null) ? ex.toString() : ex.getMessage();
+      IJ.showMessage("JAI Reader", msg);
+    }
+  }
 
 
   /**
@@ -66,17 +92,18 @@ public class JAIReaderPlugin implements PlugIn {
   public void run(String arg) {
     String type = (arg == null) ? ARG_SIMPLE : arg.trim().toLowerCase();
 
-    File[] files = null;
+    files = null;
+    pageIndex = null;
     if (type.equals(ARG_IMAGE_PREVIEW)) {
-      files = getFileImagePreview();
+      selectFilesWithImagePreview();
     }
     else {
-      files = getFileSimple();
+      selectFiles();
     }
 
     if (files != null) {
       for (int i = 0; i < files.length; ++i) {
-        open(files[i]);
+        open(files[i], pageIndex);
       }
     }
   }
@@ -85,7 +112,7 @@ public class JAIReaderPlugin implements PlugIn {
   /*
    *
    */
-  private File[] getFileImagePreview() {
+  private void selectFilesWithImagePreview() {
     if (jaiChooser == null) {
       jaiChooser = JAIFileChooserFactory.createJAIOpenChooser();
       jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
@@ -93,10 +120,12 @@ public class JAIReaderPlugin implements PlugIn {
     }
 
     if (jaiChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-      return jaiChooser.getSelectedFiles();
+      files = jaiChooser.getSelectedFiles();
+      pageIndex = jaiChooser.getPageIndex();
     }
     else {
-      return null;
+      files = null;
+      pageIndex = null;
     }
   }
 
@@ -104,40 +133,18 @@ public class JAIReaderPlugin implements PlugIn {
   /*
    *
    */
-  private File[] getFileSimple() {
+  private void selectFiles() {
+    pageIndex = null;
+
     OpenDialog openDialog = new OpenDialog("Open...", null);
     if (openDialog.getFileName() == null) {
       // No selection
-      return null;
+      files = null;
     }
 
-    File[] files = new File[1];
+    if (files == null || files.length != 1) {
+      files = new File[1];
+    }
     files[0] = new File(openDialog.getDirectory(), openDialog.getFileName());
-
-    return files;
-  }
-
-
-  /*
-   *
-   */
-  private void open(File file) {
-    IJ.showStatus("Opening: " + file.getName());
-
-    try {
-      JAIReader jaiReader = new JAIReader();
-      ImagePlus[] images = jaiReader.read(file);
-      if (images != null) {
-        for (int i = 0; i < images.length; ++i) {
-          images[i].show();
-        }
-      }
-    }
-    catch (Exception ex) {
-      ex.printStackTrace();
-      String msg = "Error opening file: " + file.getName() + ".\n\n";
-      msg += (ex.getMessage() == null) ? ex.toString() : ex.getMessage();
-      IJ.showMessage("JAI Reader", msg);
-    }
   }
 }

@@ -1,4 +1,4 @@
-/*
+/***
  * Image/J Plugins
  * Copyright (C) 2002 Jarek Sacha
  *
@@ -21,6 +21,7 @@
 package net.sf.ij.jaiio;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.beans.*;
 import java.io.*;
@@ -33,7 +34,7 @@ import net.sf.ij.swing.IconCanvas;
  *
  * @author     Jarek Sacha
  * @created    January 9, 2001
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 public class JAIFilePreviewer extends JPanel
      implements PropertyChangeListener {
@@ -47,21 +48,32 @@ public class JAIFilePreviewer extends JPanel
   /**  Description of the Field */
   protected File file;
   /**  Description of the Field */
-  protected int iconSizeX = 200;
+  protected int iconSizeX = 150;
   /**  Description of the Field */
-  protected int iconSizeY = 150;
+  protected int iconSizeY = 100;
+
+  private JAIReader.ImageInfo imageInfo = null;
+  private int[] pageIndex = null;
+  private ImagePageSelectionDialog
+      imagePageSelectionDialog = new ImagePageSelectionDialog();
+  private JFileChooser parentChooser;
 
   private JPanel infoPanel = new JPanel();
-  private GridBagLayout gridBagLayout1 = new GridBagLayout();
   private JLabel fileSizeLabel = new JLabel();
   private BorderLayout borderLayout1 = new BorderLayout();
   private JLabel ImageIconLabel = new JLabel();
+  private JButton selectPagesButton = new JButton();
+  private GridBagLayout gridBagLayout1 = new GridBagLayout();
 
 
   /**  Constructor for the FilePreviewer object */
   public JAIFilePreviewer() {
     try {
       jbInit();
+      ij.ImagePlus imp = new ij.ImagePlus("", new ij.process.ByteProcessor(iconSizeX, iconSizeY));
+      ImageIcon imageIcon = new ImageIcon(imp.getImage());
+      ImageIconLabel.setIcon(imageIcon);
+      validate();
     }
     catch (Exception e) {
       e.printStackTrace();
@@ -75,6 +87,7 @@ public class JAIFilePreviewer extends JPanel
    * @param  fc  File chooser that this object is associated with.
    */
   public JAIFilePreviewer(JFileChooser fc) {
+    parentChooser = fc;
     try {
       jbInit();
     }
@@ -82,6 +95,16 @@ public class JAIFilePreviewer extends JPanel
       e.printStackTrace();
     }
     fc.addPropertyChangeListener(this);
+  }
+
+
+  /**
+   *  Gets the PageIndex attribute of the JAIFilePreviewer object
+   *
+   * @return    The PageIndex value
+   */
+  public int[] getPageIndex() {
+    return pageIndex;
   }
 
 
@@ -101,6 +124,26 @@ public class JAIFilePreviewer extends JPanel
         repaint();
       }
     }
+  }
+
+
+  void selectPagesButton_actionPerformed(ActionEvent e) {
+    if (imageInfo == null) {
+      return;
+    }
+
+    if (parentChooser.getSelectedFiles() != null
+        && parentChooser.getSelectedFiles().length > 1) {
+      selectPagesButton.setEnabled(false);
+      JOptionPane.showMessageDialog(this,
+          "Cannot select pages when multiple files are selected.",
+          "Select pages...", JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+
+    imagePageSelectionDialog.setNumPages(imageInfo.numberOfPages);
+    imagePageSelectionDialog.setVisible(true);
+    pageIndex = imagePageSelectionDialog.getPageIndex();
   }
 
 
@@ -135,15 +178,17 @@ public class JAIFilePreviewer extends JPanel
    * @return    image info.
    */
   private JAIReader.ImageInfo loadImage() {
+    pageIndex = null;
+
     if (file == null || file.isDirectory()) {
-      ImageIconLabel.setIcon(null);
+//      ImageIconLabel.setIcon(null);
       fileSizeLabel.setText(" ");
+      selectPagesButton.setEnabled(false);
       return null;
     }
 
     try {
-
-      JAIReader.ImageInfo imageInfo = JAIReader.readFirstImageAndInfo(file);
+      imageInfo = JAIReader.readFirstImageAndInfo(file);
       Image image = imageInfo.previewImage;
 
       // Set image size label
@@ -155,9 +200,20 @@ public class JAIFilePreviewer extends JPanel
           label.append("  [" + w + "x" + h);
           if (imageInfo.numberOfPages > 1) {
             label.append("x" + imageInfo.numberOfPages + "]");
+            File[] selectedFiles = parentChooser.getSelectedFiles();
+            File selectedFile = parentChooser.getSelectedFile();
+            if ((selectedFiles != null && selectedFiles.length == 1)
+                || ((selectedFiles == null || selectedFiles.length == 0)
+                && selectedFile != null) ) {
+              selectPagesButton.setEnabled(true);
+            }
+            else {
+              selectPagesButton.setEnabled(false);
+            }
           }
           else {
             label.append("]");
+            selectPagesButton.setEnabled(false);
           }
         }
       }
@@ -199,13 +255,25 @@ public class JAIFilePreviewer extends JPanel
     fileSizeLabel.setHorizontalTextPosition(SwingConstants.CENTER);
     fileSizeLabel.setText(" ");
     infoPanel.setLayout(borderLayout1);
-    ImageIconLabel.setPreferredSize(new Dimension(200, 150));
+    ImageIconLabel.setMaximumSize(new Dimension(iconSizeX, iconSizeY));
+    ImageIconLabel.setMinimumSize(new Dimension(iconSizeX, iconSizeY));
+    ImageIconLabel.setPreferredSize(new Dimension(iconSizeX, iconSizeY));
     ImageIconLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    selectPagesButton.setEnabled(false);
+    selectPagesButton.setText("Select pages...");
+    selectPagesButton.addActionListener(
+      new java.awt.event.ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+          selectPagesButton_actionPerformed(e);
+        }
+      });
     this.add(infoPanel, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0
-        , GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+        , GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     infoPanel.add(fileSizeLabel, BorderLayout.CENTER);
     this.add(ImageIconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
-        , GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+        , GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+    this.add(selectPagesButton, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0
+        , GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
   }
 }
 
