@@ -1,6 +1,6 @@
 /*
  *  Image/J Plugins
- *  Copyright (C) 2002,2003 Jarek Sacha
+ *  Copyright (C) 2002-2004 Jarek Sacha
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,7 @@
  *
  * @author     Jarek Sacha
  * @created    January 22, 2002
- * @version    $Revision: 1.5 $
+ * @version    $Revision: 1.6 $
  */
 public class JAI_Reader_with_Preview extends JAI_Reader {
 
