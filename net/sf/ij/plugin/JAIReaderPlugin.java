@@ -36,7 +36,7 @@ import net.sf.ij.swing.ImageFileChooserFactory;
  *
  * @author     Jarek Sacha
  * @created    February 10, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 
 public class JAIReaderPlugin implements PlugIn {
@@ -84,7 +84,7 @@ public class JAIReaderPlugin implements PlugIn {
    */
   private File[] getFileImagePreview() {
     if (jaiChooser == null) {
-      jaiChooser = ImageFileChooserFactory.createJAIImageChooser();
+      jaiChooser = ImageFileChooserFactory.createJAIOpenChooser();
       jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
       jaiChooser.setMultiSelectionEnabled(true);
     }
