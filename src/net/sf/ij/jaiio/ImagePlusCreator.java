@@ -26,14 +26,13 @@ import ij.process.*;
 import non_com.media.jai.DataBufferDouble;
 import non_com.media.jai.DataBufferFloat;
 
-import java.awt.*;
 import java.awt.image.*;
 
 /**
  * Creates/converts Image/J's image objects from Java2D/JAI representation.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ImagePlusCreator {
 
@@ -139,11 +138,11 @@ public class ImagePlusCreator {
             // If image has multiple banks or multiple color components, assume that it
             // is a color image and relay on AWT for proper decoding.
             BufferedImage bi = new BufferedImage(cm, r, false, null);
-            return new ImagePlus(null, new ColorProcessor((Image) bi));
+            return new ImagePlus(null, new ColorProcessor(bi));
         } else if (sm.getSampleSize(0) < 8) {
             // Temporary fix for less then 8 bit images
             BufferedImage bi = new BufferedImage(cm, r, false, null);
-            return new ImagePlus(null, new ByteProcessor((Image) bi));
+            return new ImagePlus(null, new ByteProcessor(bi));
         } else {
             if (!(cm instanceof IndexColorModel)) {
                 // Image/J (as of version 1.26r) can not properly deal with non color
