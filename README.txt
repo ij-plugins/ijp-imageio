@@ -43,8 +43,8 @@ newer. It was tested wit Java 1.4 and 1.5, may also work with Java 1.3.
 INSTALLATION
 ------------
 
-The installation is as simple as placing ij-ImageIO_.jar in the ImageJ
-plugins folder (requires imageJ 1.31s).
+The installation is as simple as unzipping ij-ImageIO_bin_*.zip in the
+ImageJ plugins folder (or placing ij-ImageIO_.jar in the plugins folder).
 
 Previous installation of JAI Image IO will interfere with this version.
 Please remove them manually or use the "Remove obsolete JAI Image IO
