@@ -6,20 +6,19 @@ OVERVIEW
 
 JAI Image I/O is an Image/J plugin bundle or reading and writing image
 files using Java Advance Imaging (JAI) codec. It uses uncommitted source
-code for JAI 1.1.1 codecs 
-http://developer.java.sun.com/developer/sampsource/jai/
-The plugin bundle is completely self contained. All used codec classes
-are included in the bundle and there is no need to install JAI itself to
-use the bundle.
+code for JAI 1.1.1 codecs
+http://developer.java.sun.com/developer/sampsource/jai/ The plugin bundle
+is completely self contained. All used codec classes are included in the
+bundle and there is no need to install JAI itself to use the bundle.
 
 Most important functionality that this bundle adds to what already
-available in Image/J and other plugins is ability to read 16 bit, 32 bit,
-float images from TIFF images that use tiles or compression. Image/J
-built-in TIFF reader does not support tiles and compression. JIMI plugins
-correctly handle only 8 bit images.
+available in Image/J and other plugins is ability to read 1 bit, 16 bit,
+32 bit, float images from TIFF images that use tiles or compression.
+Image/J built-in TIFF reader does not support tiles and compression. JIMI
+plugins correctly handle only 8 bit images.
 
-JAI Image I/O plugins can read and write 8 bit, 16 bit, 32 bit, tiled,
-compressed (read), and multi-page TIFF images. Writing using LZW
+JAI Image I/O plugins can read and write 1 bit, 8 bit, 16 bit, 32 bit,
+tiled, compressed (read), and multi-page TIFF images. Writing using LZW
 compression is not supported for the usual reason of the patent on the
 algorithm. Unlike JIMI plugins , JAI Image I/O plugins preserve sample
 size, so for example, a 16 bit TIFF image is read into Image/J's
@@ -27,7 +26,7 @@ ShortProcessor. Plugins can additionally read/write image calibration
 information from TIFF files. Standard TIFF image calibration tags are
 supported (X_RESOLUTION, Y_RESOLUTION, RESOLUTION_UNIT). Additional image
 formats supported by JAI Image I/O include BMP, FlashPIX, GIF, JPEG, and
-PNG. 
+PNG.
 
 
 SOURCE
