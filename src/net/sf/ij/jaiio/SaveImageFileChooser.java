@@ -20,133 +20,188 @@
  */
 package net.sf.ij.jaiio;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import non_com.media.jai.codec.ImageCodec;
+import non_com.media.jai.codec.ImageEncoder;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import java.io.File;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeSet;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
-
-import non_com.media.jai.codec.ImageCodec;
-import non_com.media.jai.codec.ImageEncoder;
 
 /**
- *  Extension of JFileChooser with ability to return pages selected in
- *  multi-image files (e.g. TIFF).
- *
- * @author     Jarek Sacha
- * @created    June 16, 2002
- * @version    $Revision: 1.1 $
+ * Extension of JFileChooser with ability to return pages selected in multi-image files (e.g. TIFF).
+ * 
+ * @author Jarek Sacha
+ * @version $Revision: 1.2 $
  */
 
 public class SaveImageFileChooser
-     extends JFileChooser
-     implements PropertyChangeListener {
+        extends JFileChooser
+        implements PropertyChangeListener {
 
-  private String selectedFilePath = null;
+    private String selectedFileDirectory = null;
+    private String selectedFileRootName = null;
 
 
-  /**  Constructor for the ImageFileChooser object */
-  public SaveImageFileChooser(File currentDirectory) {
-    super(currentDirectory);
-//    this.setAccessory(previewer);
-//    this.addPropertyChangeListener(this);
+    /**
+     * Constructor for the ImageFileChooser object
+     */
+    public SaveImageFileChooser(File currentDirectory) {
+        super(currentDirectory);
+        this.addPropertyChangeListener(this);
 
-    this.setAcceptAllFileFilterUsed(false);
+        this.setMultiSelectionEnabled(false);
+        this.setDialogType(JFileChooser.SAVE_DIALOG);
+        this.setAcceptAllFileFilterUsed(false);
 
-    // Set filters corresponding to each available codec
-    Enumeration codecs = ImageCodec.getCodecs();
+        // Set filters corresponding to each available codec
+        Enumeration codecs = ImageCodec.getCodecs();
 
-    // Sort codec names
-    TreeSet codecSet = new TreeSet();
-    while (codecs.hasMoreElements()) {
-      ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
-      String formatName = thisCodec.getFormatName();
-      try {
-        // Test if ImageEncoder can be instantiated.
-        ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
-            null, null);
-        if (imageEncoder != null) {
-          codecSet.add(formatName);
+        // Sort codec names
+        TreeSet codecSet = new TreeSet();
+        while (codecs.hasMoreElements()) {
+            ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
+            String formatName = thisCodec.getFormatName();
+            try {
+                // Test if ImageEncoder can be instantiated.
+                ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
+                        null, null);
+                if (imageEncoder != null) {
+                    codecSet.add(formatName);
+                }
+            } catch (Throwable t) {
+                // Ignore ImageEncoders that cannot be instantiated
+            }
         }
-      }
-      catch (Throwable t) {
-        // Ignore ImageEncoders that cannot be instantiated
-      }
-    }
 
-    JAIFileFilter defaultFilter = null;
-    for (Iterator i = codecSet.iterator(); i.hasNext(); ) {
-      try {
-        String cadecName = (String) i.next();
-        JAIFileFilter jaiFileFilter = new JAIFileFilter(cadecName);
-        addChoosableFileFilter(jaiFileFilter);
-        if (cadecName.toUpperCase().indexOf("TIFF") > -1) {
-          defaultFilter = jaiFileFilter;
+        JAIFileFilter defaultFilter = null;
+        for (Iterator i = codecSet.iterator(); i.hasNext();) {
+            try {
+                String cadecName = (String) i.next();
+                JAIFileFilter jaiFileFilter = new JAIFileFilter(cadecName);
+                addChoosableFileFilter(jaiFileFilter);
+                if (cadecName.toUpperCase().indexOf("TIFF") > -1) {
+                    defaultFilter = jaiFileFilter;
+                }
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
         }
-      }
-      catch (Throwable t) {
-        t.printStackTrace();
-      }
-    }
 
-    // Set selected filter
-    if (defaultFilter != null) {
-      setFileFilter(defaultFilter);
-    }
-
-    this.setMultiSelectionEnabled(false);
-    this.setDialogType(JFileChooser.SAVE_DIALOG);
-
-    this.validate();
-  }
-
-
-  /**
-   *  Description of the Method
-   *
-   * @param  evt  Description of the Parameter
-   */
-  public void propertyChange(PropertyChangeEvent evt) {
-    System.out.println("Property change : " + evt.getPropertyName());
-    System.out.println("Property soource: " + evt.getSource());
-    if (evt.getPropertyName().equals(
-        JFileChooser.FILE_FILTER_CHANGED_PROPERTY)) {
-      FileFilter fileFilter = this.getFileFilter();
-      System.out.println("New file filter: " + fileFilter);
-      if (fileFilter instanceof JAIFileFilter) {
-        JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
-        System.out.println("Changin file extension to: "
-            + jaiFileFilter.getCodecName());
-        if (selectedFilePath != null) {
-          File selectedFile = new File(selectedFilePath + "."
-              + jaiFileFilter.getCodecName().toLowerCase());
-          setSelectedFile(selectedFile);
-          this.invalidate();
-          this.repaint();
+        // Set selected filter
+        if (defaultFilter != null) {
+            setFileFilter(defaultFilter);
         }
-      }
+
+
+        this.validate();
     }
-    else if (evt.getPropertyName().equals(
-        JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
-      File selectedFile = getSelectedFile();
-      if (selectedFile != null) {
-        selectedFilePath = selectedFile.getAbsolutePath();
-        int lastSeparator = selectedFilePath.lastIndexOf(File.separator);
-        int lastDot = selectedFilePath.lastIndexOf(".");
-        if (lastDot > lastSeparator) {
-          selectedFilePath = selectedFilePath.substring(0, lastDot);
+
+
+    /**
+     * This method gets called when a bound property is changed.
+     * <p/>
+     * JFileChooser have a tendency to reset name of selected file when a file filter is changed. However, we would like
+     * to keep the name of current selection but change it extension that matches current filter.
+     * <p/>
+     * This method is a hack that should enable to maintain a name of the selected file when file filter is changed at
+     * the same time changing only extension of the file to match currently selected filter.
+     * <p/>
+     * For instance, when the SaveImageFileChooser starts up a TIFF filter is selected and file name is that of the
+     * Image that is being saved. When now a user selects a different file filter JFileChooser parent class removes the
+     * name of the selected file from file name box (file name selection box is empty). To put back the name of the file
+     * in to the selection box we monitor notification about JFileChooser property changes and attempt to set proper
+     * value of the file name in the selection box. </p>
+     * 
+     * @param evt A PropertyChangeEvent object describing the event source and the property that has changed.
+     */
+    public void propertyChange(PropertyChangeEvent evt) {
+        final String propertyName = evt.getPropertyName();
+
+        // File filter changed
+        if (evt.getPropertyName().equals(
+                JFileChooser.FILE_FILTER_CHANGED_PROPERTY)) {
+            FileFilter fileFilter = this.getFileFilter();
+
+            if (fileFilter instanceof JAIFileFilter) {
+                JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
+
+                if (selectedFileDirectory != null) {
+                    final String fileName = selectedFileDirectory + File.separator
+                            + selectedFileRootName + "." + jaiFileFilter.getCodecName().toLowerCase();
+                    final File selectedFile = new File(fileName);
+
+                    // Hack to delate execution of setSelectedFile()
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            setSelectedFile(selectedFile);
+                        }
+                    });
+                }
+            }
         }
-      }
-      System.out.println("Selected file: " + selectedFilePath);
-      this.invalidate();
-      this.repaint();
+        // Selected file changed
+        else if (evt.getPropertyName().equals(
+                JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
+            // Trick here is to distinguish legitimate changes of the file selected 
+            // from ones caused by changes of file filter. Not having much to
+            // relay on e assume that legitimate changes never set the selected
+            // file to null.
+            
+            File selectedFile = getSelectedFile();
+            if (selectedFile == null) {
+                // Attemt to set file name to null, try to recover using preserved 
+                // inforamtion, if any.
+                if (selectedFileDirectory != null) {
+                    FileFilter fileFilter = this.getFileFilter();
+                    JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
+                    String name = selectedFileDirectory + File.separator + selectedFileRootName + "."
+                            + jaiFileFilter.getCodecName().toLowerCase();
+                    final File recoveredSelectedFile = new File(name);
+
+                    // Hack to delate execution of setSelectedFile()
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            setSelectedFile(recoveredSelectedFile);
+                        }
+                    });
+                }
+            } else {
+                // Preserve information about selected file
+                File parentFile = selectedFile.getParentFile();
+                selectedFileDirectory = getCurrentDirectory().getAbsolutePath();
+                String name = selectedFile.getName();
+                int lastDot = name.lastIndexOf(".");
+                if (lastDot > -1) {
+                    selectedFileRootName = name.substring(0, lastDot);
+                }
+            }
+        }
+        // Track changes in current directory
+        else if (evt.getPropertyName().equals(
+                JFileChooser.DIRECTORY_CHANGED_PROPERTY)) {
+            File newValue = (File) evt.getNewValue();
+            if (newValue != null) {
+                selectedFileDirectory = newValue.getAbsolutePath();
+            }
+            if (selectedFileDirectory != null) {
+                FileFilter fileFilter = this.getFileFilter();
+                JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
+                final String fileName = selectedFileDirectory + File.separator
+                        + selectedFileRootName + "." + jaiFileFilter.getCodecName().toLowerCase();
+                final File selectedFile = new File(fileName);
+
+                // Hack to delate execution of setSelectedFile()
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        setSelectedFile(selectedFile);
+                    }
+                });
+            }
+        }
     }
-  }
 }
