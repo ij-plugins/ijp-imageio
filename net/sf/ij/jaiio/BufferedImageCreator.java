@@ -1,4 +1,4 @@
-/*
+/***
  * Image/J Plugins
  * Copyright (C) 2002 Jarek Sacha
  *
@@ -54,15 +54,14 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.5 $
+ * @version    $Revision: 1.6 $
  */
 public class BufferedImageCreator {
 
   /*
    *  Made private to prevent subclassing.
    */
-  private BufferedImageCreator() {
-  }
+  private BufferedImageCreator() { }
 
 
   /**
@@ -165,12 +164,45 @@ public class BufferedImageCreator {
   public static BufferedImage create(ByteProcessor src, IndexColorModel icm) {
     WritableRaster wr = icm.createCompatibleWritableRaster(src.getWidth(),
         src.getHeight());
-    DataBufferByte dataBuffer = (DataBufferByte) wr.getDataBuffer();
+    int[] componentSize = icm.getComponentSize();
+    final byte[] bitsOn = {(byte) 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
     byte[] srcPixels = (byte[]) src.getPixels();
+    DataBufferByte dataBuffer = (DataBufferByte) wr.getDataBuffer();
     byte[] destPixels = dataBuffer.getData();
-    System.arraycopy(srcPixels, 0, destPixels, 0, destPixels.length);
-
-    return new BufferedImage(icm, wr, false, null);
+    int mapSize = icm.getMapSize();
+    if (mapSize == 256) {
+      System.arraycopy(srcPixels, 0, destPixels, 0, destPixels.length);
+      return new BufferedImage(icm, wr, false, null);
+    }
+    else if (mapSize == 2) {
+      // Double check that dest data are large enough
+      int srcWidth = src.getWidth();
+      int destWidth = (src.getWidth() + 7) / 8;
+      int expectedDestSize = destWidth * src.getHeight();
+      if (destPixels.length != expectedDestSize) {
+        throw new IllegalStateException("Internal error: wrong size of destPixels.");
+      }
+      // Single bit image, pack bits
+      for (int i = 0; i < destPixels.length; ++i) {
+        byte destByte = 0x00;
+        int offset = (i / destWidth) * srcWidth + (i % destWidth) * 8;
+        for (int j = 0; j < 8 && ((j + offset) < srcPixels.length); ++j) {
+          if (srcPixels[j + offset] != 0) {
+            destByte += bitsOn[j];
+          }
+        }
+        destPixels[i] = destByte;
+      }
+      return new BufferedImage(icm, wr, false, null);
+    }
+    else {
+      // FIX: deal with all bit packing schemes
+      throw new UnsupportedOperationException(
+          "Unable to properly decode this image (color map).\n" +
+          "  Map size    = " + mapSize + "\n" +
+          "  Src pixels  = " + srcPixels.length + "\n" +
+          "  Dest pixels = " + destPixels.length);
+    }
   }
 
 
