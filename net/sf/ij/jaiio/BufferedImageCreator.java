@@ -54,7 +54,7 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 public class BufferedImageCreator {
 
@@ -188,6 +188,7 @@ public class BufferedImageCreator {
     DataBufferUShort dataBuffer = (DataBufferUShort) raster.getDataBuffer();
     System.arraycopy(src.getPixels(), 0, dataBuffer.getData(), 0,
         dataBuffer.getData().length);
+    bufferedImage.setData(raster);
 
     return bufferedImage;
   }
