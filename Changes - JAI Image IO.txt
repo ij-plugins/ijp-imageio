@@ -1,3 +1,17 @@
+**********************
+CHANGES
+**********************
+----------------------
+IJ-JAI-ImageIO v.1.0.4
+----------------------
+
+Bug fix: Pixel values of 16 bit images are not saved - saved images have 
+         all pixels set to zero.
+
+Bug fix: ClassCastException thrown when saving 'inch' as a calibration 
+         unit in TIFF images. Problem caused by obscure JAI IO 'feature': 
+         unsigned short TIFF Tags are represented as 'char's.            
+
 ----------------------
 IJ-JAI-ImageIO v.1.0.3
 ----------------------
