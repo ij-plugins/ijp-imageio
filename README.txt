@@ -46,9 +46,10 @@ INSTALLATION
 The installation is as simple as unzipping ij-ImageIO_bin_*.zip in the
 ImageJ plugins folder (or placing ij-ImageIO_.jar in the plugins folder).
 
-Previous installation of JAI Image IO will interfere with this version.
-Please remove them manually or use the "Remove obsolete JAI Image IO
-plugins" plugin after installation of ij-ImageIO.
+Previous installation of JAI Image IO (prior to 1.2.0) will interfere with
+this version. Please remove them manually or use the "Remove obsolete JAI
+Image IO plugins" plugin after installation of ij-ImageIO.
+
 
 CONTACT INFORMATION
 -------------------
