@@ -23,6 +23,10 @@ package net.sf.ij.plugin;
 import net.sf.ij.swing.SwingUtils;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLFrameHyperlinkEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,7 +37,7 @@ import java.net.URL;
  * A panel displaying help for the Image I/O plugin bundle.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 final public class HelpPanel extends JPanel {
 
@@ -65,8 +69,27 @@ final public class HelpPanel extends JPanel {
         JEditorPane editorPane = new JEditorPane();
 //        editorPane.setEditorKit(htmlEditorKit);
 //        editorPane.read(is, "Ioamge IO Help file");
-        editorPane.setEditable(false);
         editorPane.setPage(helpURL);
+        editorPane.setEditable(false);
+        // TODO: Enable following of hyperlinks after adding previous/next buttons for navigation.
+//        editorPane.addHyperlinkListener(new HyperlinkListener() {
+//            public void hyperlinkUpdate(HyperlinkEvent e) {
+//                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+//                    JEditorPane pane = (JEditorPane) e.getSource();
+//                    if (e instanceof HTMLFrameHyperlinkEvent) {
+//                        HTMLFrameHyperlinkEvent evt = (HTMLFrameHyperlinkEvent) e;
+//                        HTMLDocument doc = (HTMLDocument) pane.getDocument();
+//                        doc.processHTMLFrameHyperlinkEvent(evt);
+//                    } else {
+//                        try {
+//                            pane.setPage(e.getURL());
+//                        } catch (Throwable t) {
+//                            t.printStackTrace();
+//                        }
+//                    }
+//                }
+//            }
+//        });
 
         //Put the editor pane in a scroll pane.
         JScrollPane editorScrollPane = new JScrollPane(editorPane);
