@@ -23,6 +23,8 @@ package net.sf.ij.imageio;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.io.FileInfo;
+import ij.io.Opener;
 import ij.measure.Calibration;
 
 import java.awt.Image;
@@ -49,7 +51,7 @@ import non_com.media.jai.codec.TIFFImageDecoder;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.8 $
+ * @version    $Revision: 1.9 $
  */
 public class JAIReader {
 
@@ -117,8 +119,10 @@ public class JAIReader {
            + "Cannot find decoder capable of reading: " + file.getName());
     }
 
+    String decoderName = decoders[0];
+
     // Create decoder
-    ImageDecoder decoder = ImageCodec.createImageDecoder(decoders[0], fss, null);
+    ImageDecoder decoder = ImageCodec.createImageDecoder(decoderName, fss, null);
 
     // Get number of subimages
     int nbPages = decoder.getNumPages();
@@ -131,6 +135,9 @@ public class JAIReader {
     IJ.showProgress(0);
     ArrayList imageList = new ArrayList();
     for (int i = 0; i < nbPages; ++i) {
+      if (i != 0) {
+        IJ.showStatus("Reading page " + i);
+      }
       RenderedImage ri = null;
       try {
         ri = decoder.decodeAsRenderedImage(i);
@@ -148,49 +155,57 @@ public class JAIReader {
       ImagePlus im = ImagePlusCreator.create(wr, ri.getColorModel());
       im.setTitle(file.getName() + " [" + (i + 1) + "/" + nbPages + "]");
 
+      if (im.getType() == ImagePlus.COLOR_RGB) {
+        // Convert RGB to gray if all bands are equal
+        Opener.convertGrayJpegTo8Bits(im);
+      }
+
       // Extract TIFF tags
       if (ri instanceof TIFFImage) {
         TIFFImage ti = (TIFFImage) ri;
         try {
-          TIFFDirectory dir = ti.getPrivateIFD(8);
-          Calibration c = im.getCalibration();
-          if (c == null) {
-            c = new Calibration(im);
-          }
+          Object o = ti.getProperty("tiff_directory");
+          if (o instanceof TIFFDirectory) {
+            TIFFDirectory dir = (TIFFDirectory) o;
+            Calibration c = im.getCalibration();
+            if (c == null) {
+              c = new Calibration(im);
+            }
 
-          TIFFField xResField = dir.getField(TIFFImageDecoder.TIFF_X_RESOLUTION);
-          if (xResField != null) {
-            double xRes = xResField.getAsDouble(0);
-            if (xRes != 0) {
-              c.pixelWidth = 1 / xRes;
+            TIFFField xResField = dir.getField(TIFFImageDecoder.TIFF_X_RESOLUTION);
+            if (xResField != null) {
+              double xRes = xResField.getAsDouble(0);
+              if (xRes != 0) {
+                c.pixelWidth = 1 / xRes;
+              }
             }
-          }
 
-          TIFFField yResField = dir.getField(TIFFImageDecoder.TIFF_Y_RESOLUTION);
-          if (yResField != null) {
-            double yRes = yResField.getAsDouble(0);
-            if (yRes != 0) {
-              c.pixelHeight = 1 / yRes;
+            TIFFField yResField = dir.getField(TIFFImageDecoder.TIFF_Y_RESOLUTION);
+            if (yResField != null) {
+              double yRes = yResField.getAsDouble(0);
+              if (yRes != 0) {
+                c.pixelHeight = 1 / yRes;
+              }
             }
-          }
 
-          TIFFField resolutionUnitField = dir.getField(
-              TIFFImageDecoder.TIFF_RESOLUTION_UNIT);
-          if (resolutionUnitField != null) {
-            int resolutionUnit = resolutionUnitField.getAsInt(0);
-            if (resolutionUnit == 1 && c.getUnit() == null) {
-              // no meningful units
-              c.setUnit(" ");
+            TIFFField resolutionUnitField = dir.getField(
+                TIFFImageDecoder.TIFF_RESOLUTION_UNIT);
+            if (resolutionUnitField != null) {
+              int resolutionUnit = resolutionUnitField.getAsInt(0);
+              if (resolutionUnit == 1 && c.getUnit() == null) {
+                // no meningful units
+                c.setUnit(" ");
+              }
+              else if (resolutionUnit == 2) {
+                c.setUnit("inch");
+              }
+              else if (resolutionUnit == 3) {
+                c.setUnit("cm");
+              }
             }
-            else if (resolutionUnit == 2) {
-              c.setUnit("inch");
-            }
-            else if (resolutionUnit == 3) {
-              c.setUnit("cm");
-            }
-          }
 
-          im.setCalibration(c);
+            im.setCalibration(c);
+          }
         }
         catch (NegativeArraySizeException ex) {
           // my be thrown by ti.getPrivateIFD(8)
