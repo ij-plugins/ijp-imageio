@@ -1,6 +1,6 @@
 /***
  * Image/J Plugins
- * Copyright (C) 2002 Jarek Sacha
+ * Copyright (C) 2002,2003 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -33,7 +33,7 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    February 2, 2002
- * @version    $Revision: 1.7 $
+ * @version    $Revision: 1.8 $
  */
 
 public class JAIFileChooserFactory {
@@ -45,8 +45,7 @@ public class JAIFileChooserFactory {
    * @return    Description of the Returned Value
    */
   public static ImageFileChooser createJAIOpenChooser() {
-    ImageFileChooser chooser = new ImageFileChooser();
-    chooser.setCurrentDirectory(new File(".").getAbsoluteFile());
+    ImageFileChooser chooser = new ImageFileChooser(new File(".").getAbsoluteFile());
 
     return chooser;
   }
@@ -59,8 +58,7 @@ public class JAIFileChooserFactory {
    * @return    Description of the Returned Value
    */
   public static JFileChooser createJAISaveChooser() {
-    JFileChooser chooser = new SaveImageFileChooser();
-    chooser.setCurrentDirectory(new File(".").getAbsoluteFile());
+    JFileChooser chooser = new SaveImageFileChooser(new File(".").getAbsoluteFile());
 
     return chooser;
   }

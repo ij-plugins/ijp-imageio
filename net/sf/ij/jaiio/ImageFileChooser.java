@@ -1,6 +1,6 @@
 /***
  * Image/J Plugins
- * Copyright (C) 2002 Jarek Sacha
+ * Copyright (C) 2002,2003 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,11 @@
  */
 package net.sf.ij.jaiio;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import java.io.File;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -35,16 +40,23 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    June 16, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 
-public class ImageFileChooser extends JFileChooser {
+public class ImageFileChooser
+     extends JFileChooser
+     implements ActionListener, PropertyChangeListener {
+
   JAIFilePreviewer previewer = new JAIFilePreviewer(this);
 
 
   /**  Constructor for the ImageFileChooser object */
-  public ImageFileChooser() {
+  public ImageFileChooser(File currentDirectory) {
+    super(currentDirectory);
+
     this.setAccessory(previewer);
+//    this.addActionListener(this);
+//    this.addPropertyChangeListener(this);
 
     // Add filter for all supported image types
     JAIFileFilter allSupportedFileFilter = new JAIFileFilter();
@@ -93,5 +105,25 @@ public class ImageFileChooser extends JFileChooser {
     else {
       return null;
     }
+  }
+
+
+  /**
+   *  Description of the Method
+   *
+   * @param  e  Description of the Parameter
+   */
+  public void actionPerformed(ActionEvent e) {
+    System.out.println("Action command: " + e.getActionCommand());
+  }
+
+
+  /**
+   *  Description of the Method
+   *
+   * @param  evt  Description of the Parameter
+   */
+  public void propertyChange(PropertyChangeEvent evt) {
+    System.out.println("Property change: " + evt.getPropertyName());
   }
 }
