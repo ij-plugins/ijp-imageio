@@ -20,12 +20,6 @@
  */
 package net.sf.ij.imageio;
 
-import non_com.media.jai.codec.ImageEncoder;
-import non_com.media.jai.codec.TIFFImage;
-import non_com.media.jai.codec.TIFFImageEncoder;
-import non_com.media.jai.codec.ImageCodec;
-import non_com.media.jai.codec.TIFFEncodeParam;
-
 import ij.ImagePlus;
 
 import java.awt.image.BufferedImage;
@@ -35,12 +29,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 
+import non_com.media.jai.codec.ImageCodec;
+import non_com.media.jai.codec.ImageEncoder;
+import non_com.media.jai.codec.TIFFEncodeParam;
+import non_com.media.jai.codec.TIFFImageEncoder;
+
 /**
  *  Writes images to files using JAI 1.1.1 codecs.
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 
 public class JAIWriter {
