@@ -2,6 +2,13 @@
 CHANGES
 **********************
 ----------------------
+IJ-JAI-ImageIO v.1.0.5
+----------------------
+
+Bug fix: Saving of 2-bit images, that is images that have only two entries
+         in the color map (Note: 2-bit compression is not implemented yet).
+
+----------------------
 IJ-JAI-ImageIO v.1.0.4
 ----------------------
 
