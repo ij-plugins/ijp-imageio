@@ -69,6 +69,17 @@ public class JAIFileFilter extends FileFilter {
 
 
   /**
+   *  Gets the CodecName attribute of the JAIFileFilter object. May return null
+   *  if no codec is selected (all files).
+   *
+   * @return    The CodecName value
+   */
+  public String getCodecName() {
+    return codecName;
+  }
+
+
+  /**
    *  Description of the Method
    *
    * @param  file  Description of Parameter
