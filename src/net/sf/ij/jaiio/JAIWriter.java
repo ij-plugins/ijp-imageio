@@ -26,6 +26,7 @@ import ij.measure.Calibration;
 import non_com.media.jai.codec.*;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -39,7 +40,7 @@ import java.util.Enumeration;
  * saved.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class JAIWriter {
 
@@ -119,7 +120,7 @@ public class JAIWriter {
      */
     public void write(String fileName, ImagePlus im)
             throws FileNotFoundException, IOException, IllegalArgumentException {
-        FileOutputStream outputStream = new FileOutputStream(fileName);
+        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(fileName));
         try {
             ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
                     outputStream, null);
@@ -131,10 +132,6 @@ public class JAIWriter {
                 if (param == null) {
                     param = new TIFFEncodeParam();
                 }
-//        param.setCompression(TIFFEncodeParam.COMPRESSION_GROUP4);
-//        param.setCompression(TIFFEncodeParam.COMPRESSION_JPEG_TTN2);
-//        param.setCompression(TIFFEncodeParam.COMPRESSION_DEFLATE);
-//        param.setDeflateLevel(9);
 
                 // Create list of extra images in the file
                 BufferedImage bi = BufferedImageCreator.create(im, 0);
