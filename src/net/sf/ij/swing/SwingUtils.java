@@ -24,9 +24,16 @@ import java.awt.*;
 
 /**
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class SwingUtils {
+    /**
+     * Center window on screen.
+     *
+     * @param window
+     * @param packFrame if <code>true</code> call window's <code>pack()</code>
+     *                  method before centering.
+     */
     public static void centerOnScreen(Window window, boolean packFrame) {
         //Validate frames that have preset sizes
         //Pack frames that have useful preferred size info, e.g. from their layout
@@ -51,5 +58,4 @@ public class SwingUtils {
         window.setLocation((screenSize.width - frameSize.width) / 2,
                 (screenSize.height - frameSize.height) / 2);
     }
-
 }
