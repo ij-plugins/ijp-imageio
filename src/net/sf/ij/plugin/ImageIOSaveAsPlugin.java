@@ -29,6 +29,7 @@ import ij.io.SaveDialog;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.Recorder;
 import net.sf.ij.jaiio.*;
+import net.sf.ij.swing.SwingUtils;
 import non_com.media.jai.codec.ImageEncodeParam;
 
 import javax.swing.*;
@@ -41,10 +42,9 @@ import java.io.IOException;
  * Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  *
  * @author Jarek Sacha
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ImageIOSaveAsPlugin implements PlugIn {
-
     public static final String PNG = "png";
     public static final String PNM = "pnm";
     public static final String TIFF = "tiff";
@@ -147,12 +147,12 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                     file = jaiChooser.getSelectedFile();
                     if (file.getName().indexOf(".") < 0) {
                         file = new File(file.getParent(),
-                                file.getName() + "." + getFileExtension(codecName));
+                                        file.getName() + "." + getFileExtension(codecName));
                     }
                     fileName = file.getAbsolutePath();
                 } else if (fileName == null) {
                     SaveDialog saveDialog = new SaveDialog("Save As " + codecName + "...", imp.getTitle(),
-                            "." + getFileExtension(codecName));
+                                    "." + getFileExtension(codecName));
                     // Make only single call to saveDialog.getFileName(). When recording a macro,
                     // each call records path in a macro (ImageJ 1.33k)
                     final String saveDialogFileName = saveDialog.getFileName();
@@ -176,7 +176,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                     if (paramDialog == null) {
                         paramDialog = new EncoderParamDialog();
                     }
-                    JaiioUtil.centerOnScreen(paramDialog, false);
+                    SwingUtils.centerOnScreen(paramDialog, false);
                     paramDialog.show();
                     if (!paramDialog.isAccepted()) {
                         Macro.abort();
