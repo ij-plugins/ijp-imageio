@@ -32,16 +32,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import net.sf.ij.jaiio.JAIFileChooserFactory;
 import net.sf.ij.jaiio.JAIFileFilter;
 import net.sf.ij.jaiio.JAIWriter;
-import net.sf.ij.jaiio.JAIFileChooserFactory;
 
 /**
  *  Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  *
  * @author     Jarek Sacha
  * @created    March 3, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 
 public class JAIWriterPlugin implements PlugIn {
@@ -68,6 +68,8 @@ public class JAIWriterPlugin implements PlugIn {
         jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
       }
 
+      jaiChooser.setName(imp.getTitle());
+
       if (jaiChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
         FileFilter fileFilter = jaiChooser.getFileFilter();
         String codecName = null;
@@ -84,6 +86,10 @@ public class JAIWriterPlugin implements PlugIn {
         JAIWriter jaiWriter = new JAIWriter();
         jaiWriter.setFormatName(codecName);
         file = jaiChooser.getSelectedFile();
+        if (file.getName().indexOf(".") < 0) {
+          file = new File(file.getParent(),
+              file.getName() + "." + getFileExtension(codecName));
+        }
         jaiWriter.write(file.getAbsolutePath(), imp);
       }
     }
@@ -91,11 +97,28 @@ public class JAIWriterPlugin implements PlugIn {
 //    }
 //    catch(IOException ex) {
 //    }
-    catch (Exception ex) {
-      ex.printStackTrace();
+    catch (Throwable t) {
+      t.printStackTrace();
       String msg = "Error writing file: " + file.getName() + ".\n\n";
-      msg += (ex.getMessage() == null) ? ex.toString() : ex.getMessage();
+      msg += (t.getMessage() == null) ? t.toString() : t.getMessage();
       IJ.showMessage("JAI Writer", msg);
     }
   }
+
+
+  /*
+   *  Return typically used extension for given codec name.
+   */
+  private String getFileExtension(String codecName) {
+    if (codecName.compareToIgnoreCase("TIFF") == 0) {
+      return "tif";
+    }
+    else if (codecName.compareToIgnoreCase("JPEG") == 0) {
+      return "jpg";
+    }
+    else {
+      return codecName.toLowerCase();
+    }
+  }
+
 }
