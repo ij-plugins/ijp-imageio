@@ -20,6 +20,7 @@
  */
 import java.util.jar.*;
 import java.io.File;
+import java.net.URL;
 import java.io.FileInputStream;
 
 /**
@@ -27,12 +28,11 @@ import java.io.FileInputStream;
  *
  * @author     Jarek Sacha
  * @created    January 26, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 public class JarClassLoader extends ClassLoader {
 
   private String jarFileName;
-
   private final static int BUFFER_SIZE = 0xFFFF;
 
 
@@ -43,7 +43,7 @@ public class JarClassLoader extends ClassLoader {
    */
   public JarClassLoader(String jarFileName) {
     super();
-    this.jarFileName = jarFileName;
+    this.jarFileName = jarFileName.replace('\\', '/');
   }
 
 
@@ -56,7 +56,7 @@ public class JarClassLoader extends ClassLoader {
    */
   public JarClassLoader(String jarFileName, ClassLoader parent) {
     super(parent);
-    this.jarFileName = jarFileName;
+    this.jarFileName = jarFileName.replace('\\', '/');
   }
 
 
@@ -71,6 +71,38 @@ public class JarClassLoader extends ClassLoader {
     byte[] b = loadClassData(name);
     return defineClass(name, b, 0, b.length);
   }
+
+
+  /**
+   *  Finds the resource with the given name.
+   *
+   * @param  name  The resource name.
+   * @return       A URL for reading the resource, or null  if the resource
+   *               could not be found.
+   */
+  public URL findResource(String name) {
+    try {
+      URL url = new java.net.URL("jar", null,
+          "file:/" + jarFileName + "!/" + name);
+      if (url != null) {
+        // Verify URL
+        try {
+          java.io.InputStream inputStream = url.openStream();
+          inputStream.close();
+        }
+        catch (Throwable t) {
+          return null;
+        }
+      }
+
+      return url;
+    }
+    catch (Exception ex) {
+      ex.printStackTrace();
+      return null;
+    }
+  }
+
 
 
   /*
