@@ -20,12 +20,11 @@
  */
 package net.sf.ij.imageio;
 
-import ImageCodec;
-import ImageEncoder;
-import TIFFEncodeParam;
-import TIFFField;
-import TIFFImage;
-import TIFFImageEncoder;
+import non_com.media.jai.codec.ImageEncoder;
+import non_com.media.jai.codec.TIFFImage;
+import non_com.media.jai.codec.TIFFImageEncoder;
+import non_com.media.jai.codec.ImageCodec;
+import non_com.media.jai.codec.TIFFEncodeParam;
 
 import ij.ImagePlus;
 
@@ -41,7 +40,7 @@ import java.util.Enumeration;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 
 public class JAIWriter {

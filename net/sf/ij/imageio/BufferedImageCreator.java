@@ -20,7 +20,7 @@
  */
 package net.sf.ij.imageio;
 
-import DataBufferFloat;
+import non_com.media.jai.DataBufferFloat;
 
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
@@ -42,7 +42,7 @@ import java.awt.image.WritableRaster;
 /**
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 public class BufferedImageCreator {
 

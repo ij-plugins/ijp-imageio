@@ -19,9 +19,8 @@
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
 package net.sf.ij.swing;
-
-import FileSeekableStream;
-import ImageCodec;
+import non_com.media.jai.codec.FileSeekableStream;
+import non_com.media.jai.codec.ImageCodec;
 
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
