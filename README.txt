@@ -50,21 +50,6 @@ Previous installation of JAI Image IO will interfere with this version.
 Please remove them manually or use the "Remove obsolete JAI Image IO
 plugins" plugin after installation of ij-ImageIO.
 
-KNOWN ISSUES
--------------
-
-There may be a problem running the "About..." plugin. At the time of release
-the newest version of ImageJ (1.31u) had problems loading resources from
-plugin JAR files (like test of the HTML content of ij-ImageIO help file).
-This may be resolved in newer versions of ImageJ.
-
-A work around is to add ij-ImageIO_.jar to ImageJ class path explicitely.
-You can do that by modifying system CLASSPATH variable or using -classpath
-command line option while starting ImageJ.
-
-For most up to date information visit ij-ImageIO home page at:
-http://ij-plugins.sf.net/plugins/imageio
-
 CONTACT INFORMATION
 -------------------
 
