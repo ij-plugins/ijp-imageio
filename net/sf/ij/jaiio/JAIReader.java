@@ -52,7 +52,7 @@ import non_com.media.jai.codec.TIFFImageDecoder;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 public class JAIReader {
 
@@ -206,6 +206,7 @@ public class JAIReader {
                       descriptionField.getAsString(0), im);
                 }
                 catch(Exception ex) {
+                  ex.printStackTrace();
                 }
               }
 
