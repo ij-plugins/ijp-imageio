@@ -36,7 +36,7 @@ import net.sf.ij.swing.ImageFileChooserFactory;
  *
  * @author     Jarek Sacha
  * @created    February 10, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 
 public class JAIReaderPlugin implements PlugIn {
@@ -132,8 +132,9 @@ public class JAIReaderPlugin implements PlugIn {
     }
     catch (Exception ex) {
       ex.printStackTrace();
-      IJ.showMessage("JAI Reader", "Error opening file: "
-           + file.getName() + ".\n\n" + ex.getMessage());
+      String msg = "Error opening file: " + file.getName() + ".\n\n";
+      msg += (ex.getMessage() == null) ? ex.toString() : ex.getMessage();
+      IJ.showMessage("JAI Reader", msg);
     }
   }
 }
