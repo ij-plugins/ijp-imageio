@@ -33,7 +33,7 @@ import java.io.IOException;
  * and image dimensions.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class JAIFilePreviewer extends JPanel
         implements PropertyChangeListener {
@@ -109,15 +109,22 @@ public class JAIFilePreviewer extends JPanel
      * @return The PageIndex value
      */
     public int[] getPageIndex() {
-        return pageIndex;
+        final int[] r;
+        if (pageIndex != null) {
+            r = new int[pageIndex.length];
+            System.arraycopy(pageIndex, 0, r, 0, pageIndex.length);
+        } else {
+            r = null;
+        }
+
+        return r;
     }
 
 
     /**
-     * Updates image preview when received
-     * JFileChooser.SELECTED_FILE_CHANGED_PROPERTY event. This method should not
-     * be called directly.
-     * 
+     * Updates image preview when received JFileChooser.SELECTED_FILE_CHANGED_PROPERTY
+     * event. This method should not be called directly.
+     *
      * @param e Event.
      */
     public void propertyChange(PropertyChangeEvent e) {

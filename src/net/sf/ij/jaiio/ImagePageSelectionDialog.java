@@ -29,7 +29,7 @@ import java.awt.event.ComponentEvent;
  * Dialog for selecting pages in multi-image files.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 
 public class ImagePageSelectionDialog extends JDialog {
@@ -111,12 +111,22 @@ public class ImagePageSelectionDialog extends JDialog {
 
 
     /**
-     * Returns array of selected page indexes. First image in a file has index 0.
-     * 
-     * @return Array of selected page indexes or null if selection was not made.
+     * Returns array of selected page indexes. First image in a file has index
+     * 0.
+     *
+     * @return Array of selected page indexes or null if selection was not
+     *         made.
      */
     public int[] getPageIndex() {
-        return pageIndex;
+        final int[] r;
+        if (pageIndex != null) {
+            r = new int[pageIndex.length];
+            System.arraycopy(pageIndex, 0, r, 0, pageIndex.length);
+        } else {
+            r = null;
+        }
+
+        return r;
     }
 
 
