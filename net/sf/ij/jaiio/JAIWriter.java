@@ -21,6 +21,8 @@
 package net.sf.ij.jaiio;
 
 import ij.ImagePlus;
+import ij.io.TiffDecoder;
+import ij.measure.Calibration;
 
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
@@ -32,6 +34,8 @@ import java.util.Enumeration;
 import non_com.media.jai.codec.ImageCodec;
 import non_com.media.jai.codec.ImageEncoder;
 import non_com.media.jai.codec.TIFFEncodeParam;
+import non_com.media.jai.codec.TIFFField;
+import non_com.media.jai.codec.TIFFImageDecoder;
 import non_com.media.jai.codec.TIFFImageEncoder;
 
 /**
@@ -39,11 +43,12 @@ import non_com.media.jai.codec.TIFFImageEncoder;
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 
 public class JAIWriter {
 
+  private final static double TIFF_RATIONAL_SCALE = 1000000;
   private final static String TIFF_FORMAT_NAME = "tiff";
   private final static String DEFAULT_FORMAT_NAME = TIFF_FORMAT_NAME;
 
@@ -52,6 +57,17 @@ public class JAIWriter {
 
   /**  Constructor for the JAIWriter object */
   public JAIWriter() {
+  }
+
+
+  /*
+   *
+   */
+  private static long[][] toRational(double x) {
+    long[][] r = {{
+        (long) (TIFF_RATIONAL_SCALE * x),
+        (long) TIFF_RATIONAL_SCALE}};
+    return r;
   }
 
 
@@ -109,22 +125,65 @@ public class JAIWriter {
     try {
       ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
           outputStream, null);
+
       if (imageEncoder instanceof TIFFImageEncoder) {
+        TIFFEncodeParam param = (TIFFEncodeParam) imageEncoder.getParam();
+        if (param == null) {
+          param = new TIFFEncodeParam();
+        }
+
+        // Create list of extra images in the file
         BufferedImage bi = BufferedImageCreator.create(im, 0);
         ArrayList list = new ArrayList();
         for (int i = 1; i < im.getStackSize(); ++i) {
           list.add(BufferedImageCreator.create(im, i));
         }
-
-        TIFFEncodeParam param = (TIFFEncodeParam) imageEncoder.getParam();
-        if (param == null) {
-          param = new TIFFEncodeParam();
-        }
         if (list.size() > 0) {
           param.setExtraImages(list.iterator());
-          imageEncoder.setParam(param);
         }
 
+        // Construct extra TIFF tags
+        ArrayList extraTags = new ArrayList();
+        String[] desciption = {DescriptionStringCoder.encode(im)};
+        extraTags.add(new TIFFField(TiffDecoder.IMAGE_DESCRIPTION,
+            TIFFField.TIFF_ASCII, 1, desciption));
+
+        Calibration calib = im.getCalibration();
+        if (calib != null) {
+          if (calib.pixelWidth != 0.0) {
+            extraTags.add(new TIFFField(TIFFImageDecoder.TIFF_X_RESOLUTION,
+                TIFFField.TIFF_RATIONAL, 1, toRational(1 / calib.pixelWidth)));
+          }
+
+          if (calib.pixelHeight != 0.0) {
+            extraTags.add(new TIFFField(TIFFImageDecoder.TIFF_Y_RESOLUTION,
+                TIFFField.TIFF_RATIONAL, 1, toRational(1 / calib.pixelHeight)));
+          }
+
+          String unitName = calib.getUnit();
+          short unitCode = 0;
+          if (unitName == null || unitName.trim().length() == 0) {
+            // no meaningful units
+            unitCode = 1;
+          }
+          else if (unitName.compareToIgnoreCase("inch") == 0) {
+            unitCode = 2;
+          }
+          else if (unitName.compareToIgnoreCase("cm") == 0) {
+            unitCode = 3;
+          }
+
+          if (unitCode > 0) {
+            short[] unit = {unitCode};
+            extraTags.add(new TIFFField(TIFFImageDecoder.TIFF_RESOLUTION_UNIT,
+                TIFFField.TIFF_SHORT, 1, unit));
+          }
+        }
+
+        param.setExtraFields(
+            (TIFFField[]) extraTags.toArray(new TIFFField[extraTags.size()]));
+
+        imageEncoder.setParam(param);
         imageEncoder.encode(bi);
       }
       else {
