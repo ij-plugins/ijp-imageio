@@ -1,6 +1,18 @@
 **********************
 CHANGES
 **********************
+
+----------------------
+IJ-ImageIO v.1.2.4
+----------------------
+
+Bug fix:
+
+* Fix bug 1066969: First slice replaces all slices in 'Compressed' TIFF files.
+  Fixed the problem by explicitly duplicating each slice in
+  net.sf.ij.jaiio.BufferedImageCreator.create(ImagePlus src, int sliceNb).
+  The problem was caused by unexpected side efect of ij.ImagePlus.setSlice(int).
+
 ----------------------
 IJ-ImageIO v.1.2.3
 ----------------------
