@@ -1,0 +1,67 @@
+----------------------
+IJ-JAI-ImageIO v.1.0.3
+----------------------
+
+JAI Reader with Preview  now offer option to open only select pages (images)
+for files containing multiple pages (images).
+
+----------------------
+IJ-JAI-ImageIO v.1.0.2
+----------------------
+
+This version provides a temporary fix for reading images with less
+then 8 bits per pixel. Permanent fix will come with next release.
+
+----------------------
+IJ-JAI-ImageIO v.1.0.1
+----------------------
+
+Optimized JAIFileFilter performance: improved filtering time and
+eliminated occurrence of InterruptedIOException.
+
+
+--------------------
+IJ-JAI-ImageIO v.1.0
+--------------------
+
+Version 1.0 resolves all outstanding issues and known bugs. Following
+summarizes difference since beta version 0.8.
+
+
+NEW FEATURES:
+
+* JAI_Writer adds file name extension if not specified.
+
+* JAI_Reader_with_Preview shows image dimensions (2D and 3D).
+
+* Added reading and writing of ImageJ TIFF description string.
+
+
+BUG FIXES:
+
+* Fixed problem with reading some GIFs, now conversion is done using
+  ImagePlus(String, Image) constructor.
+  
+* Corrected problem with chromosome3d.tif color maps (display intensity
+  is now not adjustment for images with color maps).
+
+* Preview now correctly shows 32 bit TIFF images.
+
+
+SOURCE CHANGES
+
+* Renamed "imageio" package to more accurate "jaiio" 
+
+* Moved all JAI dependent code to "jaiio" package (except plugins).
+
+* Removed any classes that are not used by the JAI Image IO plugin
+  bundle.
+
+* JarPluginProxy made more generic, JAR file path needs to be specified
+  by derived classes.
+  
+* Update comments. Javadoc added to website.
+
+
+
+
