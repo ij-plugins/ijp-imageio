@@ -17,7 +17,7 @@ Developer visible changes:
   can be used as a library.
 * Minor changes to source based on feedback from 'FindBugs'
 * Updated Javadoc documentation.
-* ImageJ updated to v.1.33c.
+* ImageJ updated to v.1.33m.
 
 ----------------------
 IJ-ImageIO v.1.2.1
