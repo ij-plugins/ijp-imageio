@@ -241,7 +241,7 @@
         </antcall>
 
         <!-- ZIP binaries -->
-        <zip basedir="${jar.dir}"
+        <zip basedir="${dist.dir}"
             includes="${package.name}_.jar"
             destfile="${dist.dir}/${package.name}_bin_${DSTAMP}.zip"/>
 
