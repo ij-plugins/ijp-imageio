@@ -19,11 +19,11 @@
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
 package net.sf.ij.swing;
-import non_com.media.jai.codec.FileSeekableStream;
-import non_com.media.jai.codec.ImageCodec;
 
 import java.io.File;
 import javax.swing.filechooser.FileFilter;
+import non_com.media.jai.codec.FileSeekableStream;
+import non_com.media.jai.codec.ImageCodec;
 
 /**
  *  Description of the Class
@@ -85,34 +85,49 @@ public class JAIFileFilter extends FileFilter {
    * @return       Description of the Returned Value
    */
   public boolean accept(File file) {
-    if (file == null) {
+    if (file == null || !file.canRead() || file.length() < 4) {
       return false;
     }
-    if (file.isDirectory() || !file.canRead() || file.length() < 4) {
+    if (file.isDirectory()) {
       return true;
     }
 
     // Find matching decoders
+    FileSeekableStream fss = null;
+    String[] decoders = null;
     try {
-      FileSeekableStream fss = new FileSeekableStream(file);
-      String[] decoders = ImageCodec.getDecoderNames(fss);
-      if (decoders == null || decoders.length == 0) {
-        return false;
-      }
-
-      if (codecName == null) {
-        // File is one of the supported image type.
-        return true;
-      }
-
-      for (int i = 0; i < decoders.length; ++i) {
-        if (codecName.equals(decoders[i])) {
-          return true;
+      fss = new FileSeekableStream(file);
+      decoders = ImageCodec.getDecoderNames(fss);
+    }
+    catch (Throwable t) {
+      return false;
+    }
+    finally {
+      if (fss != null) {
+        try {
+          fss.close();
+        }
+        catch (Throwable t) {
+          return false;
         }
       }
     }
-    catch (Throwable t) {
+
+    if (decoders == null || decoders.length == 0) {
+      return false;
     }
+
+    if (codecName == null) {
+      // File is one of the supported image type.
+      return true;
+    }
+
+    for (int i = 0; i < decoders.length; ++i) {
+      if (codecName.equals(decoders[i])) {
+        return true;
+      }
+    }
+
     return false;
   }
 }
