@@ -50,7 +50,7 @@ import non_com.media.jai.codec.ImageCodec;
 /**
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class BufferedImageCreator {
 
@@ -83,7 +83,7 @@ public class BufferedImageCreator {
       case ImagePlus.GRAY8:
         if (src.isInvertedLut()) {
           ip = ip.duplicate();
-          ip.invert();
+//          ip.invert();
         }
         ColorModel cm = ip.getColorModel();
         if (cm != null && (cm instanceof IndexColorModel)) {
