@@ -32,7 +32,7 @@ import java.awt.image.*;
  * Creates/converts Image/J's image objects from Java2D/JAI representation.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ImagePlusCreator {
 
@@ -74,13 +74,13 @@ public class ImagePlusCreator {
      * @param buffer Data buffer.
      * @param cm     Color model.
      * @return Image processor object.
-     * @throws Exception If data buffer is in unknown format.
+     * @throws UnsupportedImageModelException If data buffer is in unknown format.
      */
     public static ImageProcessor createProcessor(int w, int h, DataBuffer buffer,
-                                                 ColorModel cm) throws Exception {
+                                                 ColorModel cm) throws UnsupportedImageModelException {
 
         if (buffer.getOffset() != 0) {
-            throw new Exception("Expecting BufferData with no offset.");
+            throw new UnsupportedImageModelException("Expecting BufferData with no offset.");
         }
 
         switch (buffer.getDataType()) {
@@ -104,9 +104,10 @@ public class ImagePlusCreator {
             case DataBuffer.TYPE_DOUBLE:
                 return new FloatProcessor(w, h, ((DataBufferDouble) buffer).getData());
             case DataBuffer.TYPE_UNDEFINED:
-                throw new Exception("Pixel type is undefined.");
+                // ENH: Should this be reported as data problem?
+                throw new UnsupportedImageModelException("Pixel type is undefined.");
             default:
-                throw new Exception("Unrecognized DataBuffer data type");
+                throw new UnsupportedImageModelException("Unrecognized DataBuffer data type");
         }
     }
 
@@ -118,16 +119,16 @@ public class ImagePlusCreator {
      * @param cm Image color model (can be null).
      * @return ImagePlus object created from WritableRaster r and
      *         ColorModel cm
-     * @throws Exception when enable to create ImagePlus.
+     * @throws UnsupportedImageModelException when enable to create ImagePlus.
      */
     public static ImagePlus create(WritableRaster r, ColorModel cm)
-            throws Exception {
+            throws UnsupportedImageModelException {
 
         DataBuffer db = r.getDataBuffer();
 
         int numBanks = db.getNumBanks();
         if (numBanks > 1 && cm == null) {
-            throw new Exception("Don't know what to do with image with no " +
+            throw new UnsupportedImageModelException("Don't know what to do with image with no " +
                     "color model and multiple banks.");
         }
 

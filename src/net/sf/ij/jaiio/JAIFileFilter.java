@@ -23,6 +23,7 @@ package net.sf.ij.jaiio;
 import non_com.media.jai.codec.ImageCodec;
 
 import javax.swing.filechooser.FileFilter;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,12 +36,14 @@ import java.util.Enumeration;
  * extension.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 
 public class JAIFileFilter extends FileFilter {
 
-    /** Files smaller then min size are ignored by the filter. */
+    /**
+     * Files smaller then min size are ignored by the filter.
+     */
     public final static int MIN_IMAGE_FILE_SIZE = 8;
 
     private String codecName = null;
@@ -76,7 +79,10 @@ public class JAIFileFilter extends FileFilter {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(file);
-            fis.read(headerBytes);
+            int bytesRead = fis.read(headerBytes);
+            if (bytesRead < headerBytes.length) {
+                throw new EOFException("File to short to read header.");
+            }
         } finally {
             if (fis != null) {
                 fis.close();

@@ -41,7 +41,7 @@ import java.util.ArrayList;
  * to Image/J representation.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class JAIReader {
 
@@ -56,19 +56,24 @@ public class JAIReader {
 
     /**
      * Read only the first image in the <code>file</code>.
-     * 
+     *
      * @param file Image file.
      * @return ImageInfo object.
-     * @throws Exception If file is not in a supported image format or in
-     *                   case of I/O error.
+     * @throws UnsupportedImageFileFormatException
+     *                     If file is not in a supported image format
+     * @throws IOException In case of I/O error.
      */
-    public static ImageInfo readFirstImageAndInfo(File file) throws Exception {
+    public static ImageInfo readFirstImageAndInfo(File file)
+            throws
+            UnsupportedImageFileFormatException,
+            UnsupportedImageModelException,
+            IOException {
 
         // Find matching decoders
         FileSeekableStream fss = new FileSeekableStream(file);
         String[] decoders = ImageCodec.getDecoderNames(fss);
         if (decoders == null || decoders.length == 0) {
-            throw new Exception("Unsupported file format. "
+            throw new UnsupportedImageFileFormatException("Unsupported file format. "
                     + "Cannot find decoder capable of reading: " + file.getName());
         }
 

@@ -26,13 +26,14 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 
 /**
  * A utility for JAIFIleChooser that displays preview image, image file size,
  * and image dimensions.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class JAIFilePreviewer extends JPanel
         implements PropertyChangeListener {
@@ -43,11 +44,17 @@ public class JAIFilePreviewer extends JPanel
     final static long SIZE_MB = SIZE_KB * 1024;
     final static long SIZE_GB = SIZE_MB * 1024;
 
-    /** Description of the Field */
+    /**
+     * Description of the Field
+     */
     protected File file;
-    /** Description of the Field */
+    /**
+     * Description of the Field
+     */
     protected int iconSizeX = 150;
-    /** Description of the Field */
+    /**
+     * Description of the Field
+     */
     protected int iconSizeY = 100;
 
     private JAIReader.ImageInfo imageInfo = null;
@@ -115,7 +122,7 @@ public class JAIFilePreviewer extends JPanel
      */
     public void propertyChange(PropertyChangeEvent e) {
         String prop = e.getPropertyName();
-        if (prop == JFileChooser.SELECTED_FILE_CHANGED_PROPERTY) {
+        if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(prop)) {
             file = (File) e.getNewValue();
             if (isShowing()) {
                 loadImage();
@@ -184,33 +191,49 @@ public class JAIFilePreviewer extends JPanel
 
         try {
             imageInfo = JAIReader.readFirstImageAndInfo(file);
-            Image image = imageInfo.previewImage;
+        } catch (UnsupportedImageModelException e) {
+            ImageIconLabel.setIcon(null);
+            fileSizeLabel.setText("Unsupported image model");
+            return null;
+        } catch (UnsupportedImageFileFormatException e) {
+            ImageIconLabel.setIcon(null);
+            fileSizeLabel.setText("Unsupported file format");
+            return null;
+        } catch (IOException e) {
+            ImageIconLabel.setIcon(null);
+            fileSizeLabel.setText("I/O Error");
+            return null;
+        } catch (RuntimeException e) {
+            ImageIconLabel.setIcon(null);
+            fileSizeLabel.setText("Error decoding image");
+            return null;
+        }
 
-            // Set image size label
-            StringBuffer label = new StringBuffer(getFileSizeString(file.length()));
-            if (image != null) {
-                int w = image.getWidth(null);
-                int h = image.getHeight(null);
-                if (w > 0 && h > 0) {
-                    label.append("  [" + w + "x" + h);
-                    if (imageInfo.numberOfPages > 1) {
-                        label.append("x" + imageInfo.numberOfPages + "]");
-                        File[] selectedFiles = parentChooser.getSelectedFiles();
-                        File selectedFile = parentChooser.getSelectedFile();
-                        if ((selectedFiles != null && selectedFiles.length == 1)
-                                || ((selectedFiles == null || selectedFiles.length == 0)
-                                && selectedFile != null)) {
-                            selectPagesButton.setEnabled(true);
-                        } else {
-                            selectPagesButton.setEnabled(false);
-                        }
+        Image image = imageInfo.previewImage;
+
+        // Set image size label
+        StringBuffer label = new StringBuffer(getFileSizeString(file.length()));
+        if (image != null) {
+            int w = image.getWidth(null);
+            int h = image.getHeight(null);
+            if (w > 0 && h > 0) {
+                label.append("  [" + w + "x" + h);
+                if (imageInfo.numberOfPages > 1) {
+                    label.append("x" + imageInfo.numberOfPages + "]");
+                    File[] selectedFiles = parentChooser.getSelectedFiles();
+                    File selectedFile = parentChooser.getSelectedFile();
+                    if ((selectedFiles != null && selectedFiles.length == 1)
+                            || ((selectedFiles == null || selectedFiles.length == 0)
+                            && selectedFile != null)) {
+                        selectPagesButton.setEnabled(true);
                     } else {
-                        label.append("]");
                         selectPagesButton.setEnabled(false);
                     }
+                } else {
+                    label.append("]");
+                    selectPagesButton.setEnabled(false);
                 }
             }
-            fileSizeLabel.setText(label.toString());
 
             int xSizeBuffered = image.getWidth(null);
             int ySizeBuffered = image.getHeight(null);
@@ -228,12 +251,14 @@ public class JAIFilePreviewer extends JPanel
 
             ImageIcon imageIcon = new ImageIcon(image);
             ImageIconLabel.setIcon(imageIcon);
-
-            return imageInfo;
-        } catch (Throwable t) {
+        } else {
             ImageIconLabel.setIcon(null);
-            return null;
         }
+
+
+        fileSizeLabel.setText(label.toString());
+
+        return imageInfo;
     }
 
 
