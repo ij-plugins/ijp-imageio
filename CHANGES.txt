@@ -7,13 +7,14 @@ IJ-ImageIO v.1.2.2
 
 Bug fixes:
 
-* Fixed problems saving 8 bit gray level images in cases when ImageJ had 16 bit color map for them.
+* Fixed problems saving 8 bit gray level images in cases when ImageJ had
+  16 bit color map for them.
 * Fixed problem with use of 'save as' plugins in macros.
 
 Developer visible changes:
 
-* Added subdirectory example with with simple illustration how IJ-ImageIO can be 
-  used as a library.
+* Added subdirectory example with with simple illustration how IJ-ImageIO
+  can be used as a library.
 * Minor changes to source based on feedback from 'FindBugs'
 * Updated Javadoc documentation.
 * ImageJ updated to v.1.33c.
