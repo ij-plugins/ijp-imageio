@@ -37,7 +37,7 @@ import java.util.Enumeration;
  * saved.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class JAIWriter {
 
@@ -117,6 +117,8 @@ public class JAIWriter {
      */
     public void write(String fileName, ImagePlus im)
             throws FileNotFoundException, IOException, IllegalArgumentException {
+
+        boolean successfulWrite = false;
         File imageFile = new File(fileName);
         BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(imageFile));
         try {
@@ -190,10 +192,13 @@ public class JAIWriter {
                 BufferedImage bi = BufferedImageCreator.create(im, 0);
                 imageEncoder.encode(bi);
             }
+            successfulWrite = true;
         } finally {
             outputStream.close();
             // Attempt to remove incorrect file fragment
-            imageFile.delete();
+            if (!successfulWrite) {
+                imageFile.delete();
+            }
         }
     }
 

@@ -17,7 +17,7 @@
 
     <!-- In case ant.home is not defined, set default value -->
     <property name="ant.home" location="/usr/share/ant"/>
-    
+
     <property name="jaicodec.jar" location="lib/JAI-codec.1.1.1.jar"/>
 
     <!-- CVS setup -->
@@ -251,8 +251,9 @@
     <!-- Target: changelog -->
     <target name="changelog">
         <cvschangelog
+            dir="${base.dir}"
             destfile="${dist.dir}/changelog.xml"
-            start="3 Sep 2003"
+            daysinpast="100"
             />
         <style
             in="${build.dir}/changelog.xml"
@@ -267,18 +268,23 @@
     <!-- Target: tagdif -->
     <target name="tagdiff">
         <cvstagdiff
+            cvsroot="${cvs.root}"
             destfile="${build.dir}/tagdiff.xml"
             package="${imageio.cvs.module}"
-            startTag="ij-jai-imageio_v_1_0_5"
-            endTag="HEAD"
+            startdate="2003-01-19"
+            enddate="2004-01-17"
             compression="true"
             />
+        <!--
+        startTag="ij-jai-imageio_v_1_0_5"
+        endTag="HEAD"
+        -->
         <style
             in="${build.dir}/tagdiff.xml"
             out="${dist.dir}/tagdiff.html"
             style="${ant.home}/etc/tagdiff.xsl">
             <param name="title" expression="JAI-ImageIO Tag Diff"/>
-            <param name="module" expression="imageio"/>
+            <param name="module" expression="${imageio.cvs.module}"/>
             <param name="cvsweb" expression="http://cvs.sourceforge.net/viewcvs.py/ij-plugins/"/>
         </style>
     </target>

@@ -15,7 +15,7 @@ IJ-ImageIO v.1.2.0
 * New shortcut: "File/Save As/PNM ..."
 * New shortcut: "File/Save As/Compressed TIFF ..."
 * New plugin to display HTML help file (Help/About Plugin/Image IO)
-* Plugin to remove obsolete installation of version 1.1 or ealier
+* Plugin to remove obsolete installation of version 1.1 or earlier
 
 
 ----------------------
