@@ -40,7 +40,7 @@ import java.io.IOException;
  * Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 
 public class JAIWriterPlugin implements PlugIn {
@@ -118,8 +118,11 @@ public class JAIWriterPlugin implements PlugIn {
 
             // Ask for file options
             if (codecName.equals("tiff")) {
-                if (paramDialog == null)
+                // TODO: detect if image is binary and give an option to save as 1bit compressed image
+                if (paramDialog == null) {
                     paramDialog = new EncoderParamDialog();
+                }
+                // TODO: Center dialog on the screen
                 paramDialog.show();
                 if (!paramDialog.isAccepted()) {
                     Macro.abort();
