@@ -33,13 +33,15 @@ import non_com.media.jai.codec.ImageCodec;
  */
 
 public class JAIFileFilter extends FileFilter {
+
+  /**  Files smaller then min size are ignored by the filter. */
+  public final static int MIN_IMAGE_FILE_SIZE = 5;
+
   private String codecName = null;
   private String decription = "All Supported Images";
 
 
-  /**
-   *  Constructor for the JAIFileFilter object
-   */
+  /**  Constructor for the JAIFileFilter object */
   public JAIFileFilter() {
   }
 
@@ -85,11 +87,14 @@ public class JAIFileFilter extends FileFilter {
    * @return       Description of the Returned Value
    */
   public boolean accept(File file) {
-    if (file == null || !file.canRead() || file.length() < 4) {
+    if (file == null || !file.canRead()) {
       return false;
     }
     if (file.isDirectory()) {
       return true;
+    }
+    if (file.length() < MIN_IMAGE_FILE_SIZE) {
+      return false;
     }
 
     // Find matching decoders
