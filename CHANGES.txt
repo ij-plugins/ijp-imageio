@@ -2,7 +2,19 @@
 CHANGES
 **********************
 ----------------------
-IJ-ImageIO v.1.2.0
+IJ-ImageIO v.1.2.2
+----------------------
+
+This is a developer update release. there shpule be no user visible changes.
+
+* Added subdirectory example with with simple illustration how IJ-ImageIO can be 
+  used as a library.
+* Minor changes to source based on feedback from 'FindBugs'
+* Updated Javadoc documentation.
+* ImageJ updated to v.1.33c.
+
+----------------------
+IJ-ImageIO v.1.2.1
 ----------------------
 
 Bug fix: Written files were always deleted (only partial writes due to 
