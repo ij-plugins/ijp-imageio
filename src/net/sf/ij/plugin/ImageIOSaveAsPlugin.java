@@ -41,7 +41,7 @@ import java.io.IOException;
  * Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  *
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ImageIOSaveAsPlugin implements PlugIn {
 
@@ -184,7 +184,9 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                         return;
                     }
 
-                    encodeParam = paramDialog.getImageEncodeParam(JaiioUtil.isBinary(imp.getProcessor()));
+                    boolean isBinary = imp.getType() != ImagePlus.COLOR_256
+                            && JaiioUtil.isBinary(imp.getProcessor());
+                    encodeParam = paramDialog.getImageEncodeParam(isBinary);
                 }
 
             }

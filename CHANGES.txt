@@ -2,6 +2,13 @@
 CHANGES
 **********************
 ----------------------
+IJ-ImageIO v.1.2.3
+----------------------
+
+* Preserve 256 colors in 8 bit COLOR_256 images, even if they color map
+  reports less colors.
+
+----------------------
 IJ-ImageIO v.1.2.2
 ----------------------
 

@@ -35,7 +35,7 @@ import java.awt.image.*;
  * image types are supported.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class BufferedImageCreator {
 
@@ -78,7 +78,7 @@ public class BufferedImageCreator {
             case ImagePlus.GRAY32:
                 return create((FloatProcessor) ip);
             case ImagePlus.COLOR_256:
-                return create((ByteProcessor) ip, (IndexColorModel) ip.getColorModel());
+                return createColor256((ByteProcessor) ip, (IndexColorModel) ip.getColorModel());
             case ImagePlus.COLOR_RGB:
                 return create((ColorProcessor) ip);
             default:
@@ -131,7 +131,43 @@ public class BufferedImageCreator {
 
 
     /**
-     * Create BufferedImage from an 256 indexed color image.
+     * Create BufferedImage from an 256 indexed color image. If supplied color model mas map size
+     * less than 256 it will be extended.
+     *
+     * @param src ByteProcessor source.
+     * @param icm Color model.
+     * @return BufferedImage.
+     * @see #create(ij.process.ByteProcessor, java.awt.image.IndexColorModel)
+     */
+    public static BufferedImage createColor256(ByteProcessor src, IndexColorModel icm) {
+
+        final int mapSize = icm.getMapSize();
+        final IndexColorModel icm256;
+        if (mapSize == 256) {
+            // Use current color model
+            icm256 = icm;
+        } else if (mapSize < 256) {
+            // Extend color model to 256
+            final byte[] r = new byte[256];
+            final byte[] g = new byte[256];
+            final byte[] b = new byte[256];
+            icm.getReds(r);
+            icm.getGreens(g);
+            icm.getBlues(b);
+
+            icm256 = new IndexColorModel(8, 256, r, g, b);
+        } else {
+            throw new UnsupportedOperationException("Unable to properly decode this image (color map).\n" +
+                    "Please report this problem at http://ij-plugins.sf.net\n" +
+                    "or by sending email to 'jsacha at users.sourceforge.net'\n" +
+                    "  Map size    = " + mapSize + ".");
+        }
+
+        return create(src, icm256);
+    }
+
+    /**
+     * Create BufferedImage from an indexed color image.
      *
      * @param src ByteProcessor source.
      * @param icm Color model.
@@ -140,7 +176,7 @@ public class BufferedImageCreator {
     public static BufferedImage create(ByteProcessor src, IndexColorModel icm) {
         WritableRaster wr = icm.createCompatibleWritableRaster(src.getWidth(),
                 src.getHeight());
-        int[] componentSize = icm.getComponentSize();
+
         final byte[] bitsOn = {(byte) 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
         byte[] srcPixels = (byte[]) src.getPixels();
         DataBufferByte dataBuffer = (DataBufferByte) wr.getDataBuffer();
