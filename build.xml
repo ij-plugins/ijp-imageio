@@ -12,6 +12,7 @@
     <property name="package.name" value="ij-ImageIO"/>
     <property name="package.version" value="1.2.0"/>
 
+    <!-- Customize properties, e.g., jaicodec.jar, cvs.root.-->
     <property file="build.properties"/>
 
     <!-- In case ant.home is not defined, set default value -->
@@ -95,7 +96,9 @@
         <javac
             srcdir="${src.dir}"
             destdir="${build.classes.dir}"
-            debug="on" >
+            debug="on"
+            target="1.3"
+            source="1.3">
             <classpath refid="compile.classpath"/>
             <exclude name="**/*Test.java"/>
         </javac>
@@ -176,7 +179,6 @@
     <!-- Initialize  -->
     <target name="init">
         <echo message="Building ${ant.project.name}"/>
-        <echoproperties/>
         <!-- Create the time stamp -->
         <tstamp/>
         <!-- Create the build directory structure used by compile -->
@@ -186,6 +188,7 @@
         <mkdir dir="${sandbox.plugins.dir}"/>
         <mkdir dir="${dist.dir}"/>
         <mkdir dir="${javadoc.dir}"/>
+        <mkdir dir="${checkout.dir}"/>
     </target>
 
     <!-- Build dictributin from current content of CVS -->
@@ -199,9 +202,12 @@
         <!-- Cleanup CVS checkout directory -->
         <delete dir="${cvs.imageio.dir}"/>
         <!-- Fresh checkout from CVS -->
-        <antcall target="checkout" inheritall="false"/>
+        <echo message="CVS ROOT: ${cvs.root}"/>
+        <antcall target="checkout" inheritall="false">
+            <param name="cvs.root" value="${cvs.root}"/>
+        </antcall>
         <!-- Include JAI jar to simplify remove need of rebuilding from source -->
-        <copy todir="${lib.dir}" file="${jaicodec.jar}"/>
+        <copy todir="${cvs.imageio.dir}/lib" file="${jaicodec.jar}"/>
         <!-- ZIP source -->
         <zip basedir="${cvs.imageio.dir}"
             destfile="${dist.dir}/${package.name}_src_${DSTAMP}.zip"/>
@@ -213,6 +219,7 @@
         <antcall target="jar" inheritall="false">
             <param name="base.dir" location="${cvs.imageio.dir}"/>
             <param name="dist.dir" location="${base.dir}/dist"/>
+            <param name="jar.dir" location="${dist.dir}"/>
         </antcall>
 
         <!-- Cleanup -->
