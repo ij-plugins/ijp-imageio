@@ -31,11 +31,11 @@ import java.awt.color.ColorSpace;
 import java.awt.image.*;
 
 /**
- * Creates/converts BufferedImage objects from Image/J's ImageProcessor or
- * ImagePlus. All Image/J image types are supported.
- * 
+ * Creates/converts BufferedImage objects from Image/J's ImageProcessor or ImagePlus. All Image/J
+ * image types are supported.
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class BufferedImageCreator {
 
@@ -47,10 +47,9 @@ public class BufferedImageCreator {
 
 
     /**
-     * Create BufferedImage from a slice <code>sliceNb</code> in image <code>src</code>
-     * . Indexing starts at 0. New image has a copy of pixels in the source
-     * image.
-     * 
+     * Create BufferedImage from a slice <code>sliceNb</code> in image <code>src</code> . Indexing
+     * starts at 0. New image has a copy of pixels in the source image.
+     *
      * @param src     Source image.
      * @param sliceNb Slice number, numbering starts at 0.
      * @return New BufferedImage.
@@ -70,7 +69,9 @@ public class BufferedImageCreator {
                     ip = ip.duplicate();
 //          ip.invert();
                 }
-                ColorModel cm = ip.getColorModel();
+                // Assume gray level 8 bit color model. Do not use color model provided by
+                // ImageProcessor since it can be 16 bit even for 8 bit ByteProcessor.
+                final ColorModel cm = createGray8ColorModel();
                 if (cm != null && (cm instanceof IndexColorModel)) {
                     return create((ByteProcessor) ip, (IndexColorModel) cm);
                 } else {
@@ -92,7 +93,7 @@ public class BufferedImageCreator {
 
     /**
      * Create BufferedImages corresponding to each slice in the source image.
-     * 
+     *
      * @param src Source image.
      * @return Array of BufferedImages, one per source slice.
      */
@@ -116,7 +117,7 @@ public class BufferedImageCreator {
 
     /**
      * Create BufferedImage from ByteProcessor.
-     * 
+     *
      * @param src ByteProcessor source.
      * @return BufferedImage.
      */
@@ -135,7 +136,7 @@ public class BufferedImageCreator {
 
     /**
      * Create BufferedImage from an 256 indexed color image.
-     * 
+     *
      * @param src ByteProcessor source.
      * @param icm Color model.
      * @return BufferedImage.
@@ -185,9 +186,9 @@ public class BufferedImageCreator {
 
 
     /**
-     * Create BufferedImage from ShortProcessor. Pixel values are assumed to be
-     * unsigned short integers.
-     * 
+     * Create BufferedImage from ShortProcessor. Pixel values are assumed to be unsigned short
+     * integers.
+     *
      * @param src ShortProcessor source.
      * @return BufferedImage.
      */
@@ -205,7 +206,7 @@ public class BufferedImageCreator {
 
     /**
      * Create BufferedImage from FloatProcessor.
-     * 
+     *
      * @param src FloatProcessor source.
      * @return BufferedImage.
      */
@@ -232,7 +233,7 @@ public class BufferedImageCreator {
 
     /**
      * Create BufferedImage from ColorProcessor.
-     * 
+     *
      * @param src ColorProcessor source.
      * @return BufferedImage.
      */
@@ -260,4 +261,17 @@ public class BufferedImageCreator {
 
         return new BufferedImage(cm, raster, false, null);
     }
+
+    static private ColorModel createGray8ColorModel() {
+        final byte[] rLUT = new byte[256];
+        final byte[] gLUT = new byte[256];
+        final byte[] bLUT = new byte[256];
+        for (int i = 0; i < 256; i++) {
+            rLUT[i] = (byte) i;
+            gLUT[i] = (byte) i;
+            bLUT[i] = (byte) i;
+        }
+        return new IndexColorModel(8, 256, rLUT, gLUT, bLUT);
+    }
+
 }
