@@ -20,110 +20,77 @@
  */
 package net.sf.ij.jaiio;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import non_com.media.jai.codec.ImageCodec;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeSet;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-
-import non_com.media.jai.codec.ImageCodec;
 
 /**
- *  Extension of JFileChooser with ability to return pages selected in
- *  multi-image files (e.g. TIFF).
- *
- * @author     Jarek Sacha
- * @created    June 16, 2002
- * @version    $Revision: 1.1 $
+ * Extension of JFileChooser with ability to return pages selected in multi-image files (e.g. TIFF).
+ * 
+ * @author Jarek Sacha
+ * @version $Revision: 1.2 $
  */
 
 public class ImageFileChooser
-     extends JFileChooser
-     implements ActionListener, PropertyChangeListener {
+        extends JFileChooser {
 
-  JAIFilePreviewer previewer = new JAIFilePreviewer(this);
+    JAIFilePreviewer previewer = new JAIFilePreviewer(this);
 
 
-  /**  Constructor for the ImageFileChooser object */
-  public ImageFileChooser(File currentDirectory) {
-    super(currentDirectory);
+    /**
+     * Constructor for the ImageFileChooser object
+     */
+    public ImageFileChooser(File currentDirectory) {
+        super(currentDirectory);
 
-    this.setAccessory(previewer);
-//    this.addActionListener(this);
-//    this.addPropertyChangeListener(this);
+        this.setAccessory(previewer);
 
-    // Add filter for all supported image types
-    JAIFileFilter allSupportedFileFilter = new JAIFileFilter();
-    this.addChoosableFileFilter(allSupportedFileFilter);
+        // Add filter for all supported image types
+        JAIFileFilter allSupportedFileFilter = new JAIFileFilter();
+        this.addChoosableFileFilter(allSupportedFileFilter);
 
-    // Set filters corresponding to each available codec
-    Enumeration codecs = ImageCodec.getCodecs();
+        // Set filters corresponding to each available codec
+        Enumeration codecs = ImageCodec.getCodecs();
 
-    // Sort codec names
-    TreeSet codecSet = new TreeSet();
-    while (codecs.hasMoreElements()) {
-      ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
-      codecSet.add(thisCodec.getFormatName());
+        // Sort codec names
+        TreeSet codecSet = new TreeSet();
+        while (codecs.hasMoreElements()) {
+            ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
+            codecSet.add(thisCodec.getFormatName());
+        }
+
+        for (Iterator i = codecSet.iterator(); i.hasNext();) {
+            try {
+                this.addChoosableFileFilter(new JAIFileFilter((String) i.next()));
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+
+        // Set selected filter
+        this.setFileFilter(allSupportedFileFilter);
+
+        this.validate();
     }
 
-    for (Iterator i = codecSet.iterator(); i.hasNext(); ) {
-      try {
-        this.addChoosableFileFilter(new JAIFileFilter((String) i.next()));
-      }
-      catch (Throwable t) {
-        t.printStackTrace();
-      }
+
+    /**
+     * Return index of pages selected for current file using page selection dialog. This works only mulit-image files
+     * and and only when a single file is selected.
+     * 
+     * @return An array containing indexes of selected pages.
+     * @see net.sf.ij.jaiio.ImagePageSelectionDialog
+     */
+    public int[] getPageIndex() {
+        File[] selection = getSelectedFiles();
+        if (selection != null && selection.length == 1) {
+            return previewer.getPageIndex();
+        } else {
+            return null;
+        }
     }
-
-    // Set selected filter
-    this.setFileFilter(allSupportedFileFilter);
-//    chooser.setFileFilter(chooser.getAcceptAllFileFilter());
-
-    this.validate();
-  }
-
-
-  /**
-   *  Return index of pages selected for current file using page selection
-   *  dialog. This works only mulit-image files and and only when a single file
-   *  is selected.
-   *
-   * @return    An array containing indexes of selected pages.
-   * @see       net.sf.ij.jaiio.ImagePageSelectionDialog
-   */
-  public int[] getPageIndex() {
-    File[] selection = getSelectedFiles();
-    if (selection != null && selection.length == 1) {
-      return previewer.getPageIndex();
-    }
-    else {
-      return null;
-    }
-  }
-
-
-  /**
-   *  Description of the Method
-   *
-   * @param  e  Description of the Parameter
-   */
-  public void actionPerformed(ActionEvent e) {
-    System.out.println("Action command: " + e.getActionCommand());
-  }
-
-
-  /**
-   *  Description of the Method
-   *
-   * @param  evt  Description of the Parameter
-   */
-  public void propertyChange(PropertyChangeEvent evt) {
-    System.out.println("Property change: " + evt.getPropertyName());
-  }
 }
