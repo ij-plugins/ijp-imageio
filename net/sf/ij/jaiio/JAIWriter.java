@@ -39,13 +39,15 @@ import non_com.media.jai.codec.TIFFImageDecoder;
 import non_com.media.jai.codec.TIFFImageEncoder;
 
 /**
- *  Writes images to files using JAI 1.1.1 codecs.
+ *  Writes images to files using <a href="http://developer.java.sun.com/developer/sampsource/jai/">
+ *  JAI image I/O codec </a> . If writing to TIFF files, image resolution and
+ *  Image/J's description string containing calibration information are also
+ *  saved.
  *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
-
 public class JAIWriter {
 
   private final static double TIFF_RATIONAL_SCALE = 1000000;
@@ -57,6 +59,22 @@ public class JAIWriter {
 
   /**  Constructor for the JAIWriter object */
   public JAIWriter() {
+  }
+
+
+  /**
+   *  Gets all supported format names.
+   *
+   * @return    The FormatNames value
+   */
+  public static String[] getFormatNames() {
+    Enumeration codecs = ImageCodec.getCodecs();
+    ArrayList l = new ArrayList();
+    while (codecs.hasMoreElements()) {
+      ImageCodec imageCodec = (ImageCodec) codecs.nextElement();
+      l.add(imageCodec.getFormatName());
+    }
+    return (String[]) l.toArray(new String[l.size()]);
   }
 
 
@@ -78,22 +96,6 @@ public class JAIWriter {
    */
   public void setFormatName(String formatName) {
     this.formatName = formatName;
-  }
-
-
-  /**
-   *  Gets the FormatNames attribute of the JAIWriter object
-   *
-   * @return    The FormatNames value
-   */
-  public String[] getFormatNames() {
-    Enumeration codecs = ImageCodec.getCodecs();
-    ArrayList l = new ArrayList();
-    while (codecs.hasMoreElements()) {
-      ImageCodec imageCodec = (ImageCodec) codecs.nextElement();
-      l.add(imageCodec.getFormatName());
-    }
-    return (String[]) l.toArray(new String[l.size()]);
   }
 
 
