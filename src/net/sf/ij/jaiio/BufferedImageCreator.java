@@ -35,7 +35,7 @@ import java.awt.image.*;
  * image types are supported.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class BufferedImageCreator {
 
@@ -65,13 +65,9 @@ public class BufferedImageCreator {
         // Convert image processor
         switch (src.getType()) {
             case ImagePlus.GRAY8:
-                if (src.isInvertedLut()) {
-                    ip = ip.duplicate();
-//          ip.invert();
-                }
                 // Assume gray level 8 bit color model. Do not use color model provided by
                 // ImageProcessor since it can be 16 bit even for 8 bit ByteProcessor.
-                final ColorModel cm = createGray8ColorModel();
+                final ColorModel cm = createGray8ColorModel(src.isInvertedLut());
                 if (cm != null && (cm instanceof IndexColorModel)) {
                     return create((ByteProcessor) ip, (IndexColorModel) cm);
                 } else {
@@ -262,14 +258,22 @@ public class BufferedImageCreator {
         return new BufferedImage(cm, raster, false, null);
     }
 
-    static private ColorModel createGray8ColorModel() {
+    static private ColorModel createGray8ColorModel(final boolean invertLut) {
         final byte[] rLUT = new byte[256];
         final byte[] gLUT = new byte[256];
         final byte[] bLUT = new byte[256];
-        for (int i = 0; i < 256; i++) {
-            rLUT[i] = (byte) i;
-            gLUT[i] = (byte) i;
-            bLUT[i] = (byte) i;
+        if (invertLut) {
+            for (int i = 0; i < 256; i++) {
+                rLUT[255 - i] = (byte) i;
+                gLUT[255 - i] = (byte) i;
+                bLUT[255 - i] = (byte) i;
+            }
+        } else {
+            for (int i = 0; i < 256; i++) {
+                rLUT[i] = (byte) i;
+                gLUT[i] = (byte) i;
+                bLUT[i] = (byte) i;
+            }
         }
         return new IndexColorModel(8, 256, rLUT, gLUT, bLUT);
     }
