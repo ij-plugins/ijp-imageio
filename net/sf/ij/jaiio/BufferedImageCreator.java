@@ -32,6 +32,7 @@ import java.awt.Transparency;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferInt;
@@ -50,7 +51,7 @@ import non_com.media.jai.codec.ImageCodec;
 /**
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 public class BufferedImageCreator {
 
@@ -166,9 +167,7 @@ public class BufferedImageCreator {
     byte[] destPixels = dataBuffer.getData();
     System.arraycopy(srcPixels, 0, destPixels, 0, destPixels.length);
 
-    BufferedImage bufferedImage = new BufferedImage(icm, wr, false, null);
-
-    return bufferedImage;
+    return new BufferedImage(icm, wr, false, null);
   }
 
 
@@ -227,15 +226,27 @@ public class BufferedImageCreator {
    * @return      BufferedImage.
    */
   public static BufferedImage create(ColorProcessor src) {
-    ColorModel cm = src.getColorModel();
+    ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+    int[] bits = {8, 8, 8};
+    ColorModel cm = new ComponentColorModel(cs, bits, false, false,
+        Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
     WritableRaster raster = cm.createCompatibleWritableRaster(src.getWidth(),
         src.getHeight());
-    DataBufferInt dataBuffer = (DataBufferInt) raster.getDataBuffer();
-    System.arraycopy(src.getPixels(), 0, dataBuffer.getData(), 0,
-        dataBuffer.getData().length);
+    DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
 
-    BufferedImage bufferedImage = new BufferedImage(cm, raster, false, null);
-    return bufferedImage;
+    byte[] data = dataBuffer.getData();
+    int n = ((int[]) src.getPixels()).length;
+    byte[] r = new byte[n];
+    byte[] g = new byte[n];
+    byte[] b = new byte[n];
+    src.getRGB(r, g, b);
+    for (int i = 0; i < n; ++i) {
+      int offset = i * 3;
+      data[offset] = r[i];
+      data[offset + 1] = g[i];
+      data[offset + 2] = b[i];
+    }
+
+    return new BufferedImage(cm, raster, false, null);
   }
-
 }
