@@ -34,7 +34,7 @@ import java.util.Properties;
  * info in TIFF description field.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 
 public class DescriptionStringCoder {
@@ -45,9 +45,9 @@ public class DescriptionStringCoder {
 
     /**
      * Creates an optional image description string for saving calibration data.
-     * For stacks, also saves the stack size so ImageJ can open the stack without
-     * decoding an IFD for each slice.
-     * 
+     * For stacks, also saves the stack size so ImageJ can open the stack
+     * without decoding an IFD for each slice.
+     *
      * @param imp Image for which the decription string should be created.
      * @return Description string.
      */
@@ -110,9 +110,10 @@ public class DescriptionStringCoder {
         InputStream is = new ByteArrayInputStream(description.getBytes());
         try {
             props.load(is);
-            is.close();
         } catch (IOException e) {
-            return;
+            throw new RuntimeException("Exception reading ByteArrayInputStream, this should never happen. Format error?");
+        } finally {
+            is.close();
         }
 
         FileInfo fi = new FileInfo();
