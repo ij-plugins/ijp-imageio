@@ -52,7 +52,7 @@ import non_com.media.jai.FloatDoubleColorModel;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 public class ImagePlusCreator {
 
@@ -160,6 +160,11 @@ public class ImagePlusCreator {
       // is a color image and relay on AWT for proper decoding.
       BufferedImage bi = new BufferedImage(cm, r, false, null);
       return new ImagePlus(null, new ColorProcessor((Image) bi));
+    }
+    else if( sm.getSampleSize(0) < 8 ) {
+      // Temporary fix for less then 8 bit images
+      BufferedImage bi = new BufferedImage(cm, r, false, null);
+      return new ImagePlus(null, new ByteProcessor((Image) bi));
     }
     else {
       if (!(cm instanceof IndexColorModel)) {
