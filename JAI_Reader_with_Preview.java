@@ -19,12 +19,13 @@
  *  Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
 /**
- *  Read image files using JAI image I/O codec
- *  (http://developer.java.sun.com/developer/sampsource/jai/).
+ *  A proxy to JAIReaderPlugin that reads image files using <a
+ *  href="http://developer.java.sun.com/developer/sampsource/jai/"> JAI image
+ *  I/O codec </a> .
  *
  * @author     Jarek Sacha
  * @created    January 22, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 public class JAI_Reader_with_Preview extends JAI_Reader {
 

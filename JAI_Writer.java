@@ -19,15 +19,24 @@
  *  Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
 /**
- *  A proxy plugin to save an image using JAI codecs.
- *  (http://developer.java.sun.com/developer/sampsource/jai/).
+ *  A proxy to JAIWriterPlugin that saves an image using <a
+ *  href="http://developer.java.sun.com/developer/sampsource/jai/"> JAI image
+ *  I/O codec </a> .
  *
  * @author     Jarek Sacha
  * @created    March 2, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  * @see        net.sf.ij.plugin.JAIWriterPlugin
  */
 public class JAI_Writer extends JarPluginProxy {
+
+  private final static String JAR_FILE_PATH = "ij-jai-imageio.jar";
+
+
+  protected String getJarFilePath() {
+    return JAR_FILE_PATH;
+  }
+
 
   protected String getPluginClassName() {
     return "net.sf.ij.plugin.JAIWriterPlugin";
