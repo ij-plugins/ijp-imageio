@@ -34,7 +34,7 @@ import java.util.Properties;
  * info in TIFF description field.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 
 public class DescriptionStringCoder {
@@ -143,15 +143,17 @@ public class DescriptionStringCoder {
         }
         fi.valueUnit = props.getProperty("vunit");
 
-        Integer n_images = getInteger(props, "images");
-        if (n_images != null && n_images.intValue() > 1) {
-            fi.nImages = n_images.intValue();
-            if (fi.nImages != imp.getStackSize()) {
-                throw new Exception("Number of images in description string ("
-                        + fi.nImages + ") does not match number if slices in the image ("
-                        + imp.getStackSize() + ").");
-            }
-        }
+        // Verify number of images
+        // [Comment out verification since it make sense only when very first image of a stack is read]
+//        Integer n_images = getInteger(props, "images");
+//        if (n_images != null && n_images.intValue() > 1) {
+//            fi.nImages = n_images.intValue();
+//            if (fi.nImages != imp.getStackSize()) {
+//                throw new Exception("Number of images in description string ("
+//                        + fi.nImages + ") does not match number if slices in the image ("
+//                        + imp.getStackSize() + ").");
+//            }
+//        }
 
         Calibration calib = imp.getCalibration();
         if (calib == null) {
