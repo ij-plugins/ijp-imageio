@@ -20,20 +20,17 @@
  */
 package net.sf.ij.swing;
 
-import java.awt.*;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.beans.*;
-import java.io.*;
-import javax.swing.*;
-
-import net.sf.ij.imageio.JAIReader;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 
 /**
  *  Simple component to display ImageIcon.
  *
  * @author     Jarek Sacha
  * @created    February 10, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class IconCanvas extends JComponent {
 

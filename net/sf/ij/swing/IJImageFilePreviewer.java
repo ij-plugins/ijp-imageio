@@ -20,14 +20,19 @@
  */
 package net.sf.ij.swing;
 
-import java.awt.*;
-import java.beans.*;
-import java.io.*;
-import javax.swing.*;
-
 import ij.ImagePlus;
 import ij.io.Opener;
 import ij.process.ImageProcessor;
+
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 
 /**
  * @author     Jarek Sacha
