@@ -20,21 +20,17 @@
  */
 package net.sf.ij.imageio;
 
-import FileSeekableStream;
-import ImageCodec;
-import ImageDecodeParam;
-import ImageDecoder;
-import ImageDecoderImpl;
-import SimpleRenderedImage;
-import TIFFDecodeParam;
-import TIFFDirectory;
-import TIFFField;
-import TIFFImage;
-import TIFFImageDecoder;
-
-//import com.sun.media.jai.codec.FileSeekableStream;
-//import com.sun.media.jai.codec.ImageCodec;
-//import com.sun.media.jai.codec.ImageDecoder;
+import non_com.media.jai.codec.FileSeekableStream;
+import non_com.media.jai.codec.ImageCodec;
+import non_com.media.jai.codec.ImageDecodeParam;
+import non_com.media.jai.codec.ImageDecoder;
+import non_com.media.jai.codec.ImageDecoderImpl;
+import non_com.media.jai.codec.SimpleRenderedImage;
+import non_com.media.jai.codec.TIFFDecodeParam;
+import non_com.media.jai.codec.TIFFDirectory;
+import non_com.media.jai.codec.TIFFField;
+import non_com.media.jai.codec.TIFFImage;
+import non_com.media.jai.codec.TIFFImageDecoder;
 
 import ij.*;
 import ij.io.OpenDialog;
@@ -47,6 +43,10 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.File;
 import java.util.ArrayList;
+
+import non_com.media.jai.DataBufferDouble;
+import non_com.media.jai.DataBufferFloat;
+import non_com.media.jai.FloatDoubleColorModel;
 import javax.swing.ImageIcon;
 
 /**
@@ -56,7 +56,7 @@ import javax.swing.ImageIcon;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.6 $
+ * @version    $Revision: 1.7 $
  */
 public class JAIReader {
 
@@ -169,9 +169,14 @@ public class JAIReader {
       case DataBuffer.TYPE_INT:
         return new FloatProcessor(w, h, ((DataBufferInt) buffer).getData());
       case DataBuffer.TYPE_FLOAT:
+      {
+        DataBufferFloat dbFloat = (DataBufferFloat) buffer;
+        return new FloatProcessor(w, h, dbFloat.getData(), cm);
+      }
       case DataBuffer.TYPE_DOUBLE:
-        throw new Exception("Unsupported pixel type: "
-             + getDataTypeAsString(buffer.getDataType()));
+        return new FloatProcessor(w, h, ((DataBufferDouble) buffer).getData());
+//        throw new Exception("Unsupported pixel type: "
+//             + getDataTypeAsString(buffer.getDataType()));
       case DataBuffer.TYPE_UNDEFINED:
         throw new Exception("Pixel type is undefined.");
       default:
@@ -246,8 +251,14 @@ public class JAIReader {
           "color model and multiple banks.");
     }
 
+    int dbType = db.getDataType();
     if (db.getNumBanks() > 1 ||
-        (cm != null && !(cm instanceof IndexColorModel))) {
+        (cm != null
+         && !(cm instanceof IndexColorModel)
+         && !(cm instanceof FloatDoubleColorModel)
+//         && dbType != DataBuffer.TYPE_BYTE
+         && dbType != DataBuffer.TYPE_SHORT
+         && dbType != DataBuffer.TYPE_USHORT)) {
       // If image has multiple banks or multiple color components, assume that it
       // is a color image and relay on AWT for proper decoding.
       BufferedImage bi = new BufferedImage(cm, r, false, null);
