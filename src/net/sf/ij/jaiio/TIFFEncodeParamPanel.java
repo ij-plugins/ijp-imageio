@@ -40,12 +40,12 @@ import java.awt.event.WindowEvent;
  * <code>non_com.media.jai.codec.TIFFEncodeParam</code>.
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 
 public class TIFFEncodeParamPanel extends JPanel {
 
-    private String[] deflateLevels = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+//    private String[] deflateLevels = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
     private TitledBorder titledBorder1;
     private TitledBorder titledBorder2;
     private GridBagLayout gridBagLayout3 = new GridBagLayout();

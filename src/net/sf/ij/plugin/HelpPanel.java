@@ -23,21 +23,17 @@ package net.sf.ij.plugin;
 import net.sf.ij.swing.SwingUtils;
 
 import javax.swing.*;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.Document;
-import javax.swing.text.BadLocationException;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.*;
+import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.net.URL;
 
 /**
  * A panel displaying help for the Image I/O plugin bundle.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 final public class HelpPanel extends JPanel {
 
@@ -51,7 +47,7 @@ final public class HelpPanel extends JPanel {
         if (helpURL == null) {
             throw new IOException("Couldn't find Image I/O help file.");
         }
-        System.out.println("Help file URL: "+helpURL);
+        System.out.println("Help file URL: " + helpURL);
 //        InputStream is = HelpPanel.class.getResourceAsStream("/docs/index.html");
 //        if (is == null) {
 //            throw new IOException("Couldn't find Image I/O help file.");
@@ -94,11 +90,11 @@ final public class HelpPanel extends JPanel {
         String iconResourceName = "exit16.png";
         URL iconURL = HelpPanel.class.getResource(iconResourceName);
         ImageIcon icon = null;
-        if(iconURL != null) {
-            System.out.println("Button icon URL: "+iconURL);
-          icon = new ImageIcon(iconURL);
+        if (iconURL != null) {
+            System.out.println("Button icon URL: " + iconURL);
+            icon = new ImageIcon(iconURL);
         } else {
-            System.out.println("Unable to locate resource for icon: "+iconResourceName);
+            System.out.println("Unable to locate resource for icon: " + iconResourceName);
         }
 
         JButton closeButton = new JButton("Close", icon);

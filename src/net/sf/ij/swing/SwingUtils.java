@@ -24,7 +24,7 @@ import java.awt.*;
 
 /**
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SwingUtils {
     public static void centerOnScreen(Window window, boolean packFrame) {
@@ -49,7 +49,7 @@ public class SwingUtils {
         }
 
         window.setLocation((screenSize.width - frameSize.width) / 2,
-                           (screenSize.height - frameSize.height) / 2);
+                (screenSize.height - frameSize.height) / 2);
     }
 
 }

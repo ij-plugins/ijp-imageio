@@ -21,16 +21,10 @@
 package net.sf.ij.plugin;
 
 import ij.plugin.PlugIn;
-import net.sf.ij.swing.SwingUtils;
-
-import javax.swing.*;
-import java.awt.*;
-import java.io.IOException;
-import java.net.URL;
 
 /**
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class AboutImageIO implements PlugIn {
 
