@@ -41,7 +41,7 @@ import java.io.IOException;
  * Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 
 public class ImageIOSaveAsPlugin implements PlugIn {
@@ -115,11 +115,15 @@ public class ImageIOSaveAsPlugin implements PlugIn {
 
                     SaveDialog saveDialog = new SaveDialog("Save As " + codecName + "...", imp.getTitle(),
                             "." + getFileExtension(codecName));
-                    fileName = saveDialog.getDirectory() + File.separator
-                            + saveDialog.getFileName();
-                    if (fileName == null) {
+                    if(saveDialog.getFileName() == null) {
                         Macro.abort();
                         return;
+                    }
+                    if(saveDialog.getFileName() != null) {
+                    fileName = saveDialog.getDirectory() + File.separator
+                            + saveDialog.getFileName();
+                    } else {
+                        fileName = saveDialog.getFileName();
                     }
 //                Recorder.recordOption(MACRO_OPTION_FILENAME, fileName);
                 }
