@@ -25,6 +25,7 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.io.FileInfo;
 import ij.io.Opener;
+import ij.io.TiffDecoder;
 import ij.measure.Calibration;
 
 import java.awt.Image;
@@ -51,7 +52,7 @@ import non_com.media.jai.codec.TIFFImageDecoder;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 public class JAIReader {
 
@@ -88,10 +89,10 @@ public class JAIReader {
       imageInfo.previewImage = (Image) renderedImage;
     }
     else {
-
       ColorModel cm = renderedImage.getColorModel();
       if (cm == null) {
-        WritableRaster writableRaster = ImagePlusCreator.forceTileUpdate(renderedImage);
+        WritableRaster writableRaster
+             = ImagePlusCreator.forceTileUpdate(renderedImage);
         ImagePlus imagePlus = ImagePlusCreator.create(writableRaster, null);
         imageInfo.previewImage = imagePlus.getImage();
       }
@@ -195,11 +196,25 @@ public class JAIReader {
             Object o = ti.getProperty("tiff_directory");
             if (o instanceof TIFFDirectory) {
               TIFFDirectory dir = (TIFFDirectory) o;
+
+              // ImageJ description string
+              TIFFField descriptionField
+                   = dir.getField(TiffDecoder.IMAGE_DESCRIPTION);
+              if (descriptionField != null) {
+                try {
+                  DescriptionStringCoder.decode(
+                      descriptionField.getAsString(0), im);
+                }
+                catch(Exception ex) {
+                }
+              }
+
               Calibration c = im.getCalibration();
               if (c == null) {
                 c = new Calibration(im);
               }
 
+              // X resolution
               TIFFField xResField = dir.getField(TIFFImageDecoder.TIFF_X_RESOLUTION);
               if (xResField != null) {
                 double xRes = xResField.getAsDouble(0);
@@ -208,6 +223,7 @@ public class JAIReader {
                 }
               }
 
+              // Y resolution
               TIFFField yResField = dir.getField(TIFFImageDecoder.TIFF_Y_RESOLUTION);
               if (yResField != null) {
                 double yRes = yResField.getAsDouble(0);
@@ -216,6 +232,7 @@ public class JAIReader {
                 }
               }
 
+              // Resolution unit
               TIFFField resolutionUnitField = dir.getField(
                   TIFFImageDecoder.TIFF_RESOLUTION_UNIT);
               if (resolutionUnitField != null) {
