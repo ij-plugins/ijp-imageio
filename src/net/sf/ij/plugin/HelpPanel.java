@@ -37,7 +37,7 @@ import java.net.URL;
  * A panel displaying help for the Image I/O plugin bundle.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 final public class HelpPanel extends JPanel {
 
@@ -49,7 +49,7 @@ final public class HelpPanel extends JPanel {
     public HelpPanel() throws IOException {
         URL helpURL = HelpPanel.class.getResource("/docs/index.html");
         if (helpURL == null) {
-            throw new IOException("Couldn't find Image I/O help file.");
+            throw new IOException("Couldn't find Image IO help file.");
         }
         System.out.println("Help file URL: " + helpURL);
 //        InputStream is = HelpPanel.class.getResourceAsStream("/docs/index.html");
@@ -107,7 +107,7 @@ final public class HelpPanel extends JPanel {
      */
     static void showHelpWindow(boolean exitOnClose) {
         // Create window to host help panel
-        final JFrame frame = new JFrame("About Image I/O plugins");
+        final JFrame frame = new JFrame("About Image IO plugins");
 
         // Load icon for close button
         String iconResourceName = "exit16.png";
@@ -134,7 +134,7 @@ final public class HelpPanel extends JPanel {
         try {
             aboutImageIO = new HelpPanel();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to create Image I/O help window.", e);
+            throw new RuntimeException("Failed to create Image IO help window.", e);
         }
 
         frame.getContentPane().add(aboutImageIO);
