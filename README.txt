@@ -37,8 +37,7 @@ SYSTEM REQUIREMENTS
 -------------------
 
 Image I/O plugin bundle requires Image/J 1.31s or newer and Java 1.4 or
-newer. It was tested wit Java 1.4 and 1.5, may also work with Java 1.2 and
-1.3.
+newer. It was tested wit Java 1.4 and 1.5, may also work with Java 1.3.
 
 
 INSTALLATION
