@@ -1,4 +1,4 @@
-/*
+/***
  * Image/J Plugins
  * Copyright (C) 2002 Jarek Sacha
  *
@@ -33,7 +33,7 @@ import non_com.media.jai.codec.ImageCodec;
  *
  * @author     Jarek Sacha
  * @created    February 2, 2002
- * @version    $Revision: 1.5 $
+ * @version    $Revision: 1.6 $
  */
 
 public class JAIFileChooserFactory {
