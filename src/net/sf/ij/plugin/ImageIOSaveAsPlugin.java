@@ -39,38 +39,39 @@ import java.io.IOException;
 
 /**
  * Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
- * 
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
-
 public class ImageIOSaveAsPlugin implements PlugIn {
 
-    private static final String PNG = "png";
-    private static final String PNM = "pnm";
-    private static final String TIFF = "tiff";
-    private static final String JPEG = "jpeg";
+    public static final String PNG = "png";
+    public static final String PNM = "pnm";
+    public static final String TIFF = "tiff";
+    public static final String JPEG = "jpeg";
+
+    public static final String MACRO_OPTION_FILENAME = "ImageIOSaveAs.fileName";
+    public static final String MACRO_OPTION_CODECNAME = "ImageIOSaveAs.codecName";
 
     private static final String TITLE = "ImageIO Save As";
-
-    private static final String MACRO_OPTION_FILENAME = "ImageIOSaveAs.fileName";
-    private static final String MACRO_OPTION_CODECNAME = "ImageIOSaveAs.codecName";
 
     private static JFileChooser jaiChooser;
     private EncoderParamDialog paramDialog;
 
 
     /**
-     * Main processing method for the ImageIOSaveAsPlugin object
-     * 
-     * @param arg Not used.
+     * When running a macro, both macro options {@link #MACRO_OPTION_FILENAME} and {@link
+     * #MACRO_OPTION_FILENAME} must be specified.
+     *
+     * @param arg Format in which to save image, possible values: "JPEG", "PNG", "PNM", "TIFF", or
+     *            <code>null</code>. If <code>null</code> custom save dialog will be shown.
      */
-    public void run(String arg) {
+    public void run(final String arg) {
 
-        IJ.showStatus("Starting \""+TITLE+"\" plugin...");
+        IJ.showStatus("Starting \"" + TITLE + "\" plugin...");
 
         try {
-            ImagePlus imp = WindowManager.getCurrentImage();
+            final ImagePlus imp = WindowManager.getCurrentImage();
             if (imp == null) {
                 IJ.showMessage(TITLE, "No images are open.");
                 return;
@@ -84,22 +85,25 @@ public class ImageIOSaveAsPlugin implements PlugIn {
             // Check with ImageJ if macro options are present
             String macroOptions = Macro.getOptions();
             if (macroOptions != null) {
-                fileName = Macro.getValue(macroOptions, MACRO_OPTION_FILENAME, fileName);
-                codecName = Macro.getValue(macroOptions, MACRO_OPTION_CODECNAME, codecName);
+                // Running from macro so try to extract macro options
+                codecName = Macro.getValue(macroOptions, MACRO_OPTION_CODECNAME, null);
+                fileName = Macro.getValue(macroOptions, MACRO_OPTION_FILENAME, null);
 
                 // Sanity checks
-                if (fileName != null && codecName == null) {
+                if (codecName == null) {
                     IJ.showMessage(TITLE,
                             "Macro option '" + MACRO_OPTION_CODECNAME + "' is missing");
                     Macro.abort();
                     return;
-                } else if (fileName == null && codecName != null) {
+                }
+                if (fileName == null) {
                     IJ.showMessage(TITLE,
                             "Macro option '" + MACRO_OPTION_FILENAME + "' is missing");
                     Macro.abort();
                     return;
                 }
             } else {
+                // Check if file type was spcified as an argument, ignore unknown format names
                 if (arg.equalsIgnoreCase(JPEG)) {
                     codecName = JPEG;
                 } else if (arg.equalsIgnoreCase(PNG)) {
@@ -108,88 +112,88 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                     codecName = PNM;
                 } else if (arg.equalsIgnoreCase(TIFF)) {
                     codecName = TIFF;
-                }
-
-                if (codecName != null) {
-                    Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
-
-                    SaveDialog saveDialog = new SaveDialog("Save As " + codecName + "...", imp.getTitle(),
-                            "." + getFileExtension(codecName));
-                    if(saveDialog.getFileName() == null) {
-                        Macro.abort();
-                        return;
-                    }
-                    if(saveDialog.getFileName() != null) {
-                    fileName = saveDialog.getDirectory() + File.separator
-                            + saveDialog.getFileName();
-                    } else {
-                        fileName = saveDialog.getFileName();
-                    }
-//                Recorder.recordOption(MACRO_OPTION_FILENAME, fileName);
-                }
-            }
-
-
-            if (fileName == null && codecName == null) {
-                // Get fileName and codecName showing save dialog
-                if (jaiChooser == null) {
-                    jaiChooser = JAIFileChooserFactory.createJAISaveChooser();
-                    jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
-                }
-
-                File file = new File(imp.getTitle());
-                jaiChooser.setSelectedFile(file);
-
-                if (jaiChooser.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
-                    Macro.abort();
-                    return;
-                }
-
-                FileFilter fileFilter = jaiChooser.getFileFilter();
-                if (fileFilter instanceof JAIFileFilter) {
-                    JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
-                    codecName = jaiFileFilter.getCodecName();
-                    Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
+                } else {
+                    codecName = null;
                 }
 
                 if (codecName == null) {
-                    IJ.showMessage(TITLE, "File format not selected. File not saved.");
-                    Macro.abort();
-                    return;
+                    // Get fileName and codecName showing save dialog
+                    if (jaiChooser == null) {
+                        jaiChooser = JAIFileChooserFactory.createJAISaveChooser();
+                        jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
+                    }
+
+                    File file = new File(imp.getTitle());
+                    jaiChooser.setSelectedFile(file);
+
+                    if (jaiChooser.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
+                        Macro.abort();
+                        return;
+                    }
+
+                    FileFilter fileFilter = jaiChooser.getFileFilter();
+                    if (fileFilter instanceof JAIFileFilter) {
+                        JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
+                        codecName = jaiFileFilter.getCodecName();
+                        Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
+                    }
+
+                    if (codecName == null) {
+                        IJ.showMessage(TITLE, "File format not selected. File not saved.");
+                        Macro.abort();
+                        return;
+                    }
+
+                    file = jaiChooser.getSelectedFile();
+                    if (file.getName().indexOf(".") < 0) {
+                        file = new File(file.getParent(),
+                                file.getName() + "." + getFileExtension(codecName));
+                    }
+                    fileName = file.getAbsolutePath();
+                } else if (fileName == null) {
+                    SaveDialog saveDialog = new SaveDialog("Save As " + codecName + "...", imp.getTitle(),
+                            "." + getFileExtension(codecName));
+                    // Make only single call to saveDialog.getFileName(). When recording a macro,
+                    // each call records path in a macro (ImageJ 1.33k)
+                    final String saveDialogFileName = saveDialog.getFileName();
+                    if (saveDialogFileName == null) {
+                        Macro.abort();
+                        return;
+                    }
+                    if (saveDialog.getDirectory() != null) {
+                        fileName = saveDialog.getDirectory() + File.separator + saveDialogFileName;
+                    } else {
+                        fileName = saveDialogFileName;
+                    }
                 }
 
-                file = jaiChooser.getSelectedFile();
-                if (file.getName().indexOf(".") < 0) {
-                    file = new File(file.getParent(),
-                            file.getName() + "." + getFileExtension(codecName));
-                }
-                fileName = file.getAbsolutePath();
+                Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
                 Recorder.recordOption(MACRO_OPTION_FILENAME, fileName);
-            }
 
-            // Ask for file options
-            if (codecName.equalsIgnoreCase(TIFF)) {
-                // TODO: detect if image is binary and give an option to save as 1bit compressed image
-                if (paramDialog == null) {
-                    paramDialog = new EncoderParamDialog();
-                }
-                JaiioUtil.centerOnScreen(paramDialog, false);
-                paramDialog.show();
-                if (!paramDialog.isAccepted()) {
-                    Macro.abort();
-                    IJ.showMessage(TITLE, "Option dialog cancelled, image not saved.");
-                    return;
+                // Ask for file options
+                if (codecName.equalsIgnoreCase(TIFF)) {
+                    // TODO: detect if image is binary and give an option to save as 1bit compressed image
+                    if (paramDialog == null) {
+                        paramDialog = new EncoderParamDialog();
+                    }
+                    JaiioUtil.centerOnScreen(paramDialog, false);
+                    paramDialog.show();
+                    if (!paramDialog.isAccepted()) {
+                        Macro.abort();
+                        IJ.showMessage(TITLE, "Option dialog cancelled, image not saved.");
+                        return;
+                    }
+
+                    encodeParam = paramDialog.getImageEncodeParam(JaiioUtil.isBinary(imp.getProcessor()));
                 }
 
-                encodeParam = paramDialog.getImageEncodeParam(JaiioUtil.isBinary(imp.getProcessor()));
             }
 
             //
             // Now ready to write the image to a file
             //
             try {
-                IJ.showStatus("Writing image as "+codecName.toUpperCase()
-                        +" to "+fileName);
+                IJ.showStatus("Writing image as " + codecName.toUpperCase() + " to " + fileName);
                 write(imp, fileName, codecName, encodeParam);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -205,11 +209,11 @@ public class ImageIOSaveAsPlugin implements PlugIn {
 
 
     /**
-     * @param imp       
-     * @param fileName  
-     * @param codecName 
-     * @throws IOException           
-     * @throws FileNotFoundException 
+     * @param imp
+     * @param fileName
+     * @param codecName
+     * @throws IOException
+     * @throws FileNotFoundException
      */
     private static void write(ImagePlus imp,
                               String fileName,
