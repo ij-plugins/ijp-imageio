@@ -5,6 +5,15 @@ CHANGES
 IJ-ImageIO v.1.2.0
 ----------------------
 
+Bug fix: Written files were always deleted (only partial writes due to 
+         error should be deleted)
+  
+Bug fix: Error message was shown when save dialog was canceled.
+
+----------------------
+IJ-ImageIO v.1.2.0
+----------------------
+
 * Use new IJ feature allowing to distribute plugins in JARS
 * Save dialog now maintains file name when file type is changed
 * New option dialog to select TIFF compression options
