@@ -40,6 +40,7 @@ import java.awt.image.DataBufferUShort;
 import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 
 import non_com.media.jai.DataBufferDouble;
@@ -53,11 +54,13 @@ import non_com.media.jai.FloatDoubleColorModel;
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 public class ImagePlusCreator {
 
-  private ImagePlusCreator() {};
+  private ImagePlusCreator() {
+  }
+
 
   /**
    *  Force Rendered image to set all the tails that it may have. In multi-tile
@@ -153,14 +156,17 @@ public class ImagePlusCreator {
           "color model and multiple banks.");
     }
 
+    SampleModel sm = r.getSampleModel();
     int dbType = db.getDataType();
-    if (db.getNumBanks() > 1 ||
-        (cm != null
-         && !(cm instanceof IndexColorModel)
-         && !(cm instanceof FloatDoubleColorModel)
+    if (db.getNumBanks() > 1
+         || sm.getNumBands() > 1
+//         || (cm != null
+//         && !(cm instanceof IndexColorModel)
+//         && !(cm instanceof FloatDoubleColorModel)
 //         && dbType != DataBuffer.TYPE_BYTE
-         && dbType != DataBuffer.TYPE_SHORT
-         && dbType != DataBuffer.TYPE_USHORT)) {
+//         && dbType != DataBuffer.TYPE_SHORT
+//         && dbType != DataBuffer.TYPE_USHORT)
+        ) {
       // If image has multiple banks or multiple color components, assume that it
       // is a color image and relay on AWT for proper decoding.
       BufferedImage bi = new BufferedImage(cm, r, false, null);
