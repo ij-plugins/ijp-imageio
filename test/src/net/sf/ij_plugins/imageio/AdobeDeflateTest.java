@@ -23,8 +23,12 @@ package net.sf.ij_plugins.imageio;
 import junit.framework.TestCase;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Iterator;
 
 /**
  * ImageJ 1.33 and ij-imageio v.1.2.4 cannot read TIFF images created by Adobe Photshop 7 using
@@ -35,7 +39,7 @@ import java.io.File;
  * javax.imageio).
  *
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class AdobeDeflateTest extends TestCase {
     public AdobeDeflateTest(String test) {
@@ -64,4 +68,33 @@ public class AdobeDeflateTest extends TestCase {
         assertEquals("Heighr", 512, bi.getWidth());
 
     }
+
+
+    /**
+     * Test if javax.imageio can access can read TIFF image with AdobeDeflation compression. This
+     * requires jai-imageio.
+     *
+     * @throws Exception
+     */
+    public void testImageIOReadInfo() throws Exception {
+        final String inFilePath = "test/data/bug_AdobeDeflate/baboon_AdobeDeflate.tif";
+        final File inFile = new File(inFilePath);
+
+        // Check if file exists
+        assertTrue("Input file exists: " + inFile.getAbsolutePath(), inFile.exists());
+
+        ImageInputStream iis = new FileImageInputStream(inFile);
+        Iterator readers = ImageIO.getImageReaders(iis);
+        assertTrue(readers.hasNext());
+
+        // Use the first reader
+        ImageReader reader = (ImageReader) readers.next();
+        reader.setInput(iis);
+        // Find out how many images are in the file and what is the first index.
+        assertEquals("Min index", 0, reader.getMinIndex());
+        assertEquals("Number of images", 1, reader.getNumImages(true));
+        assertEquals("Width", 512, reader.getWidth(0));
+        assertEquals("Heighr", 512, reader.getHeight(0));
+    }
+
 }
