@@ -2,6 +2,23 @@
 CHANGES
 **********************
 ----------------------
+IJ-ImageIO v.1.2.0
+----------------------
+
+* Use new IJ feature allowing to distribute plugins in JARS
+* Save dialog now maintains file name when file type is changed
+* New option dialog to select TIFF compression options
+* "JAI Reader" plugin renamed to "Plugins/Image IO/Open ..."
+* "JAI Reader with preview" plugin renamed to "Plugins/Image IO/Open with preview..."
+* "JAI Writer" plugin renamed to "Plugins/Image IO/Save as ..."
+* New shortcut: "File/Save As/PNG ..."
+* New shortcut: "File/Save As/PNM ..."
+* New shortcut: "File/Save As/Compressed TIFF ..."
+* New plugin to display HTML help file (Help/About Plugin/Image IO)
+* Plugin to remove obsolete installation of version 1.1 or ealier
+
+
+----------------------
 IJ-JAI-ImageIO v.1.1.0
 ----------------------
 
