@@ -52,7 +52,7 @@ public class EncoderParamDialog extends JDialog {
         okButton.addActionListener(new EncoderParamDialog_okButton_actionAdapter(this));
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new EncoderParamDialog_cancelButton_actionAdapter(this));
-        this.setTitle("Options");
+        this.setTitle("ImageIO Save Options");
         this.addWindowListener(new EncoderParamDialog_this_windowAdapter(this));
         this.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
         buttonPanel.add(okButton, null);
