@@ -25,7 +25,7 @@
     <property name="imageio.cvs.module" value="imageio"/>
     <property name="non_com.cvs.module" value="Sun_JAI_Sample_IO_Source_Code_v_1_1_1"/>
 
-  
+
     <!-- Set default properties for this build -->
     <property name="base.dir" location="${basedir}"/>
     <property name="lib.dir" location="${base.dir}/lib"/>
@@ -52,16 +52,16 @@
     </path>
 
     <fileset id="config.files"
-        dir="${src.dir}">
+             dir="${src.dir}">
         <include name="**/*.config"/>
     </fileset>
     <fileset id="resource.files"
-        dir="${src.dir}">
+             dir="${src.dir}">
         <include name="**/*.png"/>
         <include name="**/*.gif"/>
     </fileset>
     <fileset id="docs.files"
-        dir="${docs.dir}">
+             dir="${docs.dir}">
         <include name="**/*.html"/>
         <include name="**/*.css"/>
         <include name="**/*.png"/>
@@ -73,8 +73,8 @@
     <!-- ================= -->
 
     <target name="run"
-        description="Test run ImageJ with ij-ImageIO plugins"
-        depends="jar">
+            description="Test run ImageJ with ij-ImageIO plugins"
+            depends="jar">
 
         <java
             jar="${lib.dir}/ij.jar"
@@ -86,13 +86,13 @@
     </target>
 
     <target name="dist"
-        description="Create distribution files."
-        depends="dist-from-cvs">
+            description="Create distribution files."
+            depends="dist-from-cvs">
     </target>
 
     <target name="compile"
-        depends="init"
-        description="Compile all examples">
+            depends="init"
+            description="Compile all examples">
         <javac
             srcdir="${src.dir}"
             destdir="${build.classes.dir}"
@@ -119,12 +119,12 @@
     </target>
 
     <target name="jar" depends="compile"
-        description="Create plugins' JAR">
-    
+            description="Create plugins' JAR">
+
         <!-- Create library jar -->
         <jar destfile="${jar.dir}/${package.name}_.jar"
-            basedir="${build.classes.dir}"
-            compress="true">
+             basedir="${build.classes.dir}"
+             compress="true">
             <fileset refid="resource.files"/>
             <manifest>
                 <attribute name="Main-Class" value="${main.class}"/>
@@ -135,20 +135,23 @@
 
     <!-- Create API documentation -->
     <target name="javadoc"
-        depends="compile"
-        description="Create Javadoc API documentation">
+            depends="compile"
+            description="Create Javadoc API documentation">
         <javadoc verbose="no"
-            packagenames="*"
-            destdir="${javadoc.dir}"
-            windowtitle="JAI ImageIO plugins for ImageJ - API"
-            header="JAI ImageIO plugins for ImageJ - API">
+                 packagenames="*"
+                 destdir="${javadoc.dir}"
+                 windowtitle="JAI ImageIO plugins for ImageJ - API"
+                 header="JAI ImageIO plugins for ImageJ - API">
             <fileset dir="src" defaultexcludes="yes">
                 <include name="**/*.java"/>
                 <exclude name="**/**Test.java"/>
                 <exclude name="**/**TestCase.java"/>
             </fileset>
             <footer>
-                <![CDATA[<a href="http://ij-plugins.sourceforge.net">
+<![CDATA[
+
+
+                <a href="http://ij-plugins.sourceforge.net">
             <img src="http://sourceforge.net/sflogo.php?group_id=49871&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
             </a>]]>
             </footer>
@@ -156,14 +159,15 @@
         </javadoc>
     </target>
 
-    <target name="clean" description="Remove internediate files and directories created during build.">
+    <target name="clean"
+            description="Remove internediate files and directories created during build.">
         <delete dir="${checkout.dir}"/>
         <delete dir="${build.dir}"/>
     </target>
 
     <target name="clean-all"
-        depends="clean"
-        description="Remove all files and directories created during build.">
+            depends="clean"
+            description="Remove all files and directories created during build.">
         <delete dir="${jar.dir}"/>
         <delete dir="${sandbox.plugins.dir}"/>
         <delete dir="${sandbox.dir}"/>
@@ -172,8 +176,8 @@
     </target>
 
     <target name="jdepend"
-        depends="compile"
-        description="Perform JDepend analysis and generate design quality metrics">
+            depends="compile"
+            description="Perform JDepend analysis and generate design quality metrics">
         <jdepend
             format="xml"
             outputfile="${build.dir}/jdepend-report.xml">
@@ -185,8 +189,8 @@
         </jdepend>
 
         <style basedir="${build.dir}" destdir="${build.dir}"
-            includes="jdepend-report.xml"
-            style="${ant.home}/etc/jdepend.xsl"/>
+               includes="jdepend-report.xml"
+               style="${ant.home}/etc/jdepend.xsl"/>
 
     </target>
 
@@ -228,8 +232,8 @@
         <copy todir="${cvs.imageio.dir}/lib" file="${jaicodec.jar}"/>
         <!-- ZIP source -->
         <zip basedir="${cvs.imageio.dir}"
-            destfile="${dist.dir}/${package.name}_src_${DSTAMP}.zip"/>
-        
+             destfile="${dist.dir}/${package.name}_src_${DSTAMP}.zip"/>
+
 
         <!-- ................... -->
         <!-- Binary distribution -->
@@ -242,33 +246,33 @@
 
         <!-- ZIP binaries -->
         <zip basedir="${dist.dir}"
-            includes="${package.name}_.jar"
-            destfile="${dist.dir}/${package.name}_bin_${DSTAMP}.zip"/>
+             includes="${package.name}_.jar"
+             destfile="${dist.dir}/${package.name}_bin_${DSTAMP}.zip"/>
 
         <!-- Cleanup -->
-        <!--
+<!--
         <delete dir="{cvs.imageio.dir}"/>
         -->
     </target>
 
     <!-- Checkout non_com sources from CVS repository -->
     <target name="checkout-non_com"
-        depends="init">
+            depends="init">
         <!-- Checkout SUN sources of JAI IO -->
         <cvs cvsRoot="${cvs.root}"
-            command="checkout -P"
-            package="${non_com.cvs.module}"
-            dest="${checkout.dir}"/>
+             command="checkout -P"
+             package="${non_com.cvs.module}"
+             dest="${checkout.dir}"/>
     </target>
 
     <!-- Checkout sources drom CVS repository -->
     <target name="checkout"
-        depends="init">
+            depends="init">
         <!-- Checkout wrappers for ImageJ -->
         <cvs cvsRoot="${cvs.root}"
-            command="checkout -P"
-            package="${imageio.cvs.module}"
-            dest="${checkout.dir}"/>
+             command="checkout -P"
+             package="${imageio.cvs.module}"
+             dest="${checkout.dir}"/>
     </target>
 
     <!-- Target: changelog -->
@@ -278,7 +282,7 @@
             destfile="${dist.dir}/changelog.xml"
             start="LatestRelease"
             end="HEAD"
-            />
+        />
         <style
             in="${build.dir}/changelog.xml"
             out="${dist.dir}/changelog.html"
@@ -288,7 +292,7 @@
             <param name="cvsweb" expression="http://cvs.sourceforge.net/viewcvs.py/ij-plugins/"/>
         </style>
     </target>
-  
+
     <!-- Target: tagdif -->
     <target name="tagdiff" depends="init">
         <cvstagdiff
@@ -298,8 +302,8 @@
             starttag="LatestRelease"
             endtag="HEAD"
             compression="true"
-            />
-        <!--
+        />
+<!--
         startTag="ij-jai-imageio_v_1_0_5"
         endTag="HEAD"
         -->
