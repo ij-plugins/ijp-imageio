@@ -48,13 +48,11 @@ import non_com.media.jai.DataBufferFloat;
 import non_com.media.jai.FloatDoubleColorModel;
 
 /**
- *  Read image files using JAI image I/O codec
- *  (http://developer.java.sun.com/developer/sampsource/jai/) and convert them
- *  to Image/J representation.
+ *  Creates/converts Image/J's image objects from Java2D/JAI representation.
  *
  * @author     Jarek Sacha
  * @created    January 11, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 public class ImagePlusCreator {
 
@@ -67,7 +65,7 @@ public class ImagePlusCreator {
    *  images not all tiles may be updated when a RenderedImage is created.
    *
    * @param  ri  image that may need tile update.
-   * @return     Description of the Returned Value
+   * @return     WritableRaster with all tiles updated.
    */
   public static WritableRaster forceTileUpdate(RenderedImage ri) {
     Raster r = ri.getData();
@@ -89,14 +87,14 @@ public class ImagePlusCreator {
 
 
   /**
-   *  Description of the Method
+   *  Create an ImageProcessor object from a DataBuffer.
    *
-   * @param  w              Description of the Parameter
-   * @param  h              Description of the Parameter
-   * @param  buffer         Description of the Parameter
-   * @param  cm             Description of the Parameter
-   * @return                Description of the Return Value
-   * @exception  Exception  Description of the Exception
+   * @param  w              Image width.
+   * @param  h              Image height.
+   * @param  buffer         Data buffer.
+   * @param  cm             Color model.
+   * @return                Image processor object.
+   * @exception  Exception  If data buffer is in unknown format.
    */
   public static ImageProcessor createProcessor(int w, int h, DataBuffer buffer,
       ColorModel cm) throws Exception {

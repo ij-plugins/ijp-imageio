@@ -49,9 +49,12 @@ import non_com.media.jai.RasterFactory;
 import non_com.media.jai.codec.ImageCodec;
 
 /**
+ *  Creates/converts BufferedImage objects from Image/J's ImageProcessor or
+ *  ImagePlus. All Image/J image types are supported.
+ *
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 public class BufferedImageCreator {
 
@@ -191,10 +194,10 @@ public class BufferedImageCreator {
 
 
   /**
-   *  Description of the Method
+   *  Create BufferedImage from FloatProcessor.
    *
-   * @param  src  Description of Parameter
-   * @return      Description of the Returned Value
+   * @param  src  FloatProcessor source.
+   * @return      BufferedImage.
    */
   public static BufferedImage create(FloatProcessor src) {
 
@@ -219,10 +222,9 @@ public class BufferedImageCreator {
 
 
   /**
-   *  Create BufferedImage from ShortProcessor. Pixel values are assumed to be
-   *  unsigned short integers.
+   *  Create BufferedImage from ColorProcessor.
    *
-   * @param  src  ShortProcessor source.
+   * @param  src  ColorProcessor source.
    * @return      BufferedImage.
    */
   public static BufferedImage create(ColorProcessor src) {

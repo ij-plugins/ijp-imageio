@@ -29,11 +29,12 @@ import java.io.*;
 import java.util.Properties;
 
 /**
- *  Title: Description: Copyright: GPL 2002 Company:
+ *  Decodes and encodes description strings used by ImageJ to store extra image
+ *  info in TIFF description field.
  *
- * @author
+ * @author     Jarek Sacha
  * @created    March 23, 2002
- * @version    $Revision: 1.1 $
+ * @version    $Revision: 1.2 $
  */
 
 public class DescriptionStringCoder {
@@ -47,8 +48,8 @@ public class DescriptionStringCoder {
    *  For stacks, also saves the stack size so ImageJ can open the stack without
    *  decoding an IFD for each slice.
    *
-   * @param  imp  Description of Parameter
-   * @return      Description of the Returned Value
+   * @param  imp  Image for which the decription string should be created.
+   * @return      Description string.
    */
   public static String encode(ImagePlus imp) {
     FileInfo fi = imp.getFileInfo();
@@ -93,9 +94,11 @@ public class DescriptionStringCoder {
    *  calibration data in this string. For stacks, it also saves the number of
    *  images to avoid having to decode an IFD for each image.
    *
-   * @param  description    Description of Parameter
-   * @param  imp            Description of Parameter
-   * @exception  Exception  Description of Exception
+   * @param  description    Description string.
+   * @param  imp            Image that will be adjusted using information stored
+   *      in the decription string.
+   * @exception  Exception  If information stored in the decription string is
+   *      inconsistent with image size.
    */
   public static void decode(String description, ImagePlus imp)
        throws Exception {
@@ -116,7 +119,7 @@ public class DescriptionStringCoder {
 
     FileInfo fi = new FileInfo();
 
- 		fi.unit = props.getProperty("unit","");
+    fi.unit = props.getProperty("unit", "");
 
     Integer n_cf = getInteger(props, "cf");
     if (n_cf != null) {
@@ -145,7 +148,7 @@ public class DescriptionStringCoder {
     if (n_images != null && n_images.intValue() > 1) {
       fi.nImages = n_images.intValue();
       if (fi.nImages != imp.getStackSize()) {
-        throw new Exception("Number of images in descriprion string ("
+        throw new Exception("Number of images in description string ("
             + fi.nImages + ") does not match number if slices in the image ("
             + imp.getStackSize() + ").");
       }

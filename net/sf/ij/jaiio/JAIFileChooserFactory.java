@@ -29,15 +29,18 @@ import javax.swing.JFileChooser;
 import non_com.media.jai.codec.ImageCodec;
 
 /**
+ *  Factory for creation of JAI IO customized file choosers.
+ *
  * @author     Jarek Sacha
  * @created    February 2, 2002
- * @version    $Revision: 1.2 $
+ * @version    $Revision: 1.3 $
  */
 
 public class JAIFileChooserFactory {
 
   /**
-   *  Description of the Method
+   *  Creates an image file open chooser with an image preview. File filters
+   *  correspond to registered JAI decoders.
    *
    * @return    Description of the Returned Value
    */
@@ -79,7 +82,8 @@ public class JAIFileChooserFactory {
 
 
   /**
-   *  Description of the Method
+   *  Creates file save chooser with file filters corresponding to JAI codecs
+   *  supporting writing (encoders).
    *
    * @return    Description of the Returned Value
    */

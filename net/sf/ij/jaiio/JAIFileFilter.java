@@ -26,7 +26,9 @@ import non_com.media.jai.codec.FileSeekableStream;
 import non_com.media.jai.codec.ImageCodec;
 
 /**
- *  Description of the Class
+ *  File filter that detects image files supported by registered JAI codecs.
+ *  File types are determined be magic number in the header rather then file
+ *  extension.
  *
  * @author     Jarek Sacha
  * @created    November 6, 2000
@@ -41,15 +43,15 @@ public class JAIFileFilter extends FileFilter {
   private String decription = "All Supported Images";
 
 
-  /**  Constructor for the JAIFileFilter object */
+  /**  Create file filter accepting all images supported by registered JAI codecs. */
   public JAIFileFilter() {
   }
 
 
   /**
-   *  Constructor for the ExtensionFileFilter object
+   *  Create file filter accepting images supported by given codec.
    *
-   * @param  codecName  Description of Parameter
+   * @param  codecName  Codec name.
    */
   public JAIFileFilter(String codecName) {
     if (codecName != null && codecName.length() > 0) {
@@ -81,10 +83,11 @@ public class JAIFileFilter extends FileFilter {
 
 
   /**
-   *  Description of the Method
+   *  Whether the given file is accepted by this filter.
    *
-   * @param  file  Description of Parameter
-   * @return       Description of the Returned Value
+   * @param  file  File.
+   * @return       true is it is a directory or a file that can be accessed by
+   *      associated codec.
    */
   public boolean accept(File file) {
     if (file == null || !file.canRead()) {

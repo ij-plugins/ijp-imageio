@@ -28,9 +28,12 @@ import javax.swing.*;
 import net.sf.ij.swing.IconCanvas;
 
 /**
+ *  A utility for JAIFIleChooser that displays preview image, image file size,
+ *  and image dimensions.
+ *
  * @author     Jarek Sacha
  * @created    January 9, 2001
- * @version
+ * @version    $Revision: 1.4 $
  */
 public class JAIFilePreviewer extends JPanel
      implements PropertyChangeListener {
@@ -69,7 +72,7 @@ public class JAIFilePreviewer extends JPanel
   /**
    *  Creates new FilePreviewer
    *
-   * @param  fc  Description of Parameter
+   * @param  fc  File chooser that this object is associated with.
    */
   public JAIFilePreviewer(JFileChooser fc) {
     try {
@@ -78,14 +81,16 @@ public class JAIFilePreviewer extends JPanel
     catch (Exception e) {
       e.printStackTrace();
     }
-//    setSize(new Dimension(xSize + 10, ySize + 10));
-//    setPreferredSize(new Dimension(xSize + 10, ySize + 10));
     fc.addPropertyChangeListener(this);
   }
 
 
   /**
-   * @param  e
+   *  Updates image preview when received
+   *  JFileChooser.SELECTED_FILE_CHANGED_PROPERTY event. This method should not
+   *  be called directly.
+   *
+   * @param  e  Event.
    */
   public void propertyChange(PropertyChangeEvent e) {
     String prop = e.getPropertyName();
@@ -99,6 +104,9 @@ public class JAIFilePreviewer extends JPanel
   }
 
 
+  /*
+   *
+   */
   private String getFileSizeString(long fileSize) {
     String fileSizeString = null;
     if (fileSize < SIZE_KB) {
@@ -129,7 +137,6 @@ public class JAIFilePreviewer extends JPanel
   private JAIReader.ImageInfo loadImage() {
     if (file == null || file.isDirectory()) {
       ImageIconLabel.setIcon(null);
-//      iconCanvas1.setImageIcon(null);
       fileSizeLabel.setText(" ");
       return null;
     }
@@ -183,6 +190,9 @@ public class JAIFilePreviewer extends JPanel
   }
 
 
+  /*
+   *
+   */
   private void jbInit() throws Exception {
     this.setLayout(gridBagLayout1);
     fileSizeLabel.setHorizontalAlignment(SwingConstants.CENTER);

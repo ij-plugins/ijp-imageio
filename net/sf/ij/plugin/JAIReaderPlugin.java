@@ -36,7 +36,7 @@ import net.sf.ij.jaiio.JAIReader;
  *
  * @author     Jarek Sacha
  * @created    February 10, 2002
- * @version    $Revision: 1.4 $
+ * @version    $Revision: 1.5 $
  */
 
 public class JAIReaderPlugin implements PlugIn {
@@ -56,9 +56,12 @@ public class JAIReaderPlugin implements PlugIn {
 
 
   /**
-   *  Main processing method for the JAIReaderPlugin object
+   *  Main processing method for the JAIReaderPlugin object. Type of the file
+   *  dialog is determined by value of <code>arg</code>. If it is equal <code>ARG_IMAGE_PREVIEW</code>
+   *  then file chooser with image preview will be used. By default standard
+   *  Image/J's open dialog is used.
    *
-   * @param  arg  Description of Parameter
+   * @param  arg  Can be user to specify type of the open dialog.
    */
   public void run(String arg) {
     String type = (arg == null) ? ARG_SIMPLE : arg.trim().toLowerCase();
