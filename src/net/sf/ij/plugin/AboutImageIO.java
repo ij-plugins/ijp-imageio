@@ -21,15 +21,38 @@
 package net.sf.ij.plugin;
 
 import ij.plugin.PlugIn;
+import ij.IJ;
 
 /**
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AboutImageIO implements PlugIn {
+    
+    private static final String TITLE = "About Image IO Plugin Bundle";
+    private static final String MESAGE =
+            "ij-ImageIO plugins add to ImageJ support for additional image\n" +
+            "file formats and their variants, including BMP, PNG, PNM, JPEG,\n" +
+            "TIFF. Added support provides for handling of compressed, tiled,\n" +
+            "1bit, 16bit, and 32bit images.\n" +
+            "For more detailed informations see ij-ImageIO home page at:\n" +
+            "http://ij-plugins.sf.net/plugins/imageio";
 
     public void run(String string) {
+        try {
         HelpPanel.showHelpWindow(false);
+        }
+        catch(RuntimeException e) {
+            String msg = MESAGE +"\n"+
+                    "*****************************************************************\n"+
+                    "Regular Image IO help failed to load content from HTML resource.\n"+
+                    "This may be a problem with the installation of current version\n"+
+                    "of ImageJ. Check Image IO home page (see below) for more details,\n"+
+                    "look for section \"Known Issues\"\n" +
+                    "________________________________________________________________\n"+
+                    "Original error message:\n" + e;
+            IJ.showMessage(TITLE, msg);
+        }
     }
 
 }
