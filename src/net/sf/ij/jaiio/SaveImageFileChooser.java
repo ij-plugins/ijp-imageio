@@ -36,7 +36,7 @@ import java.util.TreeSet;
  * Extension of JFileChooser with ability to return pages selected in multi-image files (e.g. TIFF).
  * 
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 
 public class SaveImageFileChooser
@@ -123,8 +123,7 @@ public class SaveImageFileChooser
         final String propertyName = evt.getPropertyName();
 
         // File filter changed
-        if (evt.getPropertyName().equals(
-                JFileChooser.FILE_FILTER_CHANGED_PROPERTY)) {
+        if (evt.getPropertyName().equals(JFileChooser.FILE_FILTER_CHANGED_PROPERTY)) {
             FileFilter fileFilter = this.getFileFilter();
 
             if (fileFilter instanceof JAIFileFilter) {
@@ -145,8 +144,7 @@ public class SaveImageFileChooser
             }
         }
         // Selected file changed
-        else if (evt.getPropertyName().equals(
-                JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
+        else if (evt.getPropertyName().equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
             // Trick here is to distinguish legitimate changes of the file selected 
             // from ones caused by changes of file filter. Not having much to
             // relay on e assume that legitimate changes never set the selected
@@ -182,8 +180,7 @@ public class SaveImageFileChooser
             }
         }
         // Track changes in current directory
-        else if (evt.getPropertyName().equals(
-                JFileChooser.DIRECTORY_CHANGED_PROPERTY)) {
+        else if (evt.getPropertyName().equals(JFileChooser.DIRECTORY_CHANGED_PROPERTY)) {
             File newValue = (File) evt.getNewValue();
             if (newValue != null) {
                 selectedFileDirectory = newValue.getAbsolutePath();

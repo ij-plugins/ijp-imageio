@@ -13,16 +13,19 @@ import java.awt.image.IndexColorModel;
  * To change this template use Options | File Templates.
  */
 public class JaiioUtil {
-  private JaiioUtil() {}
-
-  /** Return true if this image color map has only two entries. */
-  public static boolean isBinary(ImageProcessor ip) {
-    ColorModel cm = ip.getColorModel();
-    if(cm instanceof IndexColorModel
-        && ((IndexColorModel)cm).getMapSize() == 2 ) {
-      return true;
+    private JaiioUtil() {
     }
 
-    return false;
-  }
+    /**
+     * Return true if this image color map has only two entries.
+     */
+    public static boolean isBinary(ImageProcessor ip) {
+        ColorModel cm = ip.getColorModel();
+        if (cm instanceof IndexColorModel
+                && ((IndexColorModel) cm).getMapSize() == 2) {
+            return true;
+        }
+
+        return false;
+    }
 }
