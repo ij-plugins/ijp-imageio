@@ -20,16 +20,17 @@
  */
 package net.sf.ij.imageio;
 
-import non_com.media.jai.DataBufferFloat;
-
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
 import ij.process.ColorProcessor;
+import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 import ij.process.ShortProcessor;
-//import ij.process.FloatProcessor;
-import java.awt.image.BufferedImage;
+import java.awt.Point;
 
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
@@ -37,12 +38,19 @@ import java.awt.image.DataBufferInt;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+
+import non_com.media.jai.ComponentSampleModelJAI;
+import non_com.media.jai.DataBufferFloat;
+import non_com.media.jai.FloatDoubleColorModel;
+import non_com.media.jai.RasterFactory;
+import non_com.media.jai.codec.ImageCodec;
 
 /**
  * @author     Jarek Sacha
  * @created    February 18, 2002
- * @version    $Revision: 1.3 $
+ * @version    $Revision: 1.4 $
  */
 public class BufferedImageCreator {
 
@@ -87,8 +95,7 @@ public class BufferedImageCreator {
       case ImagePlus.GRAY16:
         return create((ShortProcessor) ip);
       case ImagePlus.GRAY32:
-        throw new IllegalArgumentException(
-            "Images of type GRAY32 (float) are not supported.");
+        return create((FloatProcessor) ip);
       case ImagePlus.COLOR_256:
         return create((ByteProcessor) ip, (IndexColorModel) ip.getColorModel());
       case ImagePlus.COLOR_RGB:
@@ -181,6 +188,34 @@ public class BufferedImageCreator {
         dataBuffer.getData().length);
 
     return bufferedImage;
+  }
+
+
+  /**
+   *  Description of the Method
+   *
+   * @param  src  Description of Parameter
+   * @return      Description of the Returned Value
+   */
+  public static BufferedImage create(FloatProcessor src) {
+
+    int w = src.getWidth();
+    int h = src.getHeight();
+
+    int nbBands = 1;
+    int[] rgbOffset = new int[nbBands];
+    SampleModel sampleModel = RasterFactory.createPixelInterleavedSampleModel(
+        DataBuffer.TYPE_FLOAT, w, h, nbBands, nbBands * w, rgbOffset);
+
+    ColorModel colorModel = ImageCodec.createComponentColorModel(sampleModel);
+
+    float[] pixels = (float[]) src.getPixels();
+    DataBufferFloat dataBuffer = new DataBufferFloat(pixels, pixels.length);
+
+    WritableRaster raster = RasterFactory.createWritableRaster(sampleModel,
+        dataBuffer, new Point(0, 0));
+
+    return new BufferedImage(colorModel, raster, false, null);
   }
 
 
