@@ -26,7 +26,6 @@ import java.awt.image.BufferedImage;
 import java.beans.*;
 import java.io.*;
 import javax.swing.*;
-import net.sf.ij.swing.IconCanvas;
 
 /**
  *  A utility for JAIFIleChooser that displays preview image, image file size,
@@ -34,7 +33,7 @@ import net.sf.ij.swing.IconCanvas;
  *
  * @author     Jarek Sacha
  * @created    January 9, 2001
- * @version    $Revision: 1.5 $
+ * @version    $Revision: 1.6 $
  */
 public class JAIFilePreviewer extends JPanel
      implements PropertyChangeListener {
