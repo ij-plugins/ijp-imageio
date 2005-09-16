@@ -42,7 +42,7 @@ import java.io.IOException;
  * Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  *
  * @author Jarek Sacha
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ImageIOSaveAsPlugin implements PlugIn {
     public static final String PNG = "png";
@@ -80,7 +80,6 @@ public class ImageIOSaveAsPlugin implements PlugIn {
             String fileName = null;
             String codecName = null;
             ImageEncodeParam encodeParam = null;
-
 
             // Check with ImageJ if macro options are present
             String macroOptions = Macro.getOptions();
@@ -120,7 +119,8 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                     // Get fileName and codecName showing save dialog
                     if (jaiChooser == null) {
                         jaiChooser = JAIFileChooserFactory.createJAISaveChooser();
-                        jaiChooser.setCurrentDirectory(new File(OpenDialog.getDefaultDirectory()));
+                        final String dirName = OpenDialog.getDefaultDirectory();
+                        jaiChooser.setCurrentDirectory(new File(dirName != null ? dirName : "."));
                     }
 
                     File file = new File(imp.getTitle());
@@ -147,12 +147,12 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                     file = jaiChooser.getSelectedFile();
                     if (file.getName().indexOf(".") < 0) {
                         file = new File(file.getParent(),
-                                        file.getName() + "." + getFileExtension(codecName));
+                                file.getName() + "." + getFileExtension(codecName));
                     }
                     fileName = file.getAbsolutePath();
                 } else if (fileName == null) {
                     SaveDialog saveDialog = new SaveDialog("Save As " + codecName + "...", imp.getTitle(),
-                                    "." + getFileExtension(codecName));
+                            "." + getFileExtension(codecName));
                     // Make only single call to saveDialog.getFileName(). When recording a macro,
                     // each call records path in a macro (ImageJ 1.33k)
                     final String saveDialogFileName = saveDialog.getFileName();

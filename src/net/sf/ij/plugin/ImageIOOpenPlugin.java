@@ -35,20 +35,20 @@ import java.util.ArrayList;
 
 /**
  * Opens file chooser dialog and open the image using JAI codec.
- * 
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ImageIOOpenPlugin implements PlugIn {
     private static final String TITLE = "Image IO Open";
 
     /**
-         * Argument passed to <code>run</code> method to use standard Image/J open dialog.
-         */
+     * Argument passed to <code>run</code> method to use standard Image/J open dialog.
+     */
     public final static String ARG_SIMPLE = "simple";
     /**
-         * Argument passed to <code>run</code> method to use open dialog with an image preview.
-         */
+     * Argument passed to <code>run</code> method to use open dialog with an image preview.
+     */
     public final static String ARG_IMAGE_PREVIEW = "preview";
 
     private static ImageFileChooser jaiChooser;
@@ -104,13 +104,13 @@ public class ImageIOOpenPlugin implements PlugIn {
     }
 
     /**
-         * Attempts to combine images on the list into a stack. If successful return the combined image,
-         * otherwise return null. Images cannot be combined if they are of different types,  different
-         * sizes, or have more then single slice.
-         *
-         * @param imageList List of images to combine into a stack.
-         * @return Combined image if successful, otherwise null.
-         */
+     * Attempts to combine images on the list into a stack. If successful return the combined image,
+     * otherwise return null. Images cannot be combined if they are of different types,  different
+     * sizes, or have more then single slice.
+     *
+     * @param imageList List of images to combine into a stack.
+     * @return Combined image if successful, otherwise null.
+     */
     private static ImagePlus combineImages(ArrayList imageList) {
         // TODO: in unable to combine throw exception with error message, do not return null.
         if (imageList == null || imageList.size() < 1)
@@ -135,7 +135,7 @@ public class ImageIOOpenPlugin implements PlugIn {
                 return null;
             }
             if (fileType == im.getFileInfo().fileType
-                        && w == im.getWidth() && h == im.getHeight()) {
+                    && w == im.getWidth() && h == im.getHeight()) {
                 stack.addSlice(im.getTitle(), im.getProcessor().getPixels());
             } else {
                 return null;
@@ -148,13 +148,13 @@ public class ImageIOOpenPlugin implements PlugIn {
 
 
     /**
-         * Main processing method for the ImageIOOpenPlugin object. Type of the file dialog is
-         * determined by value of <code>arg</code>. If it is equal <code>ARG_IMAGE_PREVIEW</code> then
-         * file chooser with image preview will be used. By default standard Image/J's open dialog is
-         * used.
-         *
-         * @param arg Can be user to specify type of the open dialog.
-         */
+     * Main processing method for the ImageIOOpenPlugin object. Type of the file dialog is
+     * determined by value of <code>arg</code>. If it is equal <code>ARG_IMAGE_PREVIEW</code> then
+     * file chooser with image preview will be used. By default standard Image/J's open dialog is
+     * used.
+     *
+     * @param arg Can be user to specify type of the open dialog.
+     */
     public void run(String arg) {
 
         IJ.showStatus("Starting \"" + TITLE + "\" plugin...");
@@ -174,8 +174,8 @@ public class ImageIOOpenPlugin implements PlugIn {
 
         if (files.length > 1) {
             combineIntoStack = IJ.showMessageWithCancel(TITLE,
-                            "" + files.length + " files selected.\n"
-                    + "Should the images be combined into a stack?");
+                    "" + files.length + " files selected.\n"
+                            + "Should the images be combined into a stack?");
         }
 
         if (files != null) {
@@ -194,7 +194,7 @@ public class ImageIOOpenPlugin implements PlugIn {
         if (jaiChooser == null) {
             jaiChooser = JAIFileChooserFactory.createJAIOpenChooser();
             final String dirName = OpenDialog.getDefaultDirectory();
-            final File dirFile = new File(dirName);
+            final File dirFile = new File(dirName != null ? dirName : ".");
             jaiChooser.setCurrentDirectory(dirFile);
             jaiChooser.setMultiSelectionEnabled(true);
         }
