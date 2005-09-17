@@ -39,7 +39,7 @@ import java.util.Iterator;
  * javax.imageio).
  *
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AdobeDeflateTest extends TestCase {
     public AdobeDeflateTest(String test) {
@@ -62,7 +62,7 @@ public class AdobeDeflateTest extends TestCase {
         // Load image
         BufferedImage bi = ImageIO.read(new File(inFilePath));
 
-        assertNotNull("Image loaded", bi);
+        assertNotNull("Image loaded not null", bi);
 
         assertEquals("Width", 512, bi.getWidth());
         assertEquals("Heighr", 512, bi.getWidth());
