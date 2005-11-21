@@ -18,8 +18,8 @@
     <!-- In case ant.home is not defined, set default value -->
     <property name="ant.home" location="/usr/share/ant"/>
 
-    <property name="jaicodec.jar" location="lib/JAI-codec.1.1.1.jar"/>
-
+    <!--     <property name="jaicodec.jar" location="lib/JAI-codec.1.1.1.jar"/>
+    -->
     <!-- CVS setup -->
     <property name="cvs.root" value=":pserver:anonymous@cvs.sourceforge.net:/cvsroot/ij-plugins"/>
     <property name="imageio.cvs.module" value="imageio"/>
@@ -46,9 +46,15 @@
     <property name="main.class" value="net.sf.ij.plugin.HelpPanel"/>
 
 
+    <fileset id="library.files"
+             dir="${lib.dir}">
+        <include name="*.jar"/>
+        <exclude name="ij.jar"/>
+    </fileset>
+
     <path id="compile.classpath">
         <pathelement location="${lib.dir}/ij.jar"/>
-        <pathelement location="${jaicodec.jar}"/>
+        <fileset refid="library.files"/>
     </path>
 
     <fileset id="config.files"
@@ -77,9 +83,9 @@
             depends="jar">
 
         <java
-            jar="${lib.dir}/ij.jar"
-            dir="${base.dir}"
-            fork="true">
+                jar="${lib.dir}/ij.jar"
+                dir="${base.dir}"
+                fork="true">
             <jvmarg value="-Dplugins.dir=${sandbox.dir}"/>
         </java>
 
@@ -94,11 +100,11 @@
             depends="init"
             description="Compile all examples">
         <javac
-            srcdir="${src.dir}"
-            destdir="${build.classes.dir}"
-            debug="on"
-            target="1.3"
-            source="1.3">
+                srcdir="${src.dir}"
+                destdir="${build.classes.dir}"
+                debug="on"
+                target="1.3"
+                source="1.3">
             <classpath refid="compile.classpath"/>
             <exclude name="**/*Test.java"/>
         </javac>
@@ -129,7 +135,8 @@
             <manifest>
                 <attribute name="Main-Class" value="${main.class}"/>
             </manifest>
-            <zipfileset src="${jaicodec.jar}"/>
+            <!--             <zipgroupfileset refid="library.files"/>
+            -->
         </jar>
     </target>
 
@@ -148,7 +155,7 @@
                 <exclude name="**/**TestCase.java"/>
             </fileset>
             <footer>
-<![CDATA[
+                <![CDATA[
 
 
                 <a href="http://ij-plugins.sourceforge.net">
@@ -179,8 +186,8 @@
             depends="compile"
             description="Perform JDepend analysis and generate design quality metrics">
         <jdepend
-            format="xml"
-            outputfile="${build.dir}/jdepend-report.xml">
+                format="xml"
+                outputfile="${build.dir}/jdepend-report.xml">
 
             <sourcespath>
                 <pathelement location="${build.classes.dir}"/>
@@ -250,7 +257,7 @@
              destfile="${dist.dir}/${package.name}_bin_${DSTAMP}.zip"/>
 
         <!-- Cleanup -->
-<!--
+        <!--
         <delete dir="{cvs.imageio.dir}"/>
         -->
     </target>
@@ -278,15 +285,15 @@
     <!-- Target: changelog -->
     <target name="changelog" depends="init">
         <cvschangelog
-            dir="${base.dir}"
-            destfile="${dist.dir}/changelog.xml"
-            start="LatestRelease"
-            end="HEAD"
-        />
+                dir="${base.dir}"
+                destfile="${dist.dir}/changelog.xml"
+                start="LatestRelease"
+                end="HEAD"
+                />
         <style
-            in="${build.dir}/changelog.xml"
-            out="${dist.dir}/changelog.html"
-            style="${ant.home}/etc/changelog.xsl">
+                in="${build.dir}/changelog.xml"
+                out="${dist.dir}/changelog.html"
+                style="${ant.home}/etc/changelog.xsl">
             <param name="title" expression="JAI-ImageIO ChangeLog"/>
             <param name="module" expression="imageio"/>
             <param name="cvsweb" expression="http://cvs.sourceforge.net/viewcvs.py/ij-plugins/"/>
@@ -296,21 +303,21 @@
     <!-- Target: tagdif -->
     <target name="tagdiff" depends="init">
         <cvstagdiff
-            cvsroot="${cvs.root}"
-            destfile="${build.dir}/tagdiff.xml"
-            package="${imageio.cvs.module}"
-            starttag="LatestRelease"
-            endtag="HEAD"
-            compression="true"
-        />
-<!--
+                cvsroot="${cvs.root}"
+                destfile="${build.dir}/tagdiff.xml"
+                package="${imageio.cvs.module}"
+                starttag="LatestRelease"
+                endtag="HEAD"
+                compression="true"
+                />
+        <!--
         startTag="ij-jai-imageio_v_1_0_5"
         endTag="HEAD"
         -->
         <style
-            in="${build.dir}/tagdiff.xml"
-            out="${dist.dir}/tagdiff.html"
-            style="${ant.home}/etc/tagdiff.xsl">
+                in="${build.dir}/tagdiff.xml"
+                out="${dist.dir}/tagdiff.html"
+                style="${ant.home}/etc/tagdiff.xsl">
             <param name="title" expression="JAI-ImageIO Tag Diff"/>
             <param name="module" expression="${imageio.cvs.module}"/>
             <param name="cvsweb" expression="http://cvs.sourceforge.net/viewcvs.py/ij-plugins/"/>
