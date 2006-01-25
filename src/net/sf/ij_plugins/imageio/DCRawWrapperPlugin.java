@@ -23,14 +23,19 @@ package net.sf.ij_plugins.imageio;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.gui.GenericDialog;
 import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
 import net.sf.ij_plugins.io.PGM_Reader2;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Plugin for opening RAW images. It calls DCRAW to convert a RAW image to PPM then loads that PPM image
+ * Plugin for opening RAW images. It calls DCRAW to convert a RAW image to PPM then loads that PPM image.
+ * <p/>
+ * The home site for DCRAW is http://www.cybercom.net/~dcoffin/dcraw/.
  *
  * @author Jarek Sacha
  */
@@ -42,7 +47,7 @@ public class DCRawWrapperPlugin implements PlugIn {
 
     public void run(final String arg) {
 
-        // Establish locartion of DCRAW executable
+        // Establish location of DCRAW executable
         final String dcrawPath = ij.Menus.getPlugInsPath() + File.separator + dcrawFileName;
         final File dcrawFile = new File(dcrawPath);
         if (!dcrawFile.exists()) {
@@ -57,6 +62,7 @@ public class DCRawWrapperPlugin implements PlugIn {
             return;
         }
 
+
         final File rawFile = new File(openDialog.getDirectory(), openDialog.getFileName());
         IJ.showStatus("Opening RAW file: " + rawFile.getName());
 
@@ -64,13 +70,57 @@ public class DCRawWrapperPlugin implements PlugIn {
         final File ppmFile = new File(rawFile.getParentFile(), toPPMFileName(rawFile.getName()));
         final boolean removePPM = !ppmFile.exists();
 
-        // Run DCRAW
-        final String[] command = {
-                dcrawPath,
-                "-v",
-                "-4",
-                rawFile.getAbsolutePath()
+        // Ask for DCRAW options
+        final GenericDialog dialog = new GenericDialog("'" + TITLE + "' Options");
+
+        // Auto whitebalance
+        dialog.addCheckbox("Use automatic whitebalance", false);
+
+        // Image format
+        final String[][] formatChoice = {
+                {"8-bit non-linear", "16-bit linear"},
+                {"-2", "-4"}
         };
+        dialog.addChoice("Read as", formatChoice[0], formatChoice[0][0]);
+
+        // Interpolation quality
+        final String[] interpolationQuality = {"0", "1", "2", "3"};
+        dialog.addChoice("Interpolation quality", interpolationQuality, interpolationQuality[3]);
+
+        dialog.showDialog();
+
+        if (dialog.wasCanceled()) {
+            // No selection
+            return;
+        }
+
+        // Command line components
+        final List commandList = new ArrayList();
+
+        // First put DCRAW executable
+        commandList.add(dcrawPath);
+        // Turn on verbose messages
+        commandList.add("-v");
+
+        // Add options
+        if (dialog.getNextBoolean()) {
+            commandList.add("-a");
+        }
+        commandList.add(formatChoice[1][dialog.getNextChoiceIndex()]);
+        commandList.add("-q");
+        commandList.add(dialog.getNextChoice());
+
+        // Add input PPM
+        commandList.add(rawFile.getAbsolutePath());
+
+        // Run DCRAW
+        final String[] command = (String[]) commandList.toArray(new String[commandList.size()]);
+        if (IJ.debugMode) {
+            IJ.log("DCRAW command line elements:");
+            for (int i = 0; i < command.length; i++) {
+                IJ.log("  " + command[i]);
+            }
+        }
         try {
             executeCommand(command);
         } catch (DCRawWrapperException e) {
