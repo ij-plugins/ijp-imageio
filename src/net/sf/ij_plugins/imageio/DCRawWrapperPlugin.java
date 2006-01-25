@@ -21,9 +21,11 @@
 package net.sf.ij_plugins.imageio;
 
 import ij.IJ;
+import ij.ImagePlus;
+import ij.ImageStack;
 import ij.io.OpenDialog;
-import ij.io.Opener;
 import ij.plugin.PlugIn;
+import net.sf.ij_plugins.io.PGM_Reader2;
 
 import java.io.*;
 
@@ -66,6 +68,7 @@ public class DCRawWrapperPlugin implements PlugIn {
         final String[] command = {
                 dcrawPath,
                 "-v",
+                "-4",
                 rawFile.getAbsolutePath()
         };
         try {
@@ -82,12 +85,22 @@ public class DCRawWrapperPlugin implements PlugIn {
             return;
         }
         IJ.showStatus("Opening: " + ppmFile.getAbsolutePath());
-        final Opener opener = new Opener();
-        opener.open(ppmFile.getAbsolutePath());
+        final PGM_Reader2 reader = new PGM_Reader2();
+        final ImageStack stack;
+        try {
+            stack = reader.openFile(ppmFile.getAbsolutePath());
+        } catch (IOException e) {
+            IJ.error(TITLE, e.getMessage());
+            return;
+        }
+
+        final ImagePlus imp;
+        imp = new ImagePlus(ppmFile.getName(), stack);
+        imp.show();
 
         // Remove PPM if it did not exist
         if (removePPM) {
-            ppmFile.delete();
+//            ppmFile.delete();
         }
     }
 
