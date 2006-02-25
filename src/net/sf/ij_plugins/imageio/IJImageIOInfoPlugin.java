@@ -23,6 +23,7 @@ package net.sf.ij_plugins.imageio;
 import ij.IJ;
 import ij.plugin.PlugIn;
 
+import javax.imageio.ImageIO;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.IIOServiceProvider;
 import javax.imageio.spi.ImageReaderSpi;
@@ -34,16 +35,30 @@ import java.util.Iterator;
  * providers.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class IJImageIOInfoPlugin implements PlugIn {
     public void run(String arg) {
         String message =
                 "--------------------------------------------\n"
-                + serviceProviderInfo(ImageReaderSpi.class, false)
-                + "--------------------------------------------\n"
-                + serviceProviderInfo(ImageWriterSpi.class, false)
-                + "--------------------------------------------\n";
+                        + serviceProviderInfo(ImageReaderSpi.class, false)
+                        + "--------------------------------------------\n"
+                        + serviceProviderInfo(ImageWriterSpi.class, false)
+                        + "--------------------------------------------\n";
+
+        message += "Reader format names: ";
+        final String[] readers = ImageIO.getReaderFormatNames();
+        for (int i = 0; i < readers.length; i++) {
+            message += readers[i] + ", ";
+        }
+        message += "\n";
+
+        message += "Reader format names: ";
+        final String[] writers = ImageIO.getWriterFormatNames();
+        for (int i = 0; i < writers.length; i++) {
+            message += writers[i] + ", ";
+        }
+
 
         IJ.showMessage("ImageIO readers & writers", message);
     }

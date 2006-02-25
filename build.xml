@@ -182,25 +182,6 @@
         <delete dir="${dist.dir}"/>
     </target>
 
-    <target name="jdepend"
-            depends="compile"
-            description="Perform JDepend analysis and generate design quality metrics">
-        <jdepend
-                format="xml"
-                outputfile="${build.dir}/jdepend-report.xml">
-
-            <sourcespath>
-                <pathelement location="${build.classes.dir}"/>
-            </sourcespath>
-            <classpath location="${build.classes.dir}"/>
-        </jdepend>
-
-        <style basedir="${build.dir}" destdir="${build.dir}"
-               includes="jdepend-report.xml"
-               style="${ant.home}/etc/jdepend.xsl"/>
-
-    </target>
-
     <!-- ================= -->
     <!-- Secondary targets -->
     <!-- ================= -->
@@ -236,7 +217,7 @@
             <param name="cvs.root" value="${cvs.root}"/>
         </antcall>
         <!-- Include JAI jar to simplify remove need of rebuilding from source -->
-        <copy todir="${cvs.imageio.dir}/lib" file="${jaicodec.jar}"/>
+        <!--<copy todir="${cvs.imageio.dir}/lib" file="${jaicodec.jar}"/>-->
         <!-- ZIP source -->
         <zip basedir="${cvs.imageio.dir}"
              destfile="${dist.dir}/${package.name}_src_${DSTAMP}.zip"/>

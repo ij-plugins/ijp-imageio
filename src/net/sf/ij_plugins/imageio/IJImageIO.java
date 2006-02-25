@@ -23,8 +23,8 @@ package net.sf.ij_plugins.imageio;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import net.sf.ij.jaiio.BufferedImageCreator;
 import net.sf.ij.jaiio.ImagePlusCreator;
-import net.sf.ij.jaiio.UnsupportedImageModelException;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -40,7 +40,7 @@ import java.util.List;
  * Helper class that for reading images using javax.imageio into ImageJ representation.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class IJImageIO {
     /**
@@ -59,10 +59,9 @@ public class IJImageIO {
      *         with stack size equal to the number of images in the input file.
      * @throws IOException
      * @throws IJImageIOException
-     * @throws UnsupportedImageModelException
      */
     static public ImagePlus[] read(final File file)
-            throws IOException, IJImageIOException, UnsupportedImageModelException {
+            throws IOException, IJImageIOException {
 
         if (file == null) {
             throw new IllegalArgumentException("Argument 'file' cannot be null.");
@@ -111,18 +110,28 @@ public class IJImageIO {
                 final ImagePlus imp = attemptToCombineImages(images);
 
                 // Pepare output image array 'imps'.
-                final ImagePlus[] imps = imp != null
+                return imp != null
                         ? new ImagePlus[]{imp}
                         : (ImagePlus[]) images.toArray(new ImagePlus[numImages]);
-                return imps;
             } catch (Exception ex) {
-                errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage() + "\n");
+                errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage()).append("\n");
             }
         }
 
         throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.\n"
                 + errorBuffer.toString());
 
+    }
+
+    public static boolean write(final ImagePlus imp, final String formatName, final File file) throws IJImageIOException {
+
+        final BufferedImage bi = BufferedImageCreator.create(imp, 0);
+        try {
+            return ImageIO.write(bi, formatName, file);
+        } catch (IOException e) {
+            throw new IJImageIOException("Unable to write image file :" + file.getAbsolutePath()
+                    + "\n" + e.getMessage(), e);
+        }
     }
 
     /**
@@ -156,7 +165,7 @@ public class IJImageIO {
                 return null;
             }
             if (fileType == im.getFileInfo().fileType
-                        && w == im.getWidth() && h == im.getHeight()) {
+                    && w == im.getWidth() && h == im.getHeight()) {
                 stack.addSlice(im.getTitle(), im.getProcessor().getPixels());
             } else {
                 return null;

@@ -23,11 +23,15 @@ package net.sf.ij_plugins.imageio;
 import ij.ImagePlus;
 import junit.framework.TestCase;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import java.io.File;
+import java.util.Iterator;
 
 /**
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IJImageIOTest extends TestCase {
     public IJImageIOTest(String test) {
@@ -80,6 +84,34 @@ public class IJImageIOTest extends TestCase {
         //        assertTrue("Image name length larger than 0", imp.getTitle().trim().length() > 0);
 
         //        imp.show();
+    }
+
+    public void testJPEG2000Writer() {
+        final String formatName = "jpeg2000";
+        final Iterator writers = ImageIO.getImageWritersByFormatName(formatName);
+        assertNotNull(writers);
+        assertTrue(writers.hasNext());
+
+        final ImageWriter writer = (ImageWriter) writers.next();
+        final ImageWriteParam writerParam = writer.getDefaultWriteParam();
+
+        writerParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+        final String[] compressionTypes = writerParam.getCompressionTypes();
+        print("compressionTypes", compressionTypes);
+
+        writerParam.setCompressionType(compressionTypes[0]);
+        final String[] compressionQualityDescriptions = writerParam.getCompressionQualityDescriptions();
+        print("compressionQualityDescriptions", compressionQualityDescriptions);
+    }
+
+    void print(final String message, final String[] a) {
+        System.out.print(message + ": [");
+        if (a != null) {
+            for (int i = 0; i < a.length; i++) {
+                System.out.print(a[i] + ", ");
+            }
+        }
+        System.out.println("]");
     }
 
 }
