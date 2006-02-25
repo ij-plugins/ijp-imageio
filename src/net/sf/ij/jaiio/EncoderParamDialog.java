@@ -30,7 +30,7 @@ import java.awt.event.WindowEvent;
 /**
  */
 public class EncoderParamDialog extends JDialog {
-    private boolean accepted = false;
+    private boolean accepted;
     JPanel buttonPanel = new JPanel();
     JButton okButton = new JButton();
     JButton cancelButton = new JButton();
@@ -63,17 +63,17 @@ public class EncoderParamDialog extends JDialog {
 
     void okButton_actionPerformed(ActionEvent e) {
         accepted = true;
-        hide();
+        setVisible(false);
     }
 
     void cancelButton_actionPerformed(ActionEvent e) {
         accepted = false;
-        hide();
+        setVisible(false);
     }
 
     public static void main(String[] args) {
         EncoderParamDialog dialog = new EncoderParamDialog();
-        dialog.show();
+        dialog.setVisible(true);
         System.out.println("Accepted = " + dialog.isAccepted());
         System.exit(0);
     }

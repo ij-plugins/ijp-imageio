@@ -36,18 +36,14 @@ import java.awt.event.WindowEvent;
 
 
 /**
- * Component for editing TIFF encoding options represented by
- * <code>non_com.media.jai.codec.TIFFEncodeParam</code>.
- * 
+ * Component for editing TIFF encoding options represented by <code>non_com.media.jai.codec.TIFFEncodeParam</code>.
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 
 public class TIFFEncodeParamPanel extends JPanel {
 
-//    private String[] deflateLevels = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
-    private TitledBorder titledBorder1;
-    private TitledBorder titledBorder2;
     private GridBagLayout gridBagLayout3 = new GridBagLayout();
     private ButtonGroup compressionGroup = new ButtonGroup();
     private ButtonGroup bwCompressionGroup = new ButtonGroup();
@@ -92,7 +88,7 @@ public class TIFFEncodeParamPanel extends JPanel {
 
     /**
      * Gets the imageEncodeParam attribute of the TIFFEncodeParamPanel object
-     * 
+     *
      * @param blackWhite Description of the Parameter
      * @return The imageEncodeParam value
      */
@@ -125,7 +121,7 @@ public class TIFFEncodeParamPanel extends JPanel {
 
     /**
      * The main program for the TIFFEncodeParamBox class
-     * 
+     *
      * @param args The command line arguments
      */
     public static void main(String[] args) {
@@ -144,8 +140,8 @@ public class TIFFEncodeParamPanel extends JPanel {
 
 
     private void jbInit() throws Exception {
-        titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Compression");
-        titledBorder2 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Black/White Images Only");
+        TitledBorder titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Compression");
+        TitledBorder titledBorder2 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Black/White Images Only");
         this.setLayout(gridBagLayout3);
         optionsPanel.setBorder(titledBorder1);
         optionsPanel.setLayout(gridBagLayout4);

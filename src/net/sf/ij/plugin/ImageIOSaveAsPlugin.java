@@ -42,7 +42,7 @@ import java.io.IOException;
  * Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  *
  * @author Jarek Sacha
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class ImageIOSaveAsPlugin implements PlugIn {
     public static final String PNG = "png";
@@ -177,7 +177,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                         paramDialog = new EncoderParamDialog();
                     }
                     SwingUtils.centerOnScreen(paramDialog, false);
-                    paramDialog.show();
+                    paramDialog.setVisible(true);
                     if (!paramDialog.isAccepted()) {
                         Macro.abort();
                         IJ.showMessage(TITLE, "Option dialog cancelled, image not saved.");

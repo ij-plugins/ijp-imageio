@@ -29,9 +29,9 @@ import java.util.ArrayList;
 
 /**
  * Plugin for uninstalling JAI Image IO plugin bundle version 1.0.5 or ealier.
- * 
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class RemoveOldPlugins implements PlugIn {
     private ArrayList foundComponents;
@@ -40,19 +40,19 @@ public class RemoveOldPlugins implements PlugIn {
     private static final String CANCELLED_MESSAGE
             = "Operation canceled, no changes made to installation.";
 
-    private final static String[] ROOT_FILES = {
-        "Readme - JAI Image IO.txt",
-        "Changes - JAI Image IO.txt",
-        "ij-jai-imageio.jar",
-        "JAI Image IO",
+    private static final String[] ROOT_FILES = {
+            "Readme - JAI Image IO.txt",
+            "Changes - JAI Image IO.txt",
+            "ij-jai-imageio.jar",
+            "JAI Image IO",
     };
-    private final static String SUBDIR = "JAI Image IO";
-    private final static String[] SUBDIR_FILES = {
-        "JAI_Reader.class",
-        "JAI_Reader_with_Preview.class",
-        "JAI_Writer.class",
-        "JarClassLoader.class",
-        "JarPluginProxy.class"
+    private static final String SUBDIR = "JAI Image IO";
+    private static final String[] SUBDIR_FILES = {
+            "JAI_Reader.class",
+            "JAI_Reader_with_Preview.class",
+            "JAI_Writer.class",
+            "JarClassLoader.class",
+            "JarPluginProxy.class"
     };
 
 
@@ -61,8 +61,8 @@ public class RemoveOldPlugins implements PlugIn {
         // option to cancel.
         boolean ok = IJ.showMessageWithCancel(CAPTION,
                 "This plugin will attempt to find and uninstall "
-                + "obsolete JAI Image IO plugins.\n" +
-                "To proceed with uninstall press OK.");
+                        + "obsolete JAI Image IO plugins.\n" +
+                        "To proceed with uninstall press OK.");
 
         if (!ok) {
             IJ.showMessage(CAPTION, CANCELLED_MESSAGE);
@@ -100,7 +100,7 @@ public class RemoveOldPlugins implements PlugIn {
         messageBuffer.append("Following files will be uninstalled: \n");
         for (int i = 0; i < foundComponents.size(); i++) {
             File file = (File) foundComponents.get(i);
-            messageBuffer.append(file.getAbsolutePath() + "\n");
+            messageBuffer.append(file.getAbsolutePath()).append("\n");
         }
 
         // Confirm removal
@@ -115,7 +115,7 @@ public class RemoveOldPlugins implements PlugIn {
         for (int i = 0; i < foundComponents.size(); i++) {
             File file = (File) foundComponents.get(i);
             if (!file.delete()) {
-                errorBuffer.append(file.getAbsolutePath() + "\n");
+                errorBuffer.append(file.getAbsolutePath()).append("\n");
             }
         }
 
@@ -123,7 +123,7 @@ public class RemoveOldPlugins implements PlugIn {
             String[] list = subdir.list();
             if (list != null && list.length == 0) {
                 if (!subdir.delete()) {
-                    errorBuffer.append(subdir.getAbsolutePath() + "\n");
+                    errorBuffer.append(subdir.getAbsolutePath()).append("\n");
                 }
             }
         }
@@ -140,9 +140,9 @@ public class RemoveOldPlugins implements PlugIn {
 
 
     /**
-     * Look for given file in directory <code>dir</code>. If found, add it to <code>foundComponents</code> list.
-     * Directories are ignored to prevent accidental removal.
-     * 
+     * Look for given file in directory <code>dir</code>. If found, add it to
+     * <code>foundComponents</code> list. Directories are ignored to prevent accidental removal.
+     *
      * @param dir      directory to search.
      * @param fileName file to look for.
      */

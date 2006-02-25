@@ -32,18 +32,17 @@ import java.util.Enumeration;
 
 /**
  * Writes images to files using <a href="http://developer.java.sun.com/developer/sampsource/jai/">
- * JAI image I/O codec </a> . If writing to TIFF files, image resolution and
- * Image/J's description string containing calibration information are also
- * saved.
- * 
+ * JAI image I/O codec </a> . If writing to TIFF files, image resolution and Image/J's description
+ * string containing calibration information are also saved.
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class JAIWriter {
 
-    private final static double TIFF_RATIONAL_SCALE = 1000000;
-    private final static String TIFF_FORMAT_NAME = "tiff";
-    private final static String DEFAULT_FORMAT_NAME = TIFF_FORMAT_NAME;
+    private static final double TIFF_RATIONAL_SCALE = 1000000;
+    private static final String TIFF_FORMAT_NAME = "tiff";
+    private static final String DEFAULT_FORMAT_NAME = TIFF_FORMAT_NAME;
 
     private String formatName = DEFAULT_FORMAT_NAME;
     private ImageEncodeParam encodeParam;
@@ -58,7 +57,7 @@ public class JAIWriter {
 
     /**
      * Gets all supported format names.
-     * 
+     *
      * @return The FormatNames value
      */
     public static String[] getFormatNames() {
@@ -76,16 +75,15 @@ public class JAIWriter {
      *
      */
     private static long[][] toRational(double x) {
-        long[][] r = {{
-            (long) (TIFF_RATIONAL_SCALE * x),
-            (long) TIFF_RATIONAL_SCALE}};
-        return r;
+        return new long[][]{{
+                (long) (TIFF_RATIONAL_SCALE * x),
+                (long) TIFF_RATIONAL_SCALE}};
     }
 
 
     /**
      * Sets the FormatName attribute of the JAIWriter object
-     * 
+     *
      * @param formatName The new FormatName value
      */
     public void setFormatName(String formatName) {
@@ -95,7 +93,7 @@ public class JAIWriter {
 
     /**
      * Gets the FormatName attribute of the JAIWriter object
-     * 
+     *
      * @return The FormatName value
      */
     public String getFormatName() {
@@ -105,15 +103,15 @@ public class JAIWriter {
 
     /**
      * Write image <code>im</code> to file <code>fileName</code>.
-     * 
+     *
      * @param fileName Image output file name.
      * @param im       Image to save.
-     * @throws FileNotFoundException    If the file exists but is a directory
-     *                                  rather than a regular file, does not exist but cannot be created, or
-     *                                  cannot be opened for any other reason.
+     * @throws FileNotFoundException    If the file exists but is a directory rather than a regular
+     *                                  file, does not exist but cannot be created, or cannot be
+     *                                  opened for any other reason.
      * @throws IOException              If there were error writing to file.
-     * @throws IllegalArgumentException When trying to save having multiple
-     *                                  slices using file format different then TIFF.
+     * @throws IllegalArgumentException When trying to save having multiple slices using file format
+     *                                  different then TIFF.
      */
     public void write(String fileName, ImagePlus im)
             throws FileNotFoundException, IOException, IllegalArgumentException {
@@ -128,7 +126,7 @@ public class JAIWriter {
             if (imageEncoder instanceof TIFFImageEncoder) {
                 TIFFEncodeParam param = (TIFFEncodeParam)
                         ((encodeParam instanceof TIFFEncodeParam)
-                        ? encodeParam : null); //imageEncoder.getParam());
+                                ? encodeParam : null); //imageEncoder.getParam());
                 if (param == null) {
                     param = new TIFFEncodeParam();
                 }
@@ -204,13 +202,13 @@ public class JAIWriter {
 
 
     /**
-     * This is a copy of a private method of TIFFImageEncoder. Here it is used to
-     * convert USHORT to TIFFImageEncoder representation.
-     * 
+     * This is a copy of a private method of TIFFImageEncoder. Here it is used to convert USHORT to
+     * TIFFImageEncoder representation.
+     *
      * @param intArray Integer array representing unsigned short values.
      * @return Input array represented as char (16 bit).
      */
-    private final static char[] intsToChars(int[] intArray) {
+    private static final char[] intsToChars(int[] intArray) {
         int arrayLength = intArray.length;
         char[] charArray = new char[arrayLength];
         for (int i = 0; i < arrayLength; i++) {

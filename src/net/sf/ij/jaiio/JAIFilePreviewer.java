@@ -29,20 +29,18 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * A utility for JAIFIleChooser that displays preview image, image file size,
- * and image dimensions.
- * 
+ * A utility for JAIFIleChooser that displays preview image, image file size, and image dimensions.
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class JAIFilePreviewer extends JPanel
         implements PropertyChangeListener {
 
-//  final static String FILE_SIZE_PREFIX = "File Size: ";
-    final static String FILE_SIZE_PREFIX = "";
-    final static long SIZE_KB = 1024;
-    final static long SIZE_MB = SIZE_KB * 1024;
-    final static long SIZE_GB = SIZE_MB * 1024;
+    static final String FILE_SIZE_PREFIX = "";
+    static final long SIZE_KB = 1024;
+    static final long SIZE_MB = SIZE_KB * 1024;
+    static final long SIZE_GB = SIZE_MB * 1024;
 
     /**
      * Description of the Field
@@ -57,7 +55,7 @@ public class JAIFilePreviewer extends JPanel
      */
     protected int iconSizeY = 100;
 
-    private JAIReader.ImageInfo imageInfo = null;
+    private JAIReader.ImageInfo imageInfo;
     private int[] pageIndex = null;
     private ImagePageSelectionDialog
             imagePageSelectionDialog = new ImagePageSelectionDialog();
@@ -89,7 +87,7 @@ public class JAIFilePreviewer extends JPanel
 
     /**
      * Creates new FilePreviewer
-     * 
+     *
      * @param fc File chooser that this object is associated with.
      */
     public JAIFilePreviewer(JFileChooser fc) {
@@ -105,7 +103,7 @@ public class JAIFilePreviewer extends JPanel
 
     /**
      * Gets the PageIndex attribute of the JAIFilePreviewer object
-     * 
+     *
      * @return The PageIndex value
      */
     public int[] getPageIndex() {
@@ -122,8 +120,8 @@ public class JAIFilePreviewer extends JPanel
 
 
     /**
-     * Updates image preview when received JFileChooser.SELECTED_FILE_CHANGED_PROPERTY
-     * event. This method should not be called directly.
+     * Updates image preview when received JFileChooser.SELECTED_FILE_CHANGED_PROPERTY event. This
+     * method should not be called directly.
      *
      * @param e Event.
      */
@@ -183,7 +181,7 @@ public class JAIFilePreviewer extends JPanel
 
     /**
      * Load first image in the file.
-     * 
+     *
      * @return image info.
      */
     private JAIReader.ImageInfo loadImage() {
@@ -224,9 +222,9 @@ public class JAIFilePreviewer extends JPanel
             int w = image.getWidth(null);
             int h = image.getHeight(null);
             if (w > 0 && h > 0) {
-                label.append("  [" + w + "x" + h);
+                label.append("  [").append(w).append("x").append(h);
                 if (imageInfo.numberOfPages > 1) {
-                    label.append("x" + imageInfo.numberOfPages + "]");
+                    label.append("x").append(imageInfo.numberOfPages).append("]");
                     File[] selectedFiles = parentChooser.getSelectedFiles();
                     File selectedFile = parentChooser.getSelectedFile();
                     if ((selectedFiles != null && selectedFiles.length == 1)
@@ -248,7 +246,6 @@ public class JAIFilePreviewer extends JPanel
                 // Replace image by its scaled version
                 double scaleX = (double) iconSizeX / xSizeBuffered;
                 double scaleY = (double) iconSizeY / ySizeBuffered;
-                Image scaledImage = null;
                 if (scaleX < scaleY) {
                     image = image.getScaledInstance(iconSizeX, -1, Image.SCALE_DEFAULT);
                 } else {

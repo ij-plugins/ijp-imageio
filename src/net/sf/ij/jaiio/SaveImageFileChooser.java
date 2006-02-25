@@ -33,19 +33,19 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 /**
- * Extension of JFileChooser with ability to return pages selected in multi-image files (e.g. TIFF).
- * 
+ * Extension of JFileChooser with ability to return pages selected in multi-image files (e.g.
+ * TIFF).
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 
 public class SaveImageFileChooser
         extends JFileChooser
         implements PropertyChangeListener {
 
-    private String selectedFileDirectory = null;
-    private String selectedFileRootName = null;
-
+    private String selectedFileDirectory;
+    private String selectedFileRootName;
 
     /**
      * Constructor for the ImageFileChooser object
@@ -105,25 +105,29 @@ public class SaveImageFileChooser
     /**
      * This method gets called when a bound property is changed.
      * <p/>
-     * JFileChooser have a tendency to reset name of selected file when a file filter is changed. However, we would like
-     * to keep the name of current selection but change it extension that matches current filter.
+     * JFileChooser have a tendency to reset name of selected file when a file filter is changed.
+     * However, we would like to keep the name of current selection but change it extension that
+     * matches current filter.
      * <p/>
-     * This method is a hack that should enable to maintain a name of the selected file when file filter is changed at
-     * the same time changing only extension of the file to match currently selected filter.
+     * This method is a hack that should enable to maintain a name of the selected file when file
+     * filter is changed at the same time changing only extension of the file to match currently
+     * selected filter.
      * <p/>
-     * For instance, when the SaveImageFileChooser starts up a TIFF filter is selected and file name is that of the
-     * Image that is being saved. When now a user selects a different file filter JFileChooser parent class removes the
-     * name of the selected file from file name box (file name selection box is empty). To put back the name of the file
-     * in to the selection box we monitor notification about JFileChooser property changes and attempt to set proper
-     * value of the file name in the selection box. </p>
-     * 
-     * @param evt A PropertyChangeEvent object describing the event source and the property that has changed.
+     * For instance, when the SaveImageFileChooser starts up a TIFF filter is selected and file name
+     * is that of the Image that is being saved. When now a user selects a different file filter
+     * JFileChooser parent class removes the name of the selected file from file name box (file name
+     * selection box is empty). To put back the name of the file in to the selection box we monitor
+     * notification about JFileChooser property changes and attempt to set proper value of the file
+     * name in the selection box. </p>
+     *
+     * @param evt A PropertyChangeEvent object describing the event source and the property that has
+     *            changed.
      */
     public void propertyChange(PropertyChangeEvent evt) {
         final String propertyName = evt.getPropertyName();
 
         // File filter changed
-        if (evt.getPropertyName().equals(JFileChooser.FILE_FILTER_CHANGED_PROPERTY)) {
+        if (propertyName.equals(JFileChooser.FILE_FILTER_CHANGED_PROPERTY)) {
             FileFilter fileFilter = this.getFileFilter();
 
             if (fileFilter instanceof JAIFileFilter) {
@@ -149,7 +153,7 @@ public class SaveImageFileChooser
             // from ones caused by changes of file filter. Not having much to
             // relay on e assume that legitimate changes never set the selected
             // file to null.
-            
+
             File selectedFile = getSelectedFile();
             if (selectedFile == null) {
                 // Attemt to set file name to null, try to recover using preserved 
@@ -170,7 +174,6 @@ public class SaveImageFileChooser
                 }
             } else {
                 // Preserve information about selected file
-                File parentFile = selectedFile.getParentFile();
                 selectedFileDirectory = getCurrentDirectory().getAbsolutePath();
                 String name = selectedFile.getName();
                 int lastDot = name.lastIndexOf(".");

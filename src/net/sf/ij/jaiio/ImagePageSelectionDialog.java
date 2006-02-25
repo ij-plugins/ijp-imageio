@@ -27,9 +27,9 @@ import java.awt.event.ComponentEvent;
 
 /**
  * Dialog for selecting pages in multi-image files.
- * 
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 
 public class ImagePageSelectionDialog extends JDialog {
@@ -56,7 +56,7 @@ public class ImagePageSelectionDialog extends JDialog {
 
     /**
      * Constructor for the ImagePageSelectionDialog object
-     * 
+     *
      * @param frame Description of Parameter
      * @param title Description of Parameter
      * @param modal Description of Parameter
@@ -86,9 +86,9 @@ public class ImagePageSelectionDialog extends JDialog {
 
 
     /**
-     * Set number of pages in the current image file. This method should be
-     * called before showing the dialog.
-     * 
+     * Set number of pages in the current image file. This method should be called before showing
+     * the dialog.
+     *
      * @param numPages Number of pages in the current image file.
      */
     public void setNumPages(int numPages) {
@@ -102,7 +102,7 @@ public class ImagePageSelectionDialog extends JDialog {
 
     /**
      * Gets number of pages.
-     * 
+     *
      * @return Number of pages.
      */
     public int getNumPages() {
@@ -111,11 +111,9 @@ public class ImagePageSelectionDialog extends JDialog {
 
 
     /**
-     * Returns array of selected page indexes. First image in a file has index
-     * 0.
+     * Returns array of selected page indexes. First image in a file has index 0.
      *
-     * @return Array of selected page indexes or null if selection was not
-     *         made.
+     * @return Array of selected page indexes or null if selection was not made.
      */
     public int[] getPageIndex() {
         final int[] r;

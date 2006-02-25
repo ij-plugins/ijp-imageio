@@ -37,7 +37,7 @@ import java.util.ArrayList;
  * Opens file chooser dialog and open the image using JAI codec.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ImageIOOpenPlugin implements PlugIn {
     private static final String TITLE = "Image IO Open";
@@ -45,14 +45,13 @@ public class ImageIOOpenPlugin implements PlugIn {
     /**
      * Argument passed to <code>run</code> method to use standard Image/J open dialog.
      */
-    public final static String ARG_SIMPLE = "simple";
+    public static final String ARG_SIMPLE = "simple";
     /**
      * Argument passed to <code>run</code> method to use open dialog with an image preview.
      */
-    public final static String ARG_IMAGE_PREVIEW = "preview";
+    public static final String ARG_IMAGE_PREVIEW = "preview";
 
     private static ImageFileChooser jaiChooser;
-    private int[] pageIndex;
     private File[] files;
     private boolean combineIntoStack = true;
 
@@ -162,7 +161,7 @@ public class ImageIOOpenPlugin implements PlugIn {
         String type = (arg == null) ? ARG_SIMPLE : arg.trim().toLowerCase();
 
         files = null;
-        pageIndex = null;
+        int[] pageIndex = null;
         if (type.equals(ARG_IMAGE_PREVIEW)) {
             selectFilesWithImagePreview();
         } else {
@@ -201,10 +200,8 @@ public class ImageIOOpenPlugin implements PlugIn {
 
         if (jaiChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             files = jaiChooser.getSelectedFiles();
-            pageIndex = jaiChooser.getPageIndex();
         } else {
             files = null;
-            pageIndex = null;
         }
     }
 
@@ -213,7 +210,6 @@ public class ImageIOOpenPlugin implements PlugIn {
      *
      */
     private void selectFiles() {
-        pageIndex = null;
 
         OpenDialog openDialog = new OpenDialog(TITLE, null);
         if (openDialog.getFileName() == null) {

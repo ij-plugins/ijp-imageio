@@ -29,10 +29,11 @@ import java.util.Iterator;
 import java.util.TreeSet;
 
 /**
- * Extension of JFileChooser with ability to return pages selected in multi-image files (e.g. TIFF).
- * 
+ * Extension of JFileChooser with ability to return pages selected in multi-image files (e.g.
+ * TIFF).
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 
 public class ImageFileChooser
@@ -79,11 +80,11 @@ public class ImageFileChooser
 
 
     /**
-     * Return index of pages selected for current file using page selection dialog. This works only mulit-image files
-     * and and only when a single file is selected.
-     * 
+     * Return index of pages selected for current file using page selection dialog. This works only
+     * mulit-image files and and only when a single file is selected.
+     *
      * @return An array containing indexes of selected pages.
-     * @see net.sf.ij.jaiio.ImagePageSelectionDialog
+     * @see ImagePageSelectionDialog
      */
     public int[] getPageIndex() {
         File[] selection = getSelectedFiles();

@@ -23,10 +23,6 @@ package net.sf.ij.plugin;
 import net.sf.ij.swing.SwingUtils;
 
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.html.HTMLDocument;
-import javax.swing.text.html.HTMLFrameHyperlinkEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,9 +33,9 @@ import java.net.URL;
  * A panel displaying help for the Image I/O plugin bundle.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
-final public class HelpPanel extends JPanel {
+public final class HelpPanel extends JPanel {
 
     /**
      * Default constructor.
@@ -102,7 +98,7 @@ final public class HelpPanel extends JPanel {
 
     /**
      * Create and display help window.
-     * 
+     *
      * @param exitOnClose if <code>true</code> closing the help window will exit the application.
      */
     static void showHelpWindow(boolean exitOnClose) {

@@ -25,35 +25,33 @@ import java.io.File;
 
 /**
  * Factory for creation of JAI IO customized file choosers.
- * 
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 
 public class JAIFileChooserFactory {
 
     /**
-     * Creates an image file open chooser with an image preview. File filters
-     * correspond to registered JAI decoders.
-     * 
+     * Creates an image file open chooser with an image preview. File filters correspond to
+     * registered JAI decoders.
+     *
      * @return Description of the Returned Value
      */
     public static ImageFileChooser createJAIOpenChooser() {
-        ImageFileChooser chooser = new ImageFileChooser(new File(".").getAbsoluteFile());
 
-        return chooser;
+        return new ImageFileChooser(new File(".").getAbsoluteFile());
     }
 
 
     /**
-     * Creates file save chooser with file filters corresponding to JAI codecs
-     * supporting writing (encoders).
-     * 
+     * Creates file save chooser with file filters corresponding to JAI codecs supporting writing
+     * (encoders).
+     *
      * @return Description of the Returned Value
      */
     public static JFileChooser createJAISaveChooser() {
-        JFileChooser chooser = new SaveImageFileChooser(new File(".").getAbsoluteFile());
 
-        return chooser;
+        return (JFileChooser) new SaveImageFileChooser(new File(".").getAbsoluteFile());
     }
 }

@@ -2,7 +2,6 @@ package net.sf.ij.jaiio;
 
 import ij.process.ImageProcessor;
 
-import java.awt.*;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 

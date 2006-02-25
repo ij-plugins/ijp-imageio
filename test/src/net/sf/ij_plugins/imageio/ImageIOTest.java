@@ -30,7 +30,7 @@ import java.util.TreeMap;
 
 /**
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ImageIOTest {
     public static void main(String[] args) {
@@ -57,7 +57,6 @@ public class ImageIOTest {
         for (int i = 0; i < writerNames.length; i++) {
             String writerName = writerNames[i];
             System.out.println(writerName + " writers:");
-            int count = 0;
             Iterator iterator = ImageIO.getImageWritersByFormatName(writerName);
             while (iterator.hasNext()) {
                 ImageWriter writer = (ImageWriter) iterator.next();
