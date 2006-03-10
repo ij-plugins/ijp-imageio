@@ -135,8 +135,7 @@
             <manifest>
                 <attribute name="Main-Class" value="${main.class}"/>
             </manifest>
-            <!--             <zipgroupfileset refid="library.files"/>
-            -->
+            <zipgroupfileset file="${lib.dir}/JAI-codec.1.1.1.jar"/>
         </jar>
     </target>
 
@@ -156,8 +155,6 @@
             </fileset>
             <footer>
                 <![CDATA[
-
-
                 <a href="http://ij-plugins.sourceforge.net">
             <img src="http://sourceforge.net/sflogo.php?group_id=49871&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
             </a>]]>
@@ -233,9 +230,10 @@
         </antcall>
 
         <!-- ZIP binaries -->
-        <zip basedir="${dist.dir}"
-             includes="${package.name}_.jar"
-             destfile="${dist.dir}/${package.name}_bin_${DSTAMP}.zip"/>
+        <zip destfile="${dist.dir}/${package.name}_bin_${DSTAMP}.zip">
+            <fileset dir="${dist.dir}" includes="${package.name}_.jar"/>
+            <fileset dir="$lib.dir}" includes="jai_imageio.jar"/>
+        </zip>
 
         <!-- Cleanup -->
         <!--
