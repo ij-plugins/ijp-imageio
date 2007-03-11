@@ -32,7 +32,7 @@ import java.io.File;
  * Opens file chooser dialog and reads images using {@link net.sf.ij_plugins.imageio.IJImageIO}.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IJImageIOWriterPlugin implements PlugIn {
     private static final String TITLE = "Image IO Save As...";
@@ -64,7 +64,7 @@ public class IJImageIOWriterPlugin implements PlugIn {
         }
 
         try {
-            final boolean ok = IJImageIO.write(imp, codecName, new File(fileName));
+            final boolean ok = IJImageIO.write(imp, codecName, new File(fileName), true);
             if (!ok) {
                 throw new IJImageIOException("Writer for format '" + codecName + "' not available.");
             }

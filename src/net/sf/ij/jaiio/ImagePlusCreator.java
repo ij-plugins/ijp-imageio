@@ -1,6 +1,6 @@
-/*
+/***
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2006 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,9 +30,9 @@ import java.awt.image.*;
 
 /**
  * Creates/converts Image/J's image objects from Java2D/JAI representation.
- * 
+ *
  * @author Jarek Sacha
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ImagePlusCreator {
 
@@ -43,7 +43,7 @@ public class ImagePlusCreator {
     /**
      * Force Rendered image to set all the tails that it may have. In multi-tile
      * images not all tiles may be updated when a RenderedImage is created.
-     * 
+     *
      * @param ri image that may need tile update.
      * @return WritableRaster with all tiles updated.
      */
@@ -68,7 +68,7 @@ public class ImagePlusCreator {
 
     /**
      * Create an ImageProcessor object from a DataBuffer.
-     * 
+     *
      * @param w      Image width.
      * @param h      Image height.
      * @param buffer Data buffer.
@@ -96,11 +96,10 @@ public class ImagePlusCreator {
                 return new ShortProcessor(w, h, pixels, cm);
             case DataBuffer.TYPE_INT:
                 return new FloatProcessor(w, h, ((DataBufferInt) buffer).getData());
-            case DataBuffer.TYPE_FLOAT:
-                {
-                    DataBufferFloat dbFloat = (DataBufferFloat) buffer;
-                    return new FloatProcessor(w, h, dbFloat.getData(), cm);
-                }
+            case DataBuffer.TYPE_FLOAT: {
+                DataBufferFloat dbFloat = (DataBufferFloat) buffer;
+                return new FloatProcessor(w, h, dbFloat.getData(), cm);
+            }
             case DataBuffer.TYPE_DOUBLE:
                 return new FloatProcessor(w, h, ((DataBufferDouble) buffer).getData());
             case DataBuffer.TYPE_UNDEFINED:
@@ -111,13 +110,54 @@ public class ImagePlusCreator {
         }
     }
 
+    /**
+     * Convert BufferedImage to ImageProcessor.
+     *
+     * @param src image to be converted.
+     * @return Instance of ImageProcessor, for instance, ColorProcessor.
+     * @throws UnsupportedImageModelException when unable to determine how to convert the image.
+     */
+    public static ImageProcessor createProcessor(final BufferedImage src) throws UnsupportedImageModelException {
+
+        // TODO verrify that short pixels are converted correctly
+
+        final Raster raster = src.getRaster();
+        ColorModel colorModel = src.getColorModel();
+        final DataBuffer dataBuffer = raster.getDataBuffer();
+
+        final int numBanks = dataBuffer.getNumBanks();
+        if (numBanks > 1 && colorModel == null) {
+            throw new UnsupportedImageModelException("Don't know what to do with image with no " +
+                    "color model and multiple banks.");
+        }
+
+        final SampleModel sm = raster.getSampleModel();
+        if (numBanks > 1 || sm.getNumBands() > 1
+                ) {
+            // If image has multiple banks or multiple color components, assume that it
+            // is a color image and relay on AWT for proper decoding.
+            return new ColorProcessor(src);
+        } else if (sm.getSampleSize(0) < 8) {
+            // Temporary fix for less then 8 bit images
+            return new ByteProcessor(src);
+        } else {
+            if (!(colorModel instanceof IndexColorModel)) {
+                // Image/J (as of version 1.26r) can not properly deal with non color
+                // images and ColorModel that is not an instance of IndexedColorModel.
+                colorModel = null;
+            }
+
+            return createProcessor(raster.getWidth(), raster.getHeight(), raster.getDataBuffer(), colorModel);
+        }
+    }
+
 
     /**
      * Create instance of ImagePlus from WritableRaster r and ColorModel cm.
      *
      * @param title name of the output image.
-     * @param r  Raster containing pixel data.
-     * @param cm Image color model (can be null).
+     * @param r     Raster containing pixel data.
+     * @param cm    Image color model (can be null).
      * @return ImagePlus object created from WritableRaster r and
      *         ColorModel cm
      * @throws UnsupportedImageModelException when enable to create ImagePlus.
@@ -135,7 +175,7 @@ public class ImagePlusCreator {
 
         final SampleModel sm = r.getSampleModel();
         if (numBanks > 1 || sm.getNumBands() > 1
-        ) {
+                ) {
             // If image has multiple banks or multiple color components, assume that it
             // is a color image and relay on AWT for proper decoding.
             final BufferedImage bi = new BufferedImage(cm, r, false, null);

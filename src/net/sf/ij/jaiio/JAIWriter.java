@@ -36,7 +36,7 @@ import java.util.Enumeration;
  * string containing calibration information are also saved.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class JAIWriter {
 
@@ -101,6 +101,10 @@ public class JAIWriter {
     }
 
 
+    public void write(final String fileName, final ImagePlus im) throws IOException {
+        write(fileName, im, false);
+    }
+
     /**
      * Write image <code>im</code> to file <code>fileName</code>.
      *
@@ -113,14 +117,14 @@ public class JAIWriter {
      * @throws IllegalArgumentException When trying to save having multiple slices using file format
      *                                  different then TIFF.
      */
-    public void write(String fileName, ImagePlus im)
-            throws FileNotFoundException, IOException, IllegalArgumentException {
+    public void write(final String fileName, final ImagePlus im, boolean prefferBinary)
+            throws IOException, IllegalArgumentException {
 
         boolean successfulWrite = false;
-        File imageFile = new File(fileName);
-        BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(imageFile));
+        final File imageFile = new File(fileName);
+        final BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(imageFile));
         try {
-            ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
+            final ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
                     outputStream, null);
 
             if (imageEncoder instanceof TIFFImageEncoder) {
@@ -132,10 +136,10 @@ public class JAIWriter {
                 }
 
                 // Create list of extra images in the file
-                BufferedImage bi = BufferedImageCreator.create(im, 0);
+                final BufferedImage bi = BufferedImageCreator.create(im, 0, prefferBinary);
                 ArrayList list = new ArrayList();
                 for (int i = 1; i < im.getStackSize(); ++i) {
-                    list.add(BufferedImageCreator.create(im, i));
+                    list.add(BufferedImageCreator.create(im, i, prefferBinary));
                 }
                 if (list.size() > 0) {
                     param.setExtraImages(list.iterator());
@@ -187,7 +191,7 @@ public class JAIWriter {
                             + " format does not support multi-image files. "
                             + "Image was not saved.");
                 }
-                BufferedImage bi = BufferedImageCreator.create(im, 0);
+                BufferedImage bi = BufferedImageCreator.create(im, 0, prefferBinary);
                 imageEncoder.encode(bi);
             }
             successfulWrite = true;
@@ -208,7 +212,7 @@ public class JAIWriter {
      * @param intArray Integer array representing unsigned short values.
      * @return Input array represented as char (16 bit).
      */
-    private static final char[] intsToChars(int[] intArray) {
+    private static char[] intsToChars(int[] intArray) {
         int arrayLength = intArray.length;
         char[] charArray = new char[arrayLength];
         for (int i = 0; i < arrayLength; i++) {

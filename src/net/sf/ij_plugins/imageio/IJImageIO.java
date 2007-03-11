@@ -40,7 +40,7 @@ import java.util.List;
  * Helper class that for reading images using javax.imageio into ImageJ representation.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class IJImageIO {
     /**
@@ -60,7 +60,7 @@ public class IJImageIO {
      * @throws IOException
      * @throws IJImageIOException
      */
-    static public ImagePlus[] read(final File file)
+    public static ImagePlus[] read(final File file)
             throws IOException, IJImageIOException {
 
         if (file == null) {
@@ -123,9 +123,9 @@ public class IJImageIO {
 
     }
 
-    public static boolean write(final ImagePlus imp, final String formatName, final File file) throws IJImageIOException {
+    public static boolean write(final ImagePlus imp, final String formatName, final File file, boolean prefferBinary) throws IJImageIOException {
 
-        final BufferedImage bi = BufferedImageCreator.create(imp, 0);
+        final BufferedImage bi = BufferedImageCreator.create(imp, 0, prefferBinary);
         try {
             return ImageIO.write(bi, formatName, file);
         } catch (IOException e) {
@@ -133,6 +133,7 @@ public class IJImageIO {
                     + "\n" + e.getMessage(), e);
         }
     }
+
 
     /**
      * Attempts to combine images on the list into a stack. If successful return the combined image,

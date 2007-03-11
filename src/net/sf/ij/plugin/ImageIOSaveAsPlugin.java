@@ -42,7 +42,7 @@ import java.io.IOException;
  * Saves an image using JAI codecs. (http://developer.java.sun.com/developer/sampsource/jai/).
  *
  * @author Jarek Sacha
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class ImageIOSaveAsPlugin implements PlugIn {
     public static final String PNG = "png";
@@ -186,7 +186,14 @@ public class ImageIOSaveAsPlugin implements PlugIn {
 
                     boolean isBinary = imp.getType() != ImagePlus.COLOR_256
                             && JaiioUtil.isBinary(imp.getProcessor());
-                    encodeParam = paramDialog.getImageEncodeParam(isBinary);
+
+                    boolean useOneBitCompression = false;
+                    if (isBinary) {
+                        useOneBitCompression = IJ.showMessageWithCancel("Save as TIFF",
+                                "Image seems to be two level binary. Do you want to save it using 1 bit per pixel?");
+                    }
+
+                    encodeParam = paramDialog.getImageEncodeParam(useOneBitCompression);
                 }
 
             }
@@ -221,7 +228,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                               String fileName,
                               String codecName,
                               ImageEncodeParam encodeParam)
-            throws IOException, FileNotFoundException {
+            throws IOException {
         JAIWriter jaiWriter = new JAIWriter();
         jaiWriter.setFormatName(codecName);
         jaiWriter.setImageEncodeParam(encodeParam);
