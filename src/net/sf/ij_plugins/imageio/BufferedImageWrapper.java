@@ -19,6 +19,7 @@
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  *
  */
+
 package net.sf.ij_plugins.imageio;
 
 import com.sun.media.jai.codec.ImageCodec;
@@ -40,7 +41,7 @@ import java.awt.image.*;
 public class BufferedImageWrapper {
 
     /*
-     *  Made private to prevent subclassing.
+     *  Made private to prevent sub-classing.
      */
     private BufferedImageWrapper() {
     }

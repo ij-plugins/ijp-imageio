@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
+
 package net.sf.ij.jaiio;
 
 import com.sun.media.jai.codec.ImageCodec;
@@ -25,7 +27,6 @@ import com.sun.media.jai.codec.ImageCodec;
 import javax.swing.*;
 import java.io.File;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.TreeSet;
 
 /**
@@ -39,37 +40,35 @@ import java.util.TreeSet;
 public class ImageFileChooser
         extends JFileChooser {
 
-    JAIFilePreviewer previewer = new JAIFilePreviewer(this);
+    private final JAIFilePreviewer previewer = new JAIFilePreviewer(this);
 
 
     /**
      * Constructor for the ImageFileChooser object
+     *
+     * @param currentDirectory initial directory.
      */
-    public ImageFileChooser(File currentDirectory) {
+    public ImageFileChooser(final File currentDirectory) {
         super(currentDirectory);
 
         this.setAccessory(previewer);
 
         // Add filter for all supported image types
-        JAIFileFilter allSupportedFileFilter = new JAIFileFilter();
+        final JAIFileFilter allSupportedFileFilter = new JAIFileFilter();
         this.addChoosableFileFilter(allSupportedFileFilter);
 
         // Set filters corresponding to each available codec
-        Enumeration codecs = ImageCodec.getCodecs();
+        final Enumeration codecs = ImageCodec.getCodecs();
 
         // Sort codec names
-        TreeSet codecSet = new TreeSet();
+        final TreeSet<String> codecSet = new TreeSet<String>();
         while (codecs.hasMoreElements()) {
             ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
             codecSet.add(thisCodec.getFormatName());
         }
 
-        for (Iterator i = codecSet.iterator(); i.hasNext();) {
-            try {
-                this.addChoosableFileFilter(new JAIFileFilter((String) i.next()));
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
+        for (final String aCodecSet : codecSet) {
+            this.addChoosableFileFilter(new JAIFileFilter(aCodecSet));
         }
 
         // Set selected filter
@@ -81,7 +80,7 @@ public class ImageFileChooser
 
     /**
      * Return index of pages selected for current file using page selection dialog. This works only
-     * mulit-image files and and only when a single file is selected.
+     * multi-image files and and only when a single file is selected.
      *
      * @return An array containing indexes of selected pages.
      * @see ImagePageSelectionDialog

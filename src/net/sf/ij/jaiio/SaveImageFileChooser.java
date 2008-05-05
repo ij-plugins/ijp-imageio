@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
 package net.sf.ij.jaiio;
 
@@ -29,7 +30,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.TreeSet;
 
 /**
@@ -49,6 +49,8 @@ public class SaveImageFileChooser
 
     /**
      * Constructor for the ImageFileChooser object
+     *
+     * @param currentDirectory initia directory.
      */
     public SaveImageFileChooser(File currentDirectory) {
         super(currentDirectory);
@@ -62,7 +64,7 @@ public class SaveImageFileChooser
         Enumeration codecs = ImageCodec.getCodecs();
 
         // Sort codec names
-        TreeSet codecSet = new TreeSet();
+        TreeSet<String> codecSet = new TreeSet<String>();
         while (codecs.hasMoreElements()) {
             ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
             String formatName = thisCodec.getFormatName();
@@ -79,12 +81,11 @@ public class SaveImageFileChooser
         }
 
         JAIFileFilter defaultFilter = null;
-        for (Iterator i = codecSet.iterator(); i.hasNext();) {
+        for (String codecName : codecSet) {
             try {
-                String cadecName = (String) i.next();
-                JAIFileFilter jaiFileFilter = new JAIFileFilter(cadecName);
+                JAIFileFilter jaiFileFilter = new JAIFileFilter(codecName);
                 addChoosableFileFilter(jaiFileFilter);
-                if (cadecName.toUpperCase().indexOf("TIFF") > -1) {
+                if (codecName.toUpperCase().indexOf("TIFF") > -1) {
                     defaultFilter = jaiFileFilter;
                 }
             } catch (Throwable t) {
@@ -138,7 +139,7 @@ public class SaveImageFileChooser
                             + selectedFileRootName + "." + jaiFileFilter.getCodecName().toLowerCase();
                     final File selectedFile = new File(fileName);
 
-                    // Hack to delate execution of setSelectedFile()
+                    // Hack to delay execution of setSelectedFile()
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             setSelectedFile(selectedFile);
@@ -156,8 +157,8 @@ public class SaveImageFileChooser
 
             File selectedFile = getSelectedFile();
             if (selectedFile == null) {
-                // Attemt to set file name to null, try to recover using preserved 
-                // inforamtion, if any.
+                // Attempt to set file name to null, try to recover using preserved
+                // information, if any.
                 if (selectedFileDirectory != null) {
                     FileFilter fileFilter = this.getFileFilter();
                     JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
@@ -165,7 +166,7 @@ public class SaveImageFileChooser
                             + jaiFileFilter.getCodecName().toLowerCase();
                     final File recoveredSelectedFile = new File(name);
 
-                    // Hack to delate execution of setSelectedFile()
+                    // Hack to delay execution of setSelectedFile()
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             setSelectedFile(recoveredSelectedFile);
@@ -195,7 +196,7 @@ public class SaveImageFileChooser
                         + selectedFileRootName + "." + jaiFileFilter.getCodecName().toLowerCase();
                 final File selectedFile = new File(fileName);
 
-                // Hack to delate execution of setSelectedFile()
+                // Hack to delay execution of setSelectedFile()
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         setSelectedFile(selectedFile);

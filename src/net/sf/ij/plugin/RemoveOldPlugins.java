@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
 package net.sf.ij.plugin;
 
@@ -26,15 +27,16 @@ import ij.plugin.PlugIn;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Plugin for uninstalling JAI Image IO plugin bundle version 1.0.5 or ealier.
+ * Plugin for uninstalling JAI Image IO plugin bundle version 1.0.5 or earlier.
  *
  * @author Jarek Sacha
  * @version $Revision: 1.3 $
  */
 public class RemoveOldPlugins implements PlugIn {
-    private ArrayList foundComponents;
+    private List<File> foundComponents;
 
     private static final String CAPTION = "Uninstall Obsolete JAI ImageIO Plugins";
     private static final String CANCELLED_MESSAGE
@@ -72,19 +74,19 @@ public class RemoveOldPlugins implements PlugIn {
         // Search for obsolete installation
         IJ.showStatus("Searching for obsolete components.");
 
-        foundComponents = new ArrayList();
+        foundComponents = new ArrayList<File>();
         String pluginsDir = Menus.getPlugInsPath();
 
         // Search for files in plugins folder
-        for (int i = 0; i < ROOT_FILES.length; i++) {
-            lookFor(pluginsDir, ROOT_FILES[i]);
+        for (final String aROOT_FILES : ROOT_FILES) {
+            lookFor(pluginsDir, aROOT_FILES);
         }
 
-        // Search for files in plugins folder sundirectory
+        // Search for files in plugins folder subdirectory
         File subdir = new File(pluginsDir, SUBDIR);
         if (subdir.exists() && subdir.isDirectory()) {
-            for (int i = 0; i < SUBDIR_FILES.length; i++) {
-                lookFor(subdir.getPath(), SUBDIR_FILES[i]);
+            for (final String aSUBDIR_FILES : SUBDIR_FILES) {
+                lookFor(subdir.getPath(), aSUBDIR_FILES);
 
             }
         }
@@ -98,9 +100,8 @@ public class RemoveOldPlugins implements PlugIn {
         // Prepare message listing files to be removed
         StringBuffer messageBuffer = new StringBuffer();
         messageBuffer.append("Following files will be uninstalled: \n");
-        for (int i = 0; i < foundComponents.size(); i++) {
-            File file = (File) foundComponents.get(i);
-            messageBuffer.append(file.getAbsolutePath()).append("\n");
+        for (final File foundComponent : foundComponents) {
+            messageBuffer.append(foundComponent.getAbsolutePath()).append("\n");
         }
 
         // Confirm removal
@@ -112,8 +113,7 @@ public class RemoveOldPlugins implements PlugIn {
 
         // Remove files
         StringBuffer errorBuffer = new StringBuffer();
-        for (int i = 0; i < foundComponents.size(); i++) {
-            File file = (File) foundComponents.get(i);
+        for (File file : foundComponents) {
             if (!file.delete()) {
                 errorBuffer.append(file.getAbsolutePath()).append("\n");
             }

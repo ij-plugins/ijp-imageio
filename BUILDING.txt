@@ -2,9 +2,9 @@
  BUILDING ij-ImageIO PLUGIN BUNDLE
 ===================================
 
-------------
-PRESEQUISITS
-------------
+-------------
+PREREQUISITES
+-------------
  
   * Java compiler, tested with Sun Java 1.4.+ (http://java.sun.com)
     - tested v.1.4.2 and 1.5.0
@@ -13,7 +13,7 @@ PRESEQUISITS
     - tested with 1.5.4
     
   * If you got source code from CVS you may also need the Sun's uncommitted 
-    source code for JAI 1.1.1 codecs (the disribution source code comes with
+    source code for JAI 1.1.1 codecs (the distribution source code comes with
     all dependent libraries included). Note that source code is automatically 
     checked out by Ant while building 'dist-from-cvs' target.
     - To check it out manually checked out following instructions at
@@ -29,9 +29,9 @@ BUILDING
 To rebuild and start included version of ImageJ type:
   $ ant run
 
-To greate plugins Jar file type:
+To create plugins Jar file type:
   $ ant jar
-The plugins JAR will be placed in snadbox/plugins.  
+The plugins JAR will be placed in sandbox/plugins.
   
 For summary of other top level Ant targets type:
   $ ant -projecthelp

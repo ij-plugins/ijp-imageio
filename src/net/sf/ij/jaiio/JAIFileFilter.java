@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
+
 package net.sf.ij.jaiio;
 
 import com.sun.media.jai.codec.ImageCodec;
@@ -29,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * File filter that detects image files supported by registered JAI codecs.
@@ -44,12 +47,12 @@ public class JAIFileFilter extends FileFilter {
     /**
      * Files smaller then min size are ignored by the filter.
      */
-    public final static int MIN_IMAGE_FILE_SIZE = 8;
+    public static final int MIN_IMAGE_FILE_SIZE = 8;
 
-    private String codecName = null;
+    private String codecName;
     private String decription = "All Supported Images";
     private ImageCodec activeCodecs[] = null;
-    private int maxHeaderSize = 0;
+    private int maxHeaderSize;
     private byte[] headerBytes = null;
 
 
@@ -138,8 +141,8 @@ public class JAIFileFilter extends FileFilter {
         }
 
         // Look for decoder
-        for (int i = 0; i < activeCodecs.length; ++i) {
-            if (activeCodecs[i].isFormatRecognized(headerBytes)) {
+        for (final ImageCodec activeCodec : activeCodecs) {
+            if (activeCodec.isFormatRecognized(headerBytes)) {
                 return true;
             }
         }
@@ -158,13 +161,13 @@ public class JAIFileFilter extends FileFilter {
 
         // Get handles filter codecs
         if (codecName == null) {
-            // All suported formats.
+            // All supported formats.
             Enumeration codecEnumeration = ImageCodec.getCodecs();
-            ArrayList codecArray = new ArrayList();
+            final List<ImageCodec> codecArray = new ArrayList<ImageCodec>();
             while (codecEnumeration.hasMoreElements()) {
-                codecArray.add(codecEnumeration.nextElement());
+                codecArray.add((ImageCodec) codecEnumeration.nextElement());
             }
-            activeCodecs = (ImageCodec[]) codecArray.toArray(new ImageCodec[codecArray.size()]);
+            activeCodecs = codecArray.toArray(new ImageCodec[codecArray.size()]);
         } else {
             ImageCodec codec = ImageCodec.getCodec(codecName);
             if (codec != null) {
@@ -180,11 +183,11 @@ public class JAIFileFilter extends FileFilter {
         }
 
         // Find how large header size is needed for file type detection.
-        for (int i = 0; i < activeCodecs.length; ++i) {
-            int h = activeCodecs[i].getNumHeaderBytes();
+        for (final ImageCodec activeCodec : activeCodecs) {
+            int h = activeCodec.getNumHeaderBytes();
             if (h == 0) {
                 throw new RuntimeException("Codec "
-                        + activeCodecs[i].getFormatName()
+                        + activeCodec.getFormatName()
                         + " unable to recognize its files by header.");
             }
             if (h > maxHeaderSize) {

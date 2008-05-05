@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
 package net.sf.ij_plugins.imageio;
 
@@ -44,7 +45,7 @@ import java.util.List;
  */
 public class IJImageIO {
     /**
-     * Default constructor intentionaly made private to prevent instantiation of the class.
+     * Default constructor intentionally made private to prevent instantiation of the class.
      */
     private IJImageIO() {
     }
@@ -55,7 +56,7 @@ public class IJImageIO {
      *
      * @param file input image file.
      * @return Array of images read from the file. If images are of the same type and size they will
-     *         be combined into a stack and the returned ImagePlus array will have a single elemnt
+     *         be combined into a stack and the returned ImagePlus array will have a single element
      *         with stack size equal to the number of images in the input file.
      * @throws IOException
      * @throws IJImageIOException
@@ -70,10 +71,10 @@ public class IJImageIO {
         final ImageInputStream iis = ImageIO.createImageInputStream(file);
 
         // Locate all available readers
-        final Iterator readers = ImageIO.getImageReaders(iis);
-        final List readerList = new ArrayList();
+        final Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+        final List<ImageReader> readerList = new ArrayList<ImageReader>();
         while (readers.hasNext()) {
-            final ImageReader reader = (ImageReader) readers.next();
+            final ImageReader reader = readers.next();
             readerList.add(reader);
         }
 
@@ -83,8 +84,7 @@ public class IJImageIO {
         }
 
         final StringBuffer errorBuffer = new StringBuffer();
-        for (int i = 0; i < readerList.size(); i++) {
-            final ImageReader reader = (ImageReader) readerList.get(i);
+        for (final ImageReader reader : readerList) {
             IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
             try {
                 //                iis.reset();
@@ -96,7 +96,7 @@ public class IJImageIO {
                 final int minIndex = reader.getMinIndex();
 
                 // Read each image and add it to list 'images'
-                final List images = new ArrayList(numImages);
+                final List<ImagePlus> images = new ArrayList<ImagePlus>(numImages);
                 for (int j = minIndex; j < numImages + minIndex; j++) {
                     // Read using javax.imageio
                     final BufferedImage bi = reader.read(j);
@@ -106,13 +106,13 @@ public class IJImageIO {
                     images.add(imp);
                 }
 
-                // If images on the list are ofr the same type and size combine them into a stack.
+                // If images on the list are of the same type and size combine them into a stack.
                 final ImagePlus imp = attemptToCombineImages(images);
 
-                // Pepare output image array 'imps'.
+                // Prepare output image array 'imps'.
                 return imp != null
                         ? new ImagePlus[]{imp}
-                        : (ImagePlus[]) images.toArray(new ImagePlus[numImages]);
+                        : images.toArray(new ImagePlus[numImages]);
             } catch (Exception ex) {
                 errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage()).append("\n");
             }
@@ -143,15 +143,15 @@ public class IJImageIO {
      * @param imageList List of images to combine into a stack.
      * @return Combined image if successful, otherwise <code>null</code>.
      */
-    private static ImagePlus attemptToCombineImages(final List imageList) {
+    private static ImagePlus attemptToCombineImages(final List<ImagePlus> imageList) {
         if (imageList == null || imageList.size() < 1)
             return null;
 
         if (imageList.size() == 1) {
-            return (ImagePlus) imageList.get(0);
+            return imageList.get(0);
         }
 
-        final ImagePlus firstImage = (ImagePlus) imageList.get(0);
+        final ImagePlus firstImage = imageList.get(0);
         if (firstImage.getStackSize() != 1) {
             return null;
         }
@@ -161,7 +161,7 @@ public class IJImageIO {
         final int h = firstImage.getHeight();
         final ImageStack stack = firstImage.getStack();
         for (int i = 1; i < imageList.size(); ++i) {
-            final ImagePlus im = (ImagePlus) imageList.get(i);
+            final ImagePlus im = imageList.get(i);
             if (im.getStackSize() != 1) {
                 return null;
             }

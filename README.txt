@@ -9,7 +9,7 @@ OVERVIEW
 ij-ImageIO plugins add to ImageJ support for additional image file formats
 and their variants, including BMP, PNG, PNM, JPEG, TIFF. Added support
 provides for handling of compressed, tiled, 1bit, 16bit, and 32bit images.
-For more detailed informations see subdirectory 'docs' of ij-ImageIO home
+For more detailed information see subdirectory 'docs' of ij-ImageIO home
 page at: http://ij-plugins.sf.net/plugins/imageio
 
 
@@ -25,7 +25,7 @@ ij-ImageIO install plugins under following ImageJ menu locations:
   
 * Plugins/Image IO:
   - Open ...
-  - Opem with preview ...
+  - Open with preview ...
   - Save as ...
   - Remove obsolete JAI Image IO plugins ...
   

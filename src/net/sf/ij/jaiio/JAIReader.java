@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
+
 package net.sf.ij.jaiio;
 
 import com.sun.media.jai.codec.*;
@@ -43,13 +45,13 @@ import java.util.ArrayList;
  * to Image/J representation.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.5 $
+ *         \
  */
 public class JAIReader {
 
-    private ImageDecoder decoder = null;
-    private String decoderName = null;
-    private File file = null;
+    private ImageDecoder decoder;
+    private String decoderName;
+    private File file;
 
 
     private JAIReader() {
@@ -62,8 +64,9 @@ public class JAIReader {
      * @param file Image file.
      * @return ImageInfo object.
      * @throws UnsupportedImageFileFormatException
-     *                     If file is not in a supported image format
-     * @throws IOException In case of I/O error.
+     *                                        If file is not in a supported image format
+     * @throws IOException                    In case of I/O error.
+     * @throws UnsupportedImageModelException when conversion failes.
      */
     public static ImageInfo readFirstImageAndInfo(File file)
             throws
@@ -167,7 +170,7 @@ public class JAIReader {
 
         // Iterate through pages
         IJ.showProgress(0);
-        ArrayList imageList = new ArrayList();
+        ArrayList<ImagePlus> imageList = new ArrayList<ImagePlus>();
         for (int i = 0; i < pageIndex.length; ++i) {
             if (pageIndex[i] != 0) {
                 IJ.showStatus("Reading page " + pageIndex[i]);
@@ -179,9 +182,8 @@ public class JAIReader {
         IJ.showProgress(1);
 
         reader.close();
-        reader = null;
 
-        ImagePlus[] images = (ImagePlus[]) imageList.toArray(new ImagePlus[imageList.size()]);
+        ImagePlus[] images = imageList.toArray(new ImagePlus[imageList.size()]);
 
         if (nbPages == 1) {
             // Do not use page numbers in image name
@@ -279,7 +281,7 @@ public class JAIReader {
      * @throws Exception Description of Exception
      */
     private ImagePlus read(int pageNb) throws Exception {
-        RenderedImage ri = null;
+        final RenderedImage ri;
         try {
             ri = decoder.decodeAsRenderedImage(pageNb);
         } catch (Exception ex) {

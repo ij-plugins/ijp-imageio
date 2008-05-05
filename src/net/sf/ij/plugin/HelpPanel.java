@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
 package net.sf.ij.plugin;
 
@@ -40,7 +41,7 @@ public final class HelpPanel extends JPanel {
     /**
      * Default constructor.
      *
-     * @throws IOException If help coontent cannot be loaded.
+     * @throws IOException If help content cannot be loaded.
      */
     public HelpPanel() throws IOException {
         URL helpURL = HelpPanel.class.getResource("/docs/index.html");
@@ -64,7 +65,7 @@ public final class HelpPanel extends JPanel {
 
         JEditorPane editorPane = new JEditorPane();
 //        editorPane.setEditorKit(htmlEditorKit);
-//        editorPane.read(is, "Ioamge IO Help file");
+//        editorPane.read(is, "Image IO Help file");
         editorPane.setPage(helpURL);
         editorPane.setEditable(false);
         // TODO: Enable following of hyperlinks after adding previous/next buttons for navigation.

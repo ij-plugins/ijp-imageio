@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
 package net.sf.ij.plugin;
 
@@ -32,6 +33,7 @@ import net.sf.ij.jaiio.JAIReader;
 import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Opens file chooser dialog and open the image using JAI codec.
@@ -60,26 +62,26 @@ public class ImageIOOpenPlugin implements PlugIn {
      *
      */
     private void open(File[] files, int[] pageIndex) {
-        ArrayList imageList = null;
+        List<ImagePlus> imageList = null;
         if (combineIntoStack) {
-            imageList = new ArrayList();
+            imageList = new ArrayList<ImagePlus>();
         }
 
-        for (int i = 0; i < files.length; ++i) {
-            IJ.showStatus("Opening: " + files[i].getName());
+        for (final File file : files) {
+            IJ.showStatus("Opening: " + file.getName());
             try {
-                ImagePlus[] images = JAIReader.read(files[i], pageIndex);
+                ImagePlus[] images = JAIReader.read(file, pageIndex);
                 if (images != null) {
-                    for (int j = 0; j < images.length; ++j) {
+                    for (final ImagePlus image : images) {
                         if (imageList != null)
-                            imageList.add(images[j]);
+                            imageList.add(image);
                         else
-                            images[j].show();
+                            image.show();
                     }
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
-                String msg = "Error opening file: " + files[i].getName() + ".\n\n";
+                String msg = "Error opening file: " + file.getName() + ".\n\n";
                 msg += (ex.getMessage() == null) ? ex.toString() : ex.getMessage();
                 IJ.showMessage(TITLE, msg);
             }
@@ -88,15 +90,14 @@ public class ImageIOOpenPlugin implements PlugIn {
         if (imageList != null && imageList.size() > 0) {
             ImagePlus stackImage = combineImages(imageList);
             if (stackImage != null) {
-                imageList = null;
                 stackImage.show();
             } else {
                 if (imageList.size() > 1) {
                     IJ.showMessage(TITLE, "Unable to combine images into a stack.\n" +
                             "Loading each separately.");
                 }
-                for (int i = 0; i < imageList.size(); ++i) {
-                    ((ImagePlus) imageList.get(i)).show();
+                for (final ImagePlus anImageList : imageList) {
+                    anImageList.show();
                 }
             }
         }
@@ -110,16 +111,16 @@ public class ImageIOOpenPlugin implements PlugIn {
      * @param imageList List of images to combine into a stack.
      * @return Combined image if successful, otherwise null.
      */
-    private static ImagePlus combineImages(ArrayList imageList) {
+    private static ImagePlus combineImages(final List<ImagePlus> imageList) {
         // TODO: in unable to combine throw exception with error message, do not return null.
         if (imageList == null || imageList.size() < 1)
             return null;
 
         if (imageList.size() == 1) {
-            return (ImagePlus) imageList.get(0);
+            return imageList.get(0);
         }
 
-        ImagePlus firstImage = (ImagePlus) imageList.get(0);
+        ImagePlus firstImage = imageList.get(0);
         if (firstImage.getStackSize() != 1) {
             return null;
         }
@@ -129,7 +130,7 @@ public class ImageIOOpenPlugin implements PlugIn {
         int h = firstImage.getHeight();
         ImageStack stack = firstImage.getStack();
         for (int i = 1; i < imageList.size(); ++i) {
-            ImagePlus im = (ImagePlus) imageList.get(i);
+            ImagePlus im = imageList.get(i);
             if (im.getStackSize() != 1) {
                 return null;
             }

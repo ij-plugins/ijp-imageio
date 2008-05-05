@@ -17,7 +17,7 @@ PNG 300x300+0+0 PseudoClass 2c 1-bit
 png saved as
 PNG 300x300+0+0 PseudoClass 2c 8-bi
 
-this doesn't happen with eg tiff format
+this doesn't happen with tiff format
 saved as
 TIFF 300x300+0+0 PseudoClass 256c 8-bit
 -----------------------------------------------

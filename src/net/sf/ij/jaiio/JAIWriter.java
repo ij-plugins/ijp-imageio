@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
 package net.sf.ij.jaiio;
 
@@ -65,12 +66,12 @@ public class JAIWriter {
      */
     public static String[] getFormatNames() {
         Enumeration codecs = ImageCodec.getCodecs();
-        ArrayList l = new ArrayList();
+        ArrayList<String> l = new ArrayList<String>();
         while (codecs.hasMoreElements()) {
             ImageCodec imageCodec = (ImageCodec) codecs.nextElement();
             l.add(imageCodec.getFormatName());
         }
-        return (String[]) l.toArray(new String[l.size()]);
+        return l.toArray(new String[l.size()]);
     }
 
 
@@ -140,7 +141,7 @@ public class JAIWriter {
 
                 // Create list of extra images in the file
                 final BufferedImage bi = BufferedImageCreator.create(im, 0, prefferBinary);
-                ArrayList list = new ArrayList();
+                ArrayList<BufferedImage> list = new ArrayList<BufferedImage>();
                 for (int i = 1; i < im.getStackSize(); ++i) {
                     list.add(BufferedImageCreator.create(im, i, prefferBinary));
                 }
@@ -149,24 +150,24 @@ public class JAIWriter {
                 }
 
                 // Construct extra TIFF tags
-                ArrayList extraTags = new ArrayList();
-                String[] desciption = {DescriptionStringCoder.encode(im)};
+                ArrayList<TIFFField> extraTags = new ArrayList<TIFFField>();
+                String[] description = {DescriptionStringCoder.encode(im)};
                 extraTags.add(new TIFFField(TiffDecoder.IMAGE_DESCRIPTION,
-                        TIFFField.TIFF_ASCII, 1, desciption));
+                        TIFFField.TIFF_ASCII, 1, description));
 
-                Calibration calib = im.getCalibration();
-                if (calib != null) {
-                    if (calib.pixelWidth != 0.0) {
+                final Calibration calibration = im.getCalibration();
+                if (calibration != null) {
+                    if (calibration.pixelWidth != 0.0) {
                         extraTags.add(new TIFFField(TIFFImageDecoder.TIFF_X_RESOLUTION,
-                                TIFFField.TIFF_RATIONAL, 1, toRational(1 / calib.pixelWidth)));
+                                TIFFField.TIFF_RATIONAL, 1, toRational(1 / calibration.pixelWidth)));
                     }
 
-                    if (calib.pixelHeight != 0.0) {
+                    if (calibration.pixelHeight != 0.0) {
                         extraTags.add(new TIFFField(TIFFImageDecoder.TIFF_Y_RESOLUTION,
-                                TIFFField.TIFF_RATIONAL, 1, toRational(1 / calib.pixelHeight)));
+                                TIFFField.TIFF_RATIONAL, 1, toRational(1 / calibration.pixelHeight)));
                     }
 
-                    String unitName = calib.getUnit();
+                    String unitName = calibration.getUnit();
                     short unitCode = 0;
                     if (unitName == null || unitName.trim().length() == 0) {
                         // no meaningful units
@@ -184,7 +185,7 @@ public class JAIWriter {
                     }
                 }
 
-                param.setExtraFields((TIFFField[]) extraTags.toArray(new TIFFField[extraTags.size()]));
+                param.setExtraFields(extraTags.toArray(new TIFFField[extraTags.size()]));
 
                 imageEncoder.setParam(param);
                 imageEncoder.encode(bi);

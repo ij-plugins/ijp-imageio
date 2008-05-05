@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
 package net.sf.ij.jaiio;
 
@@ -34,12 +35,11 @@ import java.awt.image.*;
  * image types are supported.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.9 $
  */
 public class BufferedImageCreator {
 
     /*
-     *  Made private to prevent subclassing.
+     *  Made private to prevent sub-classing.
      */
     private BufferedImageCreator() {
     }
@@ -51,7 +51,7 @@ public class BufferedImageCreator {
      *
      * @param src           Source image.
      * @param sliceNb       Slice number, numbering starts at 0.
-     * @param prefferBinary Preferr to save two level binary images using 1 bit per pixel.
+     * @param prefferBinary Prefer to save two level binary images using 1 bit per pixel.
      * @return New BufferedImage.
      */
     public static BufferedImage create(ImagePlus src, int sliceNb, boolean prefferBinary) {

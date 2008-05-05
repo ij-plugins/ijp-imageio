@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
 package net.sf.ij.plugin;
 
@@ -32,16 +33,16 @@ public class AboutImageIO implements PlugIn {
     private static final String TITLE = "About Image IO Plugin Bundle";
     private static final String MESAGE =
             "ij-ImageIO plugins add to ImageJ support for additional image\n" +
-            "file formats and their variants, including BMP, PNG, PNM, JPEG,\n" +
-            "TIFF. Added support provides for handling of compressed, tiled,\n" +
-            "1bit, 16bit, and 32bit images.\n" +
-            "For more detailed informations see ij-ImageIO home page at:\n" +
-            "http://ij-plugins.sf.net/plugins/imageio";
+                    "file formats and their variants, including BMP, PNG, PNM, JPEG,\n" +
+                    "TIFF. Added support provides for handling of compressed, tiled,\n" +
+                    "1bit, 16bit, and 32bit images.\n" +
+                    "For more detailed informations see ij-ImageIO home page at:\n" +
+                    "http://ij-plugins.sf.net/plugins/imageio";
 
     public void run(String string) {
 
         try {
-            IJ.showStatus("Starting \""+TITLE+"\" plugin...");
+            IJ.showStatus("Starting \"" + TITLE + "\" plugin...");
             HelpPanel.showHelpWindow(false);
         } catch (RuntimeException e) {
             String msg = MESAGE + "\n" +

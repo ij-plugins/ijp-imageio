@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
 package net.sf.ij.plugin;
 
@@ -79,7 +80,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
             }
 
             String fileName = null;
-            String codecName = null;
+            String codecName;
             ImageEncodeParam encodeParam = null;
 
             // Check with ImageJ if macro options are present
@@ -103,7 +104,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                     return;
                 }
             } else {
-                // Check if file type was spcified as an argument, ignore unknown format names
+                // Check if file type was specified as an argument, ignore unknown format names
                 if (arg.equalsIgnoreCase(JPEG)) {
                     codecName = JPEG;
                 } else if (arg.equalsIgnoreCase(PNG)) {
