@@ -51,11 +51,15 @@ public class IJImageIOTest extends TestCase {
     }
 
     public void testRead() throws Exception {
-        testRead("test/data/mri-stack.tif", 27, 186, 186);
-        testRead("test/data/mri-stack-1.tif", 1, 186, 186);
+        testRead("test/data/mri-stack.tif", 27, 186, 226);
+        testRead("test/data/mri-stack-1.tif", 1, 186, 226);
         testRead("test/data/bug_1047736/otbm_C_131004_48_0048.png", 1, 300, 300);
         testRead("test/data/bug_1047736/totbm_C_131004_48_0048.png", 1, 300, 300);
         testRead("test/data/bug_1047736/totbm_C_131004_48_0048.tif", 1, 300, 300);
+    }
+
+    public void testDataBufferFloat() throws Exception {
+        testRead("test/data/bug_DataBufferFloat/blobs_smooth_float.tif", 1, 256, 254);
     }
 
     public void testReadAdobeDeflate() throws Exception {
@@ -77,7 +81,7 @@ public class IJImageIOTest extends TestCase {
 
         ImagePlus imp = imps[0];
         assertEquals("Image width", width, imp.getWidth());
-        assertEquals("Image height", height, imp.getWidth());
+        assertEquals("Image height", height, imp.getHeight());
         assertEquals("Image stack size", stackSize, imp.getStackSize());
         assertEquals("Image name", file.getName(), imp.getTitle());
         //        assertNotNull("Image title should not be null", imp.getTitle());

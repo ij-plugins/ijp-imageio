@@ -20,8 +20,8 @@
  */
 package net.sf.ij.jaiio;
 
-import non_com.media.jai.codec.ImageCodec;
-import non_com.media.jai.codec.ImageEncoder;
+import com.sun.media.jai.codec.ImageCodec;
+import com.sun.media.jai.codec.ImageEncoder;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;

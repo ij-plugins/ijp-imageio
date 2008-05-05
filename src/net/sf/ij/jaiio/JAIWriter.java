@@ -20,15 +20,18 @@
  */
 package net.sf.ij.jaiio;
 
+import com.sun.media.jai.codec.*;
+import com.sun.media.jai.codecimpl.TIFFImageDecoder;
+import com.sun.media.jai.codecimpl.TIFFImageEncoder;
 import ij.ImagePlus;
 import ij.io.TiffDecoder;
 import ij.measure.Calibration;
-import non_com.media.jai.codec.*;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
+
 
 /**
  * Writes images to files using <a href="http://developer.java.sun.com/developer/sampsource/jai/">

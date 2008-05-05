@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,13 +17,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
-package net.sf.ij.jaiio;
+package net.sf.ij_plugins.imageio;
 
 import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codecimpl.util.RasterFactory;
 import ij.ImagePlus;
 import ij.process.*;
+import net.sf.ij.jaiio.JaiioUtil;
 
 import java.awt.*;
 import java.awt.color.ColorSpace;
@@ -34,14 +36,13 @@ import java.awt.image.*;
  * image types are supported.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.9 $
  */
-public class BufferedImageCreator {
+public class BufferedImageWrapper {
 
     /*
      *  Made private to prevent subclassing.
      */
-    private BufferedImageCreator() {
+    private BufferedImageWrapper() {
     }
 
 
@@ -58,13 +59,9 @@ public class BufferedImageCreator {
 
         // Get slice image processor
         int oldSliceNb = src.getCurrentSlice();
-        if (oldSliceNb != (sliceNb + 1)) {
-            src.setSlice(sliceNb + 1);
-        }
+        src.setSlice(sliceNb + 1);
         final ImageProcessor ip = src.getProcessor().duplicate();
-        if (oldSliceNb != (sliceNb + 1)) {
-            src.setSlice(oldSliceNb);
-        }
+        src.setSlice(oldSliceNb);
 
         // Convert image processor
         switch (src.getType()) {
@@ -74,7 +71,7 @@ public class BufferedImageCreator {
                 if (JaiioUtil.isBinary(bp) && prefferBinary) {
                     final ColorModel cm = ip.getColorModel();
                     if (cm instanceof IndexColorModel) {
-                        return createBinary(bp, (IndexColorModel) ip.getColorModel());
+                        return create(bp, (IndexColorModel) ip.getColorModel());
                     } else {
                         throw new RuntimeException("Expecting 'IndexColorModel', got: " + cm);
                     }
@@ -95,38 +92,30 @@ public class BufferedImageCreator {
         }
     }
 
-    public static BufferedImage createBinary(final ByteProcessor src, final IndexColorModel icm) {
+    public static BufferedImage createBinary(final ByteProcessor src) {
+        // TODO: create destination BufferedImage directly without creating intermediate image (save memory and time)
 
-        final int mapSize = icm.getMapSize();
-        if (mapSize != 2) {
-            throw new IllegalArgumentException("Input ByteProcessor has to have index color model with map size of 2, got " + mapSize + ".");
-        }
+//        final BufferedImage srcBI = create(src);
+//
+//        final BufferedImage destBI = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_BYTE_BINARY);
+//        final Graphics2D g2d = destBI.createGraphics();
+//        g2d.drawImage(srcBI, 0, 0, null);
+//
+//        return destBI;
 
-        final WritableRaster wr = icm.createCompatibleWritableRaster(src.getWidth(), src.getHeight());
+        final int w = src.getWidth();
+        final int h = src.getHeight();
 
-        final byte[] bitsOn = {(byte) 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
-        final byte[] srcPixels = (byte[]) src.getPixels();
-        final DataBufferByte dataBuffer = (DataBufferByte) wr.getDataBuffer();
-        final byte[] destPixels = dataBuffer.getData();
-        // Double check that dest data are large enough
-        int srcWidth = src.getWidth();
-        int destWidth = (src.getWidth() + 7) / 8;
-        int expectedDestSize = destWidth * src.getHeight();
-        if (destPixels.length != expectedDestSize) {
-            throw new IllegalStateException("Internal error: wrong size of destPixels.");
-        }
-        // Single bit image, pack bits
-        for (int i = 0; i < destPixels.length; ++i) {
-            byte destByte = 0x00;
-            int offset = (i / destWidth) * srcWidth + (i % destWidth) * 8;
-            for (int j = 0; j < 8 && ((j + offset) < srcPixels.length); ++j) {
-                if (srcPixels[j + offset] != 0) {
-                    destByte += bitsOn[j];
-                }
-            }
-            destPixels[i] = destByte;
-        }
-        return new BufferedImage(icm, wr, false, null);
+        final SampleModel sampleModel = new MultiPixelPackedSampleModel(DataBuffer.TYPE_BYTE, w, h, 1);
+        final ColorModel colorModel = ImageCodec.createGrayIndexColorModel(sampleModel, true);
+        final byte[] pixels = (byte[]) src.getPixels();
+        final DataBufferByte dataBuffer = new DataBufferByte(pixels, pixels.length);
+
+        final int bitsPerPixel = 1;
+        final WritableRaster raster = RasterFactory.createPackedRaster(dataBuffer, w, h, bitsPerPixel, new Point(0, 0));
+
+        return new BufferedImage(colorModel, raster, false, null);
+
     }
 
 
@@ -148,12 +137,12 @@ public class BufferedImageCreator {
         }
         final IndexColorModel icm = new IndexColorModel(8, 256, rLUT, gLUT, bLUT);
 
-        return createDirectly(src, icm);
+        return createFrom256Index(src, icm);
     }
 
 
     /**
-     * Create BufferedImage from an 256 indexed color image, share pixels with input. If supplied color model mas map size
+     * Create BufferedImage from an 256 indexed color image. If supplied color model mas map size
      * less than 256 it will be extended.
      *
      * @param src ByteProcessor source.
@@ -185,7 +174,7 @@ public class BufferedImageCreator {
                     "  Map size    = " + mapSize + ".");
         }
 
-        return createDirectly(src, icm256);
+        return createFrom256Index(src, icm256);
     }
 
     /**
@@ -195,7 +184,7 @@ public class BufferedImageCreator {
      * @param icm Color model.
      * @return new BufferedImage.
      */
-    private static BufferedImage createDirectly(final ByteProcessor src, final IndexColorModel icm) {
+    private static BufferedImage createFrom256Index(final ByteProcessor src, final IndexColorModel icm) {
 
         final int width = src.getWidth();
         final int height = src.getHeight();
@@ -263,7 +252,7 @@ public class BufferedImageCreator {
 
 
     /**
-     * Create BufferedImage from ShortProcessor, share pixels with source. Pixel values are assumed to be unsigned short
+     * Create BufferedImage from ShortProcessor. Pixel values are assumed to be unsigned short
      * integers.
      *
      * @param src ShortProcessor source.
@@ -292,12 +281,12 @@ public class BufferedImageCreator {
 
 
     /**
-     * Create BufferedImage from FloatProcessor, share pixels with source.
+     * Create BufferedImage from FloatProcessor.
      *
      * @param src FloatProcessor source.
      * @return BufferedImage.
      */
-    public static BufferedImage create(final FloatProcessor src) {
+    public static BufferedImage create(FloatProcessor src) {
 
         int w = src.getWidth();
         int h = src.getHeight();
@@ -325,13 +314,12 @@ public class BufferedImageCreator {
      * @return BufferedImage.
      */
     public static BufferedImage create(ColorProcessor src) {
-        // FIXME: share pixels with source
-
         ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
         int[] bits = {8, 8, 8};
         ColorModel cm = new ComponentColorModel(cs, bits, false, false,
                 Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
-        WritableRaster raster = cm.createCompatibleWritableRaster(src.getWidth(), src.getHeight());
+        WritableRaster raster = cm.createCompatibleWritableRaster(src.getWidth(),
+                src.getHeight());
         DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
 
         byte[] data = dataBuffer.getData();

@@ -20,11 +20,11 @@
  */
 package net.sf.ij.jaiio;
 
+import com.sun.media.jai.codec.TIFFEncodeParam;
 import ij.ImagePlus;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import junit.framework.TestCase;
-import non_com.media.jai.codec.TIFFEncodeParam;
 
 import java.io.File;
 import java.util.Arrays;

@@ -20,7 +20,7 @@
  */
 package net.sf.ij.jaiio;
 
-import non_com.media.jai.codec.ImageCodec;
+import com.sun.media.jai.codec.ImageCodec;
 
 import javax.swing.*;
 import java.io.File;

@@ -20,8 +20,8 @@
  */
 package net.sf.ij.jaiio;
 
-import non_com.media.jai.codec.ImageEncodeParam;
-import non_com.media.jai.codec.TIFFEncodeParam;
+import com.sun.media.jai.codec.ImageEncodeParam;
+import com.sun.media.jai.codec.TIFFEncodeParam;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;

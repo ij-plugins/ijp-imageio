@@ -23,8 +23,6 @@ package net.sf.ij.jaiio;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.process.*;
-import non_com.media.jai.DataBufferDouble;
-import non_com.media.jai.DataBufferFloat;
 
 import java.awt.image.*;
 

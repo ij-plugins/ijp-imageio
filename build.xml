@@ -23,7 +23,6 @@
     <!-- CVS setup -->
     <property name="cvs.root" value=":pserver:anonymous@cvs.sourceforge.net:/cvsroot/ij-plugins"/>
     <property name="imageio.cvs.module" value="imageio"/>
-    <property name="non_com.cvs.module" value="Sun_JAI_Sample_IO_Source_Code_v_1_1_1"/>
 
 
     <!-- Set default properties for this build -->
@@ -164,7 +163,7 @@
     </target>
 
     <target name="clean"
-            description="Remove internediate files and directories created during build.">
+            description="Remove intermediate files and directories created during build.">
         <delete dir="${checkout.dir}"/>
         <delete dir="${build.dir}"/>
     </target>
@@ -198,7 +197,7 @@
         <mkdir dir="${checkout.dir}"/>
     </target>
 
-    <!-- Build dictributin from current content of CVS -->
+    <!-- Build distribution from current content of CVS -->
     <target name="dist-from-cvs" depends="init">
 
         <property name="cvs.imageio.dir" location="${checkout.dir}/${imageio.cvs.module}"/>
@@ -239,16 +238,6 @@
         <!--
         <delete dir="{cvs.imageio.dir}"/>
         -->
-    </target>
-
-    <!-- Checkout non_com sources from CVS repository -->
-    <target name="checkout-non_com"
-            depends="init">
-        <!-- Checkout SUN sources of JAI IO -->
-        <cvs cvsRoot="${cvs.root}"
-             command="checkout -P"
-             package="${non_com.cvs.module}"
-             dest="${checkout.dir}"/>
     </target>
 
     <!-- Checkout sources drom CVS repository -->

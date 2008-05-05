@@ -20,6 +20,7 @@
  */
 package net.sf.ij.plugin;
 
+import com.sun.media.jai.codec.ImageEncodeParam;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.Macro;
@@ -30,7 +31,6 @@ import ij.plugin.PlugIn;
 import ij.plugin.frame.Recorder;
 import net.sf.ij.jaiio.*;
 import net.sf.ij.swing.SwingUtils;
-import non_com.media.jai.codec.ImageEncodeParam;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -70,6 +70,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
 
         IJ.showStatus("Starting \"" + TITLE + "\" plugin...");
 
+        boolean useOneBitCompression = false;
         try {
             final ImagePlus imp = WindowManager.getCurrentImage();
             if (imp == null) {
@@ -187,7 +188,6 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                     boolean isBinary = imp.getType() != ImagePlus.COLOR_256
                             && JaiioUtil.isBinary(imp.getProcessor());
 
-                    boolean useOneBitCompression = false;
                     if (isBinary) {
                         useOneBitCompression = IJ.showMessageWithCancel("Save as TIFF",
                                 "Image seems to be two level binary. Do you want to save it using 1 bit per pixel?");
@@ -203,7 +203,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
             //
             try {
                 IJ.showStatus("Writing image as " + codecName.toUpperCase() + " to " + fileName);
-                write(imp, fileName, codecName, encodeParam);
+                write(imp, fileName, codecName, encodeParam, useOneBitCompression);
             } catch (IOException e) {
                 e.printStackTrace();
                 Macro.abort();
@@ -227,12 +227,13 @@ public class ImageIOSaveAsPlugin implements PlugIn {
     private static void write(ImagePlus imp,
                               String fileName,
                               String codecName,
-                              ImageEncodeParam encodeParam)
+                              ImageEncodeParam encodeParam,
+                              boolean useOneBitCompression)
             throws IOException {
         JAIWriter jaiWriter = new JAIWriter();
         jaiWriter.setFormatName(codecName);
         jaiWriter.setImageEncodeParam(encodeParam);
-        jaiWriter.write(fileName, imp);
+        jaiWriter.write(fileName, imp, useOneBitCompression);
     }
 
 

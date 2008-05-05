@@ -20,7 +20,7 @@
  */
 package net.sf.ij.jaiio;
 
-import non_com.media.jai.codec.ImageCodec;
+import com.sun.media.jai.codec.ImageCodec;
 
 import javax.swing.filechooser.FileFilter;
 import java.io.EOFException;
@@ -34,7 +34,7 @@ import java.util.Enumeration;
  * File filter that detects image files supported by registered JAI codecs.
  * File types are determined be magic number in the header rather then file
  * extension.
- * 
+ *
  * @author Jarek Sacha
  * @version $Revision: 1.4 $
  */
@@ -63,7 +63,7 @@ public class JAIFileFilter extends FileFilter {
 
     /**
      * Create file filter accepting images supported by given codec.
-     * 
+     *
      * @param codecName Codec name.
      */
     public JAIFileFilter(String codecName) {
@@ -93,7 +93,7 @@ public class JAIFileFilter extends FileFilter {
 
     /**
      * Gets the Description attribute of the ExtensionFileFilter object
-     * 
+     *
      * @return The Description value
      */
     public String getDescription() {
@@ -104,7 +104,7 @@ public class JAIFileFilter extends FileFilter {
     /**
      * Gets the CodecName attribute of the JAIFileFilter object. May return null
      * if no codec is selected (all files).
-     * 
+     *
      * @return The CodecName value
      */
     public String getCodecName() {
@@ -114,7 +114,7 @@ public class JAIFileFilter extends FileFilter {
 
     /**
      * Whether the given file is accepted by this filter.
-     * 
+     *
      * @param file File.
      * @return true is it is a directory or a file that can be accessed by
      *         associated codec.

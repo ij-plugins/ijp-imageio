@@ -20,14 +20,16 @@
  */
 package net.sf.ij.jaiio;
 
+import com.sun.media.jai.codec.*;
+import com.sun.media.jai.codecimpl.TIFFImage;
+import com.sun.media.jai.codecimpl.TIFFImageDecoder;
+import com.sun.media.jai.codecimpl.util.FloatDoubleColorModel;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.io.Opener;
 import ij.io.TiffDecoder;
 import ij.measure.Calibration;
-import non_com.media.jai.FloatDoubleColorModel;
-import non_com.media.jai.codec.*;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -39,7 +41,7 @@ import java.util.ArrayList;
  * Read image files using JAI image I/O codec
  * (http://developer.java.sun.com/developer/sampsource/jai/) and convert them
  * to Image/J representation.
- * 
+ *
  * @author Jarek Sacha
  * @version $Revision: 1.5 $
  */
@@ -120,7 +122,7 @@ public class JAIReader {
      * as the first an only element of the image array. If reading from TIFF
      * files, image resolution and Image/J's description string containing
      * calibration information are decoded.
-     * 
+     *
      * @param file File to open image from.
      * @return Array of images contained in the file.
      * @throws Exception when unable to read image from the specified file.
@@ -137,7 +139,7 @@ public class JAIReader {
      * as the first an only element of the image array. If reading from TIFF
      * files, image resolution and Image/J's description string containing
      * calibration information are decoded.
-     * 
+     *
      * @param file      File to open image from.
      * @param pageIndex Description of Parameter
      * @return Array of images contained in the file.
@@ -202,7 +204,7 @@ public class JAIReader {
      * Attempt to combine images into a single stack. Images can be combined into
      * a stack if all of them are single slice images of the same type and
      * dimensions.
-     * 
+     *
      * @param images Array of images.
      * @return Input images combined into a stack. Return null if images
      *         cannot be combined.
@@ -249,7 +251,7 @@ public class JAIReader {
 
     /**
      * Create image decoder to read the image file.
-     * 
+     *
      * @param file Image file name.
      * @throws Exception Description of Exception
      */
