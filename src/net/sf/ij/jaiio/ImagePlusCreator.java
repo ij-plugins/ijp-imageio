@@ -31,9 +31,9 @@ import java.awt.image.*;
  * Creates/converts Image/J's image objects from Java2D/JAI representation.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.7 $
  */
 public class ImagePlusCreator {
+
 
     private ImagePlusCreator() {
     }
@@ -109,6 +109,7 @@ public class ImagePlusCreator {
         }
     }
 
+
     /**
      * Convert BufferedImage to ImageProcessor.
      *
@@ -152,6 +153,21 @@ public class ImagePlusCreator {
 
 
     /**
+     * Create instance of ImagePlus from a BufferedImage.
+     *
+     * @param title name of the output image.
+     * @param bi    source buffered image
+     * @return ImagePlus object created from WritableRaster r and
+     *         ColorModel cm
+     * @throws UnsupportedImageModelException when enable to create ImagePlus.
+     * @see #create(String, java.awt.image.WritableRaster, java.awt.image.ColorModel)
+     */
+    public static ImagePlus create(final String title, final BufferedImage bi) throws UnsupportedImageModelException {
+        return create(title, bi.getRaster(), bi.getColorModel());
+    }
+
+
+    /**
      * Create instance of ImagePlus from WritableRaster r and ColorModel cm.
      *
      * @param title name of the output image.
@@ -173,16 +189,38 @@ public class ImagePlusCreator {
         }
 
         final SampleModel sm = r.getSampleModel();
+        final ImagePlus result;
         if (numBanks > 1 || sm.getNumBands() > 1
                 ) {
             // If image has multiple banks or multiple color components, assume that it
             // is a color image and relay on AWT for proper decoding.
             final BufferedImage bi = new BufferedImage(cm, r, false, null);
-            return new ImagePlus(title, new ColorProcessor(bi));
+            result = new ImagePlus(title, new ColorProcessor(bi));
         } else if (sm.getSampleSize(0) < 8) {
             // Temporary fix for less then 8 bit images
             final BufferedImage bi = new BufferedImage(cm, r, false, null);
-            return new ImagePlus(title, new ByteProcessor(bi));
+            switch (bi.getType()) {
+                case BufferedImage.TYPE_BYTE_GRAY:
+                    result = new ImagePlus(title, new ByteProcessor(bi));
+                    break;
+                case BufferedImage.TYPE_BYTE_BINARY:
+                    final int width = bi.getWidth();
+                    final int height = bi.getHeight();
+                    final ByteProcessor bp = new ByteProcessor(width, height);
+                    final Raster data = bi.getData();
+                    final int[] p = new int[1];
+                    for (int y = 0; y < height; y++) {
+                        for (int x = 0; x < width; x++) {
+                            data.getPixel(x, y, p);
+                            bp.set(x, y, p[0]);
+                        }
+                    }
+                    bp.setColorModel(cm);
+                    result = new ImagePlus(title, bp);
+                    break;
+                default:
+                    throw new UnsupportedImageModelException("Unable to process buffered image of type: " + bi.getType());
+            }
         } else {
             if (!(cm instanceof IndexColorModel)) {
                 // Image/J (as of version 1.26r) can not properly deal with non color
@@ -198,7 +236,7 @@ public class ImagePlusCreator {
             if (db.getDataType() == DataBuffer.TYPE_SHORT) {
 
                 final Calibration cal = new Calibration(im);
-                double[] coeff = new double[2];
+                final double[] coeff = new double[2];
                 coeff[0] = -32768.0;
                 coeff[1] = 1.0;
                 cal.setFunction(Calibration.STRAIGHT_LINE, coeff, "gray value");
@@ -206,14 +244,16 @@ public class ImagePlusCreator {
             } else if (cm == null) {
                 final Calibration cal = im.getCalibration();
                 im.setCalibration(null);
-                ImageStatistics stats = im.getStatistics();
+                final ImageStatistics stats = im.getStatistics();
                 im.setCalibration(cal);
                 ip.setMinAndMax(stats.min, stats.max);
                 im.updateImage();
             }
 
-            return im;
+            result = im;
         }
+
+        return result;
 
     }
 }
