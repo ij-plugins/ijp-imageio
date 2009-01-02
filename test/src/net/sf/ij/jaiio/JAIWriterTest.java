@@ -98,7 +98,7 @@ public final class JAIWriterTest extends TestCase {
         if (expected instanceof ByteProcessor) {
             final byte[] expectedPixels = (byte[]) expected.getPixels();
             final byte[] actualPixels = (byte[]) actual.getPixels();
-            assertTrue(Arrays.equals(expectedPixels, actualPixels));
+            assertTrue("Equal pixels", Arrays.equals(expectedPixels, actualPixels));
         } else {
             throw new UnsupportedOperationException("Comparison for image processor of type: "
                     + expected.getClass() + " not implemented.");

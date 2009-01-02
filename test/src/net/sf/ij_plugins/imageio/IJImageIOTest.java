@@ -1,6 +1,6 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2005 Jarek Sacha
+ * Copyright (C) 2002-2008 Jarek Sacha
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *
  */
 package net.sf.ij_plugins.imageio;
 
@@ -31,23 +32,13 @@ import java.util.Iterator;
 
 /**
  * @author Jarek Sacha
- * @version $Revision: 1.2 $
  */
 public class IJImageIOTest extends TestCase {
+
+    final private static File DATA_DIR = new File("test/data");
+
     public IJImageIOTest(String test) {
         super(test);
-    }
-
-    /**
-     * The fixture set up called before every test method.
-     */
-    protected void setUp() throws Exception {
-    }
-
-    /**
-     * The fixture clean up called after every test method.
-     */
-    protected void tearDown() throws Exception {
     }
 
     public void testRead() throws Exception {
@@ -64,8 +55,19 @@ public class IJImageIOTest extends TestCase {
 
     public void testReadAdobeDeflate() throws Exception {
         // sun-jai-codec.1.1.1 cannot read TIFF images with compression: AdobeDeflate (created by
-        // Adobe Photoshop 7). New jai-imageio can readit.
+        // Adobe Photoshop 7). New jai-imageio can read it.
         testRead("test/data/bug_AdobeDeflate/baboon_AdobeDeflate.tif", 1, 512, 512);
+    }
+
+    public void testReadTwoSequences() throws Exception {
+        final File inFile = new File(DATA_DIR, "two_stacks.tif");
+        assertTrue(inFile.exists());
+
+        final ImagePlus[] images = IJImageIO.read(inFile);
+        assertNotNull(images);
+        assertEquals(2, images.length);
+        assertEquals(2, images[0].getNSlices());
+        assertEquals(3, images[1].getNSlices());
     }
 
     private void testRead(final String fileName, final int stackSize, final int width, final int height)
@@ -111,8 +113,8 @@ public class IJImageIOTest extends TestCase {
     void print(final String message, final String[] a) {
         System.out.print(message + ": [");
         if (a != null) {
-            for (int i = 0; i < a.length; i++) {
-                System.out.print(a[i] + ", ");
+            for (final String anA : a) {
+                System.out.print(anA + ", ");
             }
         }
         System.out.println("]");

@@ -26,6 +26,7 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import net.sf.ij.jaiio.BufferedImageCreator;
 import net.sf.ij.jaiio.ImagePlusCreator;
+import net.sf.ij.jaiio.UnsupportedImageModelException;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -41,14 +42,67 @@ import java.util.List;
  * Helper class that for reading images using javax.imageio into ImageJ representation.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.6 $
  */
 public class IJImageIO {
+
     /**
      * Default constructor intentionally made private to prevent instantiation of the class.
      */
     private IJImageIO() {
     }
+
+
+    /**
+     * Read image from file using using javax.imageio and convert it to ImageJ representation. All
+     * images contained in the file ill be read.
+     *
+     * @param file          input image file.
+     * @param combineStacks if {@code true} series of images of the same tyep and size will be combined into stacks (single ImagePlus).
+     * @return Array of images read from the file. If images are of the same type and size they will
+     *         be combined into a stack and the returned ImagePlus array will have a single element
+     *         with stack size equal to the number of images in the input file.
+     * @throws IJImageIOException when images cannot be read or represented as ImagePlus.
+     */
+    public static ImagePlus[] read(final File file, final boolean combineStacks) throws IJImageIOException {
+
+        // Load images
+        final List<BufferedImage> bufferedImages = readAsBufferedImages(file);
+
+        // Convert to ImageJ representation
+        final List<ImagePlus> images = new ArrayList<ImagePlus>();
+        for (final BufferedImage bi : bufferedImages) {
+            final ImagePlus imp;
+            try {
+                imp = ImagePlusCreator.create(file.getName(), bi);
+            } catch (final UnsupportedImageModelException e) {
+                throw new IJImageIOException("Unable to convert loaded image to ImagePlus. " + e.getMessage(), e);
+            }
+            // Add converted to the list
+            images.add(imp);
+        }
+
+        return combineStacks
+                ? attemptToCombineStacks(images)
+                : images.toArray(new ImagePlus[images.size()]);
+    }
+
+
+    /**
+     * Read image from file using using javax.imageio and convert it to ImageJ representation. All
+     * images contained in the file will be read, and stacks combined.
+     * Convenience call to read(file, true) ({@link #read(java.io.File, boolean)} ).
+     *
+     * @param file input image file.
+     * @return Array of images read from the file. If images are of the same type and size they will
+     *         be combined into a stack and the returned ImagePlus array will have a single element
+     *         with stack size equal to the number of images in the input file.
+     * @throws IJImageIOException when images cannot be read or represented as ImagePlus.
+     * @see #read(java.io.File, boolean)
+     */
+    public static ImagePlus[] read(final File file) throws IJImageIOException {
+        return read(file, true);
+    }
+
 
     /**
      * Read image from file using using javax.imageio and convert it to ImageJ representation. All
@@ -58,70 +112,68 @@ public class IJImageIO {
      * @return Array of images read from the file. If images are of the same type and size they will
      *         be combined into a stack and the returned ImagePlus array will have a single element
      *         with stack size equal to the number of images in the input file.
-     * @throws IOException
-     * @throws IJImageIOException
+     * @throws IJImageIOException when I/O error occurs.
      */
-    public static ImagePlus[] read(final File file)
-            throws IOException, IJImageIOException {
+    public static List<BufferedImage> readAsBufferedImages(final File file) throws IJImageIOException {
 
         if (file == null) {
             throw new IllegalArgumentException("Argument 'file' cannot be null.");
         }
 
-        final ImageInputStream iis = ImageIO.createImageInputStream(file);
-
-        // Locate all available readers
-        final Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-        final List<ImageReader> readerList = new ArrayList<ImageReader>();
-        while (readers.hasNext()) {
-            final ImageReader reader = readers.next();
-            readerList.add(reader);
+        final ImageInputStream iis;
+        try {
+            iis = ImageIO.createImageInputStream(file);
+        } catch (IOException e) {
+            throw new IJImageIOException("Failed to create image input sttream for file: " + file.getAbsolutePath() + ". "
+                    + e.getMessage(), e);
+        }
+        if (iis == null) {
+            throw new IJImageIOException("Failed to create image input sttream for file: " + file.getAbsolutePath() + ".");
         }
 
-        // Verify that at least one reader available.
-        if (readerList.isEmpty()) {
-            throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.");
-        }
+        try {
+            // Locate all available readers
+            final Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+            final List<ImageReader> readerList = new ArrayList<ImageReader>();
+            while (readers.hasNext()) {
+                final ImageReader reader = readers.next();
+                readerList.add(reader);
+            }
 
-        final StringBuffer errorBuffer = new StringBuffer();
-        for (final ImageReader reader : readerList) {
-            IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
-            try {
-                //                iis.reset();
-                iis.seek(0);
-                reader.setInput(iis, false, false);
+            // Verify that there is at least one reader available.
+            if (readerList.isEmpty()) {
+                throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.");
+            }
 
-                // How many images are in the file and what is the first image index
-                final int numImages = reader.getNumImages(true);
-                final int minIndex = reader.getMinIndex();
-
-                // Read each image and add it to list 'images'
-                final List<ImagePlus> images = new ArrayList<ImagePlus>(numImages);
-                for (int j = minIndex; j < numImages + minIndex; j++) {
-                    // Read using javax.imageio
-                    final BufferedImage bi = reader.read(j);
-                    // Convert to ImageJ representation
-                    final ImagePlus imp = ImagePlusCreator.create(file.getName(), bi.getRaster(), bi.getColorModel());
-                    // Add converted to the list
-                    images.add(imp);
+            // Try available readers till one of them reads images with no errors
+            final StringBuffer errorBuffer = new StringBuffer();
+            List<BufferedImage> bufferedImages = null;
+            for (int i = 0; bufferedImages == null && i < readerList.size(); i++) {
+                final ImageReader reader = readerList.get(i);
+                IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
+                try {
+                    bufferedImages = read(reader, iis);
+                } catch (Exception ex) {
+                    errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage()).append("\n");
                 }
+            }
 
-                // If images on the list are of the same type and size combine them into a stack.
-                final ImagePlus imp = attemptToCombineImages(images);
-
-                // Prepare output image array 'imps'.
-                return imp != null
-                        ? new ImagePlus[]{imp}
-                        : images.toArray(new ImagePlus[numImages]);
-            } catch (Exception ex) {
-                errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage()).append("\n");
+            if (bufferedImages != null) {
+                return bufferedImages;
+            } else {
+                throw new IJImageIOException("Unable to read images from file: " + file.getAbsoluteFile() + ". " + errorBuffer.toString());
+            }
+        } finally {
+            try {
+                iis.close();
+            } catch (final IOException e) {
+                final String messsage = "Failed to close image input stream. " + e.getMessage();
+                e.printStackTrace();
+                logDebug(messsage);
             }
         }
-
-        throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.\n"
-                + errorBuffer.toString());
-
     }
+
 
     public static boolean write(final ImagePlus imp, final String formatName, final File file, boolean prefferBinary) throws IJImageIOException {
 
@@ -135,53 +187,123 @@ public class IJImageIO {
     }
 
 
+    private static List<BufferedImage> read(final ImageReader reader,
+                                            final ImageInputStream iis)
+            throws IJImageIOException {
+
+        //                iis.reset();
+        try {
+            iis.seek(0);
+        } catch (IOException e) {
+            throw new IJImageIOException("Unable to reset input stream to position 0. ", e);
+        }
+        reader.setInput(iis, false, false);
+
+        // How many images are in the file and what is the first image index
+        final int numImages;
+        try {
+            numImages = reader.getNumImages(true);
+        } catch (IOException e) {
+            throw new IJImageIOException("Failed to retrieve number of images in the file. ", e);
+        }
+        final int minIndex = reader.getMinIndex();
+
+        // Read each image and add it to list 'images'
+        final List<BufferedImage> images = new ArrayList<BufferedImage>();
+        for (int j = minIndex; j < numImages + minIndex; j++) {
+            // Read using javax.imageio
+            final BufferedImage bi;
+            try {
+                bi = reader.read(j);
+            } catch (IOException e) {
+                throw new IJImageIOException("Error reading image with internal index " + j
+                        + ". Min internal index is " + minIndex + ". ", e);
+            }
+
+//            // Read metadata for this image
+//            final ImageReadParam imageReadParam = reader.getDefaultReadParam();
+//            final IIOImage a = reader.readAll(j, imageReadParam);
+//            final IIOMetadata metadata = a.getMetadata();
+
+            images.add(bi);
+        }
+
+        return images;
+    }
+
+
     /**
-     * Attempts to combine images on the list into a stack. If successful return the combined image,
-     * otherwise return null. Images cannot be combined if they are of different types,  different
-     * sizes, or have more then single slice. Can return <code>null</code>.
+     * Attempts to combine images on the list into a stack.
+     * Images cannot be combined if they are of different types or different sizes.
      *
      * @param imageList List of images to combine into a stack.
-     * @return Combined image if successful, otherwise <code>null</code>.
+     * @return Combined image stacks.
      */
-    private static ImagePlus attemptToCombineImages(final List<ImagePlus> imageList) {
-        if (imageList == null || imageList.size() < 1)
-            return null;
+    private static ImagePlus[] attemptToCombineStacks(final List<ImagePlus> imageList) {
 
-        if (imageList.size() == 1) {
-            return imageList.get(0);
+        final List<ImagePlus> result = new ArrayList<ImagePlus>();
+        int sourceIndex = 0;
+        while (sourceIndex < imageList.size()) {
+            // Test how many images can be combined
+            final int chainLength = stackableChain(imageList, sourceIndex);
+
+            // Combine
+            final ImagePlus imp = imageList.get(sourceIndex);
+            if (chainLength > 1) {
+                final ImageStack stack = imp.getStack();
+                for (int i = sourceIndex + 1; i < sourceIndex + chainLength; ++i) {
+                    final ImageStack s2 = imageList.get(i).getStack();
+                    for (int s2i = 1; s2i <= s2.getSize(); s2i++) {
+                        stack.addSlice(s2.getSliceLabel(s2i), s2.getProcessor(s2i));
+                    }
+                }
+                imp.setStack(imp.getTitle(), stack);
+            }
+
+            // Add to output
+            result.add(imp);
+            sourceIndex += chainLength;
         }
 
-        final ImagePlus firstImage = imageList.get(0);
-        if (firstImage.getStackSize() != 1) {
-            return null;
+        return result.toArray(new ImagePlus[result.size()]);
+    }
+
+
+    private static int stackableChain(final List<ImagePlus> imageList, final int startIndex) {
+        if (imageList.size() <= startIndex || startIndex < 0) {
+            return 0;
         }
 
+        if (imageList.size() == startIndex + 1) {
+            return 1;
+        }
+
+        final ImagePlus firstImage = imageList.get(startIndex);
         final int fileType = firstImage.getFileInfo().fileType;
         final int w = firstImage.getWidth();
         final int h = firstImage.getHeight();
-        final ImageStack stack = firstImage.getStack();
-        for (int i = 1; i < imageList.size(); ++i) {
-            final ImagePlus im = imageList.get(i);
-            if (im.getStackSize() != 1) {
-                return null;
-            }
-            if (fileType == im.getFileInfo().fileType
-                    && w == im.getWidth() && h == im.getHeight()) {
-                stack.addSlice(im.getTitle(), im.getProcessor().getPixels());
+        int count = 1;
+        for (int i = startIndex + 1; i < imageList.size(); i++) {
+            ImagePlus imp = imageList.get(i);
+            if (fileType == imp.getFileInfo().fileType && w == imp.getWidth() && h == imp.getHeight()) {
+                count++;
             } else {
-                return null;
+                break;
             }
+
         }
 
-        firstImage.setStack(firstImage.getTitle(), stack);
-        return firstImage;
+        return count;
     }
+
 
     /**
      * Helper method to print log message using {@link ij.IJ#log} when {@link ij.IJ#debugMode} is
      * set to <code>true</code>.
+     *
+     * @param message log message
      */
-    static void logDebug(final String message) {
+    private static void logDebug(final String message) {
         if (IJ.debugMode) {
             IJ.log(message);
         }
