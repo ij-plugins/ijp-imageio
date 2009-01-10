@@ -1,294 +1,235 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="ij-ImageIO" default="run" basedir=".">
-    <description>
-        ij-ImageIO plugins add to ImageJ support for additional image
-        file formats and their variants, including BMP, PNG, PNM, JPEG,
-        TIFF. Added support provides for handling of compressed, tiled,
-        1bit, 16bit, and 32bit images. For more detailed informations
-        see subdirectory 'docs' of ij-ImageIO home page at:
-        http://ij-plugins.sf.net/plugins/imageio
-    </description>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
+<project name="imageio" default="default" basedir=".">
+    <description>Builds, tests, and runs the project imageio.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <!--
 
-    <property name="package.name" value="ij-ImageIO"/>
-    <property name="package.version" value="1.2.4"/>
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
 
-    <!-- Customize properties, e.g., jaicodec.jar, cvs.root.-->
-    <property file="build.properties"/>
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
 
-    <!-- In case ant.home is not defined, set default value -->
-    <property name="ant.home" location="/usr/share/ant"/>
+    (Targets beginning with '-' are not intended to be called on their own.)
 
-    <!--     <property name="jaicodec.jar" location="lib/JAI-codec.1.1.1.jar"/>
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar-with-manifest:    JAR building (if you are using a manifest)
+      -do-jar-without-manifest: JAR building (if you are not using a manifest)
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="imageio-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
     -->
-    <!-- CVS setup -->
-    <property name="cvs.root" value=":pserver:anonymous@cvs.sourceforge.net:/cvsroot/ij-plugins"/>
-    <property name="imageio.cvs.module" value="imageio"/>
+
+    <target name="-post-init">
+        <!-- Package name and version -->
+        <property name="package.name" value="ij-ImageIO"/>
+        <property name="package.version" value="1.3.0"/>
+
+        <property name="sandbox.dir" value="sandbox"/>
+        <property name="plugins.dir" value="${sandbox.dir}/plugins"/>
+
+        <fileset id="resource.files"
+                 dir="${src.dir}">
+            <include name="**/*.png"/>
+            <include name="**/*.gif"/>
+        </fileset>
+
+        <fileset id="library.files"
+                 dir="lib">
+            <include name="**/jai_codec.jar"/>
+            <include name="**/jai_imageio.jar"/>
+        </fileset>
 
 
-    <!-- Set default properties for this build -->
-    <property name="base.dir" location="${basedir}"/>
-    <property name="lib.dir" location="${base.dir}/lib"/>
-    <property name="src.dir" location="${base.dir}/src"/>
-    <property name="docs.dir" location="${base.dir}/docs"/>
+        <!-- SVN setup -->
+        <property name="svn.repository" value="https://ij-plugins.svn.sourceforge.net/svnroot/ij-plugins"/>
+        <property name="svn.module" value="imageio"/>
+        <property name="checkout.dir" location="${build.dir}/checkout"/>
+        <!-- path to the svnant libraries. Usually they will be located in ANT_HOME/lib -->
+        <property name="svnant.lib.dir" location="../vendor/svnant/lib"/>
+        <path id="svnant.classpath">
+            <fileset dir="${svnant.lib.dir}">
+                <include name="**/*.jar"/>
+            </fileset>
+        </path>
+        <!-- load the svn task -->
+        <typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpathref="svnant.classpath"/>
 
-    <!-- Generated directories -->
-    <property name="build.dir" location="${base.dir}/build"/>
-    <property name="build.classes.dir" location="${build.dir}/classes"/>
+        <!-- Create the time stamp -->
+        <tstamp/>
 
-    <property name="checkout.dir" location="${build.dir}/checkout"/>
-    <property name="dist.dir" location="${base.dir}/dist"/>
-    <property name="sandbox.dir" location="${base.dir}/sandbox"/>
-    <property name="sandbox.plugins.dir" location="${sandbox.dir}/plugins"/>
-    <property name="jar.dir" location="${sandbox.plugins.dir}"/>
-    <property name="javadoc.dir" location="${dist.dir}/api"/>
-
-    <property name="main.class" value="net.sf.ij.plugin.HelpPanel"/>
-
-
-    <fileset id="library.files"
-             dir="${lib.dir}">
-        <include name="*.jar"/>
-        <exclude name="ij.jar"/>
-    </fileset>
-
-    <path id="compile.classpath">
-        <pathelement location="${lib.dir}/ij.jar"/>
-        <fileset refid="library.files"/>
-    </path>
-
-    <fileset id="config.files"
-             dir="${src.dir}">
-        <include name="**/*.config"/>
-    </fileset>
-    <fileset id="resource.files"
-             dir="${src.dir}">
-        <include name="**/*.png"/>
-        <include name="**/*.gif"/>
-    </fileset>
-    <fileset id="docs.files"
-             dir="${docs.dir}">
-        <include name="**/*.html"/>
-        <include name="**/*.css"/>
-        <include name="**/*.png"/>
-        <include name="**/*.gif"/>
-    </fileset>
-
-    <!-- ================= -->
-    <!--  Primary targets  -->
-    <!-- ================= -->
-
-    <target name="run"
-            description="Test run ImageJ with ij-ImageIO plugins"
-            depends="jar">
-
-        <java
-                jar="${lib.dir}/ij.jar"
-                dir="${base.dir}"
-                fork="true">
-            <jvmarg value="-Dplugins.dir=${sandbox.dir}"/>
-        </java>
-
+        <mkdir dir="${sandbox.dir}"/>
+        <mkdir dir="${plugins.dir}"/>
     </target>
 
-    <target name="dist"
-            description="Create distribution files."
-            depends="dist-from-cvs">
+
+    <target name="-post-clean">
+        <delete dir="${sandbox.dir}"/>
     </target>
 
-    <target name="compile"
-            depends="init"
-            description="Compile all examples">
-        <javac
-                srcdir="${src.dir}"
-                destdir="${build.classes.dir}"
-                debug="on"
-                target="1.5"
-                source="1.5">
-            <classpath refid="compile.classpath"/>
-            <exclude name="**/*Test.java"/>
-        </javac>
 
-        <copy todir="${build.classes.dir}" overwrite="true">
-            <fileset refid="config.files"/>
-            <filterset>
-                <filter token="BUILD_DATE" value="${DSTAMP}"/>
-                <filter token="BUILD_VERSION" value="${package.version}"/>
-            </filterset>
-        </copy>
-        <copy todir="${build.classes.dir}">
-            <fileset refid="resource.files"/>
-        </copy>
-        <copy todir="${build.classes.dir}/docs">
-            <fileset refid="docs.files"/>
+    <target name="run" description="Run ImageJ with plugins" depends="setup-plugins">
+        <java dir="${sandbox.dir}" classname="ij.ImageJ" classpath="${run.classpath}" fork="true"/>
+    </target>
+
+
+    <target name="setup-plugins" depends="jar" description="Prepare plugins for testing with ImageJ">
+        <copy file="${dist.jar}" todir="${plugins.dir}"/>
+        <copy todir="${plugins.dir}">
+            <fileset dir="lib" excludes="**/ij.jar"/>
         </copy>
     </target>
 
-    <target name="jar" depends="compile"
-            description="Create plugins' JAR">
+    <target name="jar-all" depends="jar"
+            description="Create plugins' JAR with all dependencies">
 
         <!-- Create library jar -->
-        <jar destfile="${jar.dir}/${package.name}_.jar"
+        <jar destfile="${jar.dir}/${package.name}.jar"
              basedir="${build.classes.dir}"
              compress="true">
             <fileset refid="resource.files"/>
+            <zipgroupfileset refid="library.files"/>
             <manifest>
-                <attribute name="Main-Class" value="${main.class}"/>
+                <attribute name="Implementation-Version" value="${package.version}"/>
             </manifest>
-            <zipgroupfileset file="${lib.dir}/JAI-codec.1.1.1.jar"/>
         </jar>
     </target>
 
-    <!-- Create API documentation -->
-    <target name="javadoc"
-            depends="compile"
-            description="Create Javadoc API documentation">
-        <javadoc verbose="no"
-                 packagenames="*"
-                 destdir="${javadoc.dir}"
-                 windowtitle="JAI ImageIO plugins for ImageJ - API"
-                 header="JAI ImageIO plugins for ImageJ - API">
-            <fileset dir="src" defaultexcludes="yes">
-                <include name="**/*.java"/>
-                <exclude name="**/**Test.java"/>
-                <exclude name="**/**TestCase.java"/>
-            </fileset>
-            <footer>
-                <![CDATA[
-                <a href="http://ij-plugins.sourceforge.net">
-            <img src="http://sourceforge.net/sflogo.php?group_id=49871&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo">
-            </a>]]>
-            </footer>
-            <classpath refid="compile.classpath"/>
-        </javadoc>
-    </target>
+    <!-- Build distribution from current content of SVN -->
+    <target name="dist-from-svn" depends="init" description="Distribution from SVN">
 
-    <target name="clean"
-            description="Remove intermediate files and directories created during build.">
-        <delete dir="${checkout.dir}"/>
-        <delete dir="${build.dir}"/>
-    </target>
-
-    <target name="clean-all"
-            depends="clean"
-            description="Remove all files and directories created during build.">
-        <delete dir="${jar.dir}"/>
-        <delete dir="${sandbox.plugins.dir}"/>
-        <delete dir="${sandbox.dir}"/>
-        <delete dir="${javadoc.dir}"/>
-        <delete dir="${dist.dir}"/>
-    </target>
-
-    <!-- ================= -->
-    <!-- Secondary targets -->
-    <!-- ================= -->
-
-    <!-- Initialize  -->
-    <target name="init">
-        <echo message="Building ${ant.project.name}"/>
-        <!-- Create the time stamp -->
-        <tstamp/>
-        <!-- Create the build directory structure used by compile -->
-        <mkdir dir="${build.dir}"/>
-        <mkdir dir="${build.classes.dir}"/>
-        <mkdir dir="${sandbox.dir}"/>
-        <mkdir dir="${sandbox.plugins.dir}"/>
-        <mkdir dir="${dist.dir}"/>
-        <mkdir dir="${javadoc.dir}"/>
-        <mkdir dir="${checkout.dir}"/>
-    </target>
-
-    <!-- Build distribution from current content of CVS -->
-    <target name="dist-from-cvs" depends="init">
-
-        <property name="cvs.imageio.dir" location="${checkout.dir}/${imageio.cvs.module}"/>
+        <property name="svn.dir" location="${checkout.dir}/${svn.module}"/>
 
         <!-- ................... -->
         <!-- Source distribution -->
         <!-- ................... -->
-        <!-- Cleanup CVS checkout directory -->
-        <delete dir="${cvs.imageio.dir}"/>
-        <!-- Fresh checkout from CVS -->
-        <echo message="CVS ROOT: ${cvs.root}"/>
+        <!-- Cleanup SVN checkout directory -->
+        <delete dir="${svn.dir}"/>
+
+        <!-- Fresh checkout from SVN -->
+        <echo message="SVN ROOT: ${svn.repository}"/>
         <antcall target="checkout" inheritall="false">
-            <param name="cvs.root" value="${cvs.root}"/>
+            <param name="svn.dir" value="${svn.dir}"/>
         </antcall>
-        <!-- Include JAI jar to simplify remove need of rebuilding from source -->
-        <!--<copy todir="${cvs.imageio.dir}/lib" file="${jaicodec.jar}"/>-->
+
+        <!-- Get revision number for checked out source -->
+        <!--<echo message="svn.dir = ${svn.dir}"/>-->
+        <!--<svn>-->
+        <!--<status path="${svn.dir}" revisionProperty="svn.revision"/>-->
+        <!--</svn>-->
+
+        <!--Copy dependencies-->
+        <!--<mkdir dir="${svn.dir}/lib"/>-->
+        <!--<copy file="${ij.jar}" todir="${svn.dir}/lib"/>-->
+        <!--<copy file="${license.file}" todir="${svn.dir}"/>-->
+
         <!-- ZIP source -->
-        <zip basedir="${cvs.imageio.dir}"
-             destfile="${dist.dir}/${package.name}_src_${DSTAMP}.zip"/>
+        <mkdir dir="${dist.dir}"/>
+        <zip basedir="${svn.dir}"
+             destfile="${dist.dir}/${package.name}_src_${package.version}_r${svn.revision}_${DSTAMP}.zip"/>
+
+        <!-- ................................................... -->
+        <!-- Run tests                                           -->
+        <!-- ................................................... -->
+        <ant antfile="${svn.dir}/build.xml" target="test" inheritall="false">
+            <property name="svnant.lib.dir" location="${svnant.lib.dir}"/>
+        </ant>
 
 
-        <!-- ................... -->
-        <!-- Binary distribution -->
-        <!-- ................... -->
-        <antcall target="jar" inheritall="false">
-            <param name="base.dir" location="${cvs.imageio.dir}"/>
-            <param name="dist.dir" location="${base.dir}/dist"/>
-            <param name="jar.dir" location="${dist.dir}"/>
-        </antcall>
+        <!-- ................................................... -->
+        <!-- Binary distribution from actual distribution source -->
+        <!-- ................................................... -->
+        <ant antfile="${svn.dir}/build.xml" target="jar-all" inheritall="false">
+            <property name="jar.dir" location="${dist.dir}"/>
+            <property name="svnant.lib.dir" location="${svnant.lib.dir}"/>
+        </ant>
+
+        <!--<ant antfile="${svn.dir}/build.xml" target="jar-nodep" inheritall="false">-->
+        <!--<property name="jar.dir" location="${base.dir}/dist"/>-->
+        <!--<property name="svnant.lib.dir" location="${svnant.lib.dir}"/>-->
+        <!--</ant>-->
+
 
         <!-- ZIP binaries -->
-        <zip destfile="${dist.dir}/${package.name}_bin_${DSTAMP}.zip">
-            <fileset dir="${dist.dir}" includes="${package.name}_.jar"/>
-            <fileset dir="${lib.dir}" includes="jai_imageio.jar"/>
-        </zip>
+        <zip basedir="${dist.dir}"
+             includes="${package.name}.jar"
+             destfile="${dist.dir}/${package.name}_bin_${package.version}_r${svn.revision}_${DSTAMP}.zip"/>
 
-        <!-- Cleanup -->
-        <!--
-        <delete dir="{cvs.imageio.dir}"/>
-        -->
+        <!--<zip basedir="${base.dir}/dist"-->
+        <!--includes="${package.name}-nodep.jar"-->
+        <!--destfile="${dist.dir}/${package.name}-nodep_bin_${package.version}_r${svn.revision}_${DSTAMP}.zip"/>-->
     </target>
 
-    <!-- Checkout sourcesfrom CVS repository -->
+    <!-- Checkout sources from SVN repository -->
     <target name="checkout"
             depends="init">
-        <!-- Checkout wrappers for ImageJ -->
-        <cvs cvsRoot="${cvs.root}"
-             command="checkout -P"
-             package="${imageio.cvs.module}"
-             dest="${checkout.dir}"/>
-    </target>
+        <property name="svnant.latest.url" value="${svn.repository}/trunk/${svn.module}/"/>
+        <!--<property name="svnant.this.url"   url="${svn.repository}/tags/${svn.module}/${svnant.version}/"/>-->
+        <property name="svnant.repository.user" value="guest"/>
+        <property name="svnant.repository.passwd" value=""/>
 
-    <!-- Target: changelog -->
-    <target name="changelog" depends="init">
-        <cvschangelog
-                dir="${base.dir}"
-                destfile="${dist.dir}/changelog.xml"
-                start="LatestRelease"
-                end="HEAD"
-                />
-        <style
-                in="${build.dir}/changelog.xml"
-                out="${dist.dir}/changelog.html"
-                style="${ant.home}/etc/changelog.xsl">
-            <param name="title" expression="JAI-ImageIO ChangeLog"/>
-            <param name="module" expression="imageio"/>
-            <param name="cvsweb" expression="http://cvs.sourceforge.net/viewcvs.py/ij-plugins/"/>
-        </style>
+        <!-- Checkout latest sources -->
+        <mkdir dir="${svn.dir}"/>
+        <!--<svn username="${svnant.repository.user}" password="${svnant.repository.passwd}">-->
+        <!--<checkout url="${svnant.latest.url}" revision="HEAD" destPath="${svn.dir}"/>-->
+        <!--</svn>-->
+        <exec executable="svn">
+            <arg value="checkout"/>
+            <arg value="${svnant.latest.url}"/>
+            <arg value="${svn.dir}"/>
+        </exec>
     </target>
-
-    <!-- Target: tagdif -->
-    <target name="tagdiff" depends="init">
-        <cvstagdiff
-                cvsroot="${cvs.root}"
-                destfile="${build.dir}/tagdiff.xml"
-                package="${imageio.cvs.module}"
-                starttag="LatestRelease"
-                endtag="HEAD"
-                compression="true"
-                />
-        <!--
-        startTag="ij-jai-imageio_v_1_0_5"
-        endTag="HEAD"
-        -->
-        <style
-                in="${build.dir}/tagdiff.xml"
-                out="${dist.dir}/tagdiff.html"
-                style="${ant.home}/etc/tagdiff.xsl">
-            <param name="title" expression="JAI-ImageIO Tag Diff"/>
-            <param name="module" expression="${imageio.cvs.module}"/>
-            <param name="cvsweb" expression="http://cvs.sourceforge.net/viewcvs.py/ij-plugins/"/>
-        </style>
-    </target>
+    
 </project>
