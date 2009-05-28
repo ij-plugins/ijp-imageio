@@ -3,6 +3,23 @@ CHANGES
 **********************
 
 ----------------------
+IJ-ImageIO v.2.m1
+----------------------
+
+New & inproved:
+* Removing dependencu on old SUN libraries, moving to javax.imageio and 
+  "standard" JAI codecs.
+* Distribution "standard" JAI codecs: TIFF, JPEG2000, ...
+
+Bug fix:
+* BUG-1434311: Problem saving 1 bit TIFF images
+* Correct how multi image files are corrected into stacks
+* numerous small big fixes
+
+Code level:
+* Added unit tests.
+
+----------------------
 IJ-ImageIO v.1.2.4
 ----------------------
 
