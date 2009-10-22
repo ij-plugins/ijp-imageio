@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.jaiio;
 
@@ -74,7 +74,17 @@ public class BufferedImageCreator {
                 if (JaiioUtil.isBinary(bp) && prefferBinary) {
                     final ColorModel cm = ip.getColorModel();
                     if (cm instanceof IndexColorModel) {
-                        return createBinary(bp, (IndexColorModel) ip.getColorModel());
+                        final IndexColorModel icm = (IndexColorModel) cm;
+                        final IndexColorModel icm2;
+                        if (icm.getMapSize() == 2) {
+                            icm2 = icm;
+                        } else {
+                            // Create binary
+                            // Create gray level color model
+                            final byte[] l = new byte[]{0x00, (byte) 0xff};
+                            icm2 = new IndexColorModel(8, 2, l, l, l);
+                        }
+                        return createBinary(bp, icm2);
                     } else {
                         throw new RuntimeException("Expecting 'IndexColorModel', got: " + cm);
                     }
@@ -95,6 +105,13 @@ public class BufferedImageCreator {
         }
     }
 
+    /**
+     * Converts a binary image processor to buffered image.
+     *
+     * @param src binary image
+     * @param icm index color model with only two entries
+     * @return buffered image
+     */
     public static BufferedImage createBinary(final ByteProcessor src, final IndexColorModel icm) {
 
         final int mapSize = icm.getMapSize();
