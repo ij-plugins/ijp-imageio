@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 
 package net.sf.ij.jaiio;
@@ -68,40 +68,40 @@ public class JAIReader {
      * @throws IOException                    In case of I/O error.
      * @throws UnsupportedImageModelException when conversion failes.
      */
-    public static ImageInfo readFirstImageAndInfo(File file)
+    public static ImageInfo readFirstImageAndInfo(final File file)
             throws
             UnsupportedImageFileFormatException,
             UnsupportedImageModelException,
             IOException {
 
         // Find matching decoders
-        FileSeekableStream fss = new FileSeekableStream(file);
-        String[] decoders = ImageCodec.getDecoderNames(fss);
+        final FileSeekableStream fss = new FileSeekableStream(file);
+        final String[] decoders = ImageCodec.getDecoderNames(fss);
         if (decoders == null || decoders.length == 0) {
             throw new UnsupportedImageFileFormatException("Unsupported file format. "
                     + "Cannot find decoder capable of reading: " + file.getName());
         }
 
         // Create decoder
-        ImageDecoder decoder = ImageCodec.createImageDecoder(decoders[0], fss, null);
+        final ImageDecoder decoder = ImageCodec.createImageDecoder(decoders[0], fss, null);
 
-        RenderedImage renderedImage = decoder.decodeAsRenderedImage();
+        final RenderedImage renderedImage = decoder.decodeAsRenderedImage();
 
-        ImageInfo imageInfo = new ImageInfo();
+        final ImageInfo imageInfo = new ImageInfo();
         imageInfo.numberOfPages = decoder.getNumPages();
         imageInfo.codecName = decoders[0];
 
         if (renderedImage instanceof Image) {
             imageInfo.previewImage = (Image) renderedImage;
         } else {
-            ColorModel cm = renderedImage.getColorModel();
+            final ColorModel cm = renderedImage.getColorModel();
             if (cm == null || cm instanceof FloatDoubleColorModel) {
-                WritableRaster writableRaster
+                final WritableRaster writableRaster
                         = ImagePlusCreator.forceTileUpdate(renderedImage);
-                ImagePlus imagePlus = ImagePlusCreator.create(file.getName(), writableRaster, null);
+                final ImagePlus imagePlus = ImagePlusCreator.create(file.getName(), writableRaster, null);
                 imageInfo.previewImage = imagePlus.getImage();
             } else {
-                Raster raster = renderedImage.getData();
+                final Raster raster = renderedImage.getData();
                 WritableRaster writableRaster;
                 if (raster instanceof WritableRaster) {
                     writableRaster = (WritableRaster) raster;
@@ -130,7 +130,7 @@ public class JAIReader {
      * @return Array of images contained in the file.
      * @throws Exception when unable to read image from the specified file.
      */
-    public static ImagePlus[] read(File file) throws Exception {
+    public static ImagePlus[] read(final File file) throws Exception {
         return read(file, null);
     }
 
@@ -148,14 +148,14 @@ public class JAIReader {
      * @return Array of images contained in the file.
      * @throws Exception when unable to read image from the specified file.
      */
-    public static ImagePlus[] read(File file, int[] pageIndex) throws Exception {
+    public static ImagePlus[] read(final File file, int[] pageIndex) throws Exception {
 
-        JAIReader reader = new JAIReader();
+        final JAIReader reader = new JAIReader();
 
         reader.open(file);
 
         // Get number of sub images
-        int nbPages = reader.getNumPages();
+        final int nbPages = reader.getNumPages();
         if (nbPages < 1) {
             throw new Exception("Image decoding problem. "
                     + "Image file has less then 1 page. Nothing to decode.");
@@ -170,7 +170,7 @@ public class JAIReader {
 
         // Iterate through pages
         IJ.showProgress(0);
-        ArrayList<ImagePlus> imageList = new ArrayList<ImagePlus>();
+        final ArrayList<ImagePlus> imageList = new ArrayList<ImagePlus>();
         for (int i = 0; i < pageIndex.length; ++i) {
             if (pageIndex[i] != 0) {
                 IJ.showStatus("Reading page " + pageIndex[i]);
@@ -190,7 +190,7 @@ public class JAIReader {
             images[0].setTitle(file.getName());
         } else {
             // Attempt to combine images into a single stack.
-            ImagePlus im = combineImages(images);
+            final ImagePlus im = combineImages(images);
             if (im != null) {
                 im.setTitle(file.getName());
                 images = new ImagePlus[1];
@@ -211,7 +211,7 @@ public class JAIReader {
      * @return Input images combined into a stack. Return null if images
      *         cannot be combined.
      */
-    private static ImagePlus combineImages(ImagePlus[] images) {
+    private static ImagePlus combineImages(final ImagePlus[] images) {
         if (images == null || images.length <= 1) {
             return null;
         }
@@ -220,12 +220,12 @@ public class JAIReader {
             return null;
         }
 
-        int fileType = images[0].getFileInfo().fileType;
-        int w = images[0].getWidth();
-        int h = images[0].getHeight();
-        ImageStack stack = images[0].getStack();
+        final int fileType = images[0].getFileInfo().fileType;
+        final int w = images[0].getWidth();
+        final int h = images[0].getHeight();
+        final ImageStack stack = images[0].getStack();
         for (int i = 1; i < images.length; ++i) {
-            ImagePlus im = images[i];
+            final ImagePlus im = images[i];
             if (im.getStackSize() != 1) {
                 return null;
             }
@@ -257,12 +257,12 @@ public class JAIReader {
      * @param file Image file name.
      * @throws Exception Description of Exception
      */
-    private void open(File file) throws Exception {
+    private void open(final File file) throws Exception {
         this.file = file;
 
         // Find matching decoders
-        FileSeekableStream fss = new FileSeekableStream(file);
-        String[] decoders = ImageCodec.getDecoderNames(fss);
+        final FileSeekableStream fss = new FileSeekableStream(file);
+        final String[] decoders = ImageCodec.getDecoderNames(fss);
         if (decoders == null || decoders.length == 0) {
             throw new Exception("Unsupported file format. "
                     + "Cannot find decoder capable of reading: " + file.getName());
@@ -280,11 +280,11 @@ public class JAIReader {
      * @return Description of the Returned Value
      * @throws Exception Description of Exception
      */
-    private ImagePlus read(int pageNb) throws Exception {
+    private ImagePlus read(final int pageNb) throws Exception {
         final RenderedImage ri;
         try {
             ri = decoder.decodeAsRenderedImage(pageNb);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             ex.printStackTrace();
             String msg = ex.getMessage();
             if (msg == null || msg.trim().length() < 1) {
@@ -293,13 +293,13 @@ public class JAIReader {
             throw new Exception(msg);
         }
 
-        WritableRaster wr = ImagePlusCreator.forceTileUpdate(ri);
+        final WritableRaster wr = ImagePlusCreator.forceTileUpdate(ri);
 
         ImagePlus im;
         if (decoderName.equalsIgnoreCase("GIF")
                 || decoderName.equalsIgnoreCase("JPEG")) {
             // Convert the way ImageJ does (ij.io.Opener.openJpegOrGif())
-            BufferedImage bi = new BufferedImage(ri.getColorModel(), wr, false, null);
+            final BufferedImage bi = new BufferedImage(ri.getColorModel(), wr, false, null);
             im = new ImagePlus(file.getName(), bi);
             if (im.getType() == ImagePlus.COLOR_RGB) {
                 // Convert RGB to gray if all bands are equal
@@ -316,19 +316,19 @@ public class JAIReader {
 
             // Extract TIFF tags
             if (ri instanceof TIFFImage) {
-                TIFFImage ti = (TIFFImage) ri;
+                final TIFFImage ti = (TIFFImage) ri;
                 try {
-                    Object o = ti.getProperty("tiff_directory");
+                    final Object o = ti.getProperty("tiff_directory");
                     if (o instanceof TIFFDirectory) {
-                        TIFFDirectory dir = (TIFFDirectory) o;
+                        final TIFFDirectory dir = (TIFFDirectory) o;
 
                         // ImageJ description string
-                        TIFFField descriptionField
+                        final TIFFField descriptionField
                                 = dir.getField(TiffDecoder.IMAGE_DESCRIPTION);
                         if (descriptionField != null) {
                             try {
                                 DescriptionStringCoder.decode(descriptionField.getAsString(0), im);
-                            } catch (Exception ex) {
+                            } catch (final Exception ex) {
                                 ex.printStackTrace();
                             }
                         }
@@ -339,27 +339,27 @@ public class JAIReader {
                         }
 
                         // X resolution
-                        TIFFField xResField = dir.getField(TIFFImageDecoder.TIFF_X_RESOLUTION);
+                        final TIFFField xResField = dir.getField(TIFFImageDecoder.TIFF_X_RESOLUTION);
                         if (xResField != null) {
-                            double xRes = xResField.getAsDouble(0);
+                            final double xRes = xResField.getAsDouble(0);
                             if (xRes != 0) {
                                 c.pixelWidth = 1 / xRes;
                             }
                         }
 
                         // Y resolution
-                        TIFFField yResField = dir.getField(TIFFImageDecoder.TIFF_Y_RESOLUTION);
+                        final TIFFField yResField = dir.getField(TIFFImageDecoder.TIFF_Y_RESOLUTION);
                         if (yResField != null) {
-                            double yRes = yResField.getAsDouble(0);
+                            final double yRes = yResField.getAsDouble(0);
                             if (yRes != 0) {
                                 c.pixelHeight = 1 / yRes;
                             }
                         }
 
                         // Resolution unit
-                        TIFFField resolutionUnitField = dir.getField(TIFFImageDecoder.TIFF_RESOLUTION_UNIT);
+                        final TIFFField resolutionUnitField = dir.getField(TIFFImageDecoder.TIFF_RESOLUTION_UNIT);
                         if (resolutionUnitField != null) {
-                            int resolutionUnit = resolutionUnitField.getAsInt(0);
+                            final int resolutionUnit = resolutionUnitField.getAsInt(0);
                             if (resolutionUnit == 1 && c.getUnit() == null) {
                                 // no meaningful units
                                 c.setUnit(" ");
@@ -372,7 +372,7 @@ public class JAIReader {
 
                         im.setCalibration(c);
                     }
-                } catch (NegativeArraySizeException ex) {
+                } catch (final NegativeArraySizeException ex) {
                     // my be thrown by ti.getPrivateIFD(8)
                     ex.printStackTrace();
                 }

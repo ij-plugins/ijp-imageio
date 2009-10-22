@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.jaiio;
 
@@ -45,22 +45,26 @@ import java.awt.event.WindowEvent;
 
 public class TIFFEncodeParamPanel extends JPanel {
 
-    private GridBagLayout gridBagLayout3 = new GridBagLayout();
-    private ButtonGroup compressionGroup = new ButtonGroup();
-    private ButtonGroup bwCompressionGroup = new ButtonGroup();
-    private JPanel optionsPanel = new JPanel();
-    private GridBagLayout gridBagLayout4 = new GridBagLayout();
-    private JRadioButton zipRadioButton = new JRadioButton();
-    private JRadioButton jpegRadioButton = new JRadioButton();
-    private JRadioButton packbitRadioButton = new JRadioButton();
-    private JPanel compressionPanel = new JPanel();
-    private GridBagLayout gridBagLayout1 = new GridBagLayout();
-    private JRadioButton noneRadioButton = new JRadioButton();
-    private JPanel bwCompressionPanel = new JPanel();
-    private JRadioButton fax4RadioButton = new JRadioButton();
-    private JRadioButton fax3RadioButton = new JRadioButton();
-    private GridBagLayout gridBagLayout2 = new GridBagLayout();
-    private JRadioButton rleRadioButton = new JRadioButton();
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+    private final GridBagLayout gridBagLayout3 = new GridBagLayout();
+    private final ButtonGroup compressionGroup = new ButtonGroup();
+    private final ButtonGroup bwCompressionGroup = new ButtonGroup();
+    private final JPanel optionsPanel = new JPanel();
+    private final GridBagLayout gridBagLayout4 = new GridBagLayout();
+    private final JRadioButton zipRadioButton = new JRadioButton();
+    private final JRadioButton jpegRadioButton = new JRadioButton();
+    private final JRadioButton packbitRadioButton = new JRadioButton();
+    private final JPanel compressionPanel = new JPanel();
+    private final GridBagLayout gridBagLayout1 = new GridBagLayout();
+    private final JRadioButton noneRadioButton = new JRadioButton();
+    private final JPanel bwCompressionPanel = new JPanel();
+    private final JRadioButton fax4RadioButton = new JRadioButton();
+    private final JRadioButton fax3RadioButton = new JRadioButton();
+    private final GridBagLayout gridBagLayout2 = new GridBagLayout();
+    private final JRadioButton rleRadioButton = new JRadioButton();
     JPanel jPanel1 = new JPanel();
     GridBagLayout gridBagLayout5 = new GridBagLayout();
 
@@ -81,7 +85,7 @@ public class TIFFEncodeParamPanel extends JPanel {
 //    deflateBox.add(deflateComboBox);
         try {
             jbInit();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
     }
@@ -93,8 +97,8 @@ public class TIFFEncodeParamPanel extends JPanel {
      * @param blackWhite Description of the Parameter
      * @return The imageEncodeParam value
      */
-    public ImageEncodeParam getImageEncodeParam(boolean blackWhite) {
-        TIFFEncodeParam param = new TIFFEncodeParam();
+    public ImageEncodeParam getImageEncodeParam(final boolean blackWhite) {
+        final TIFFEncodeParam param = new TIFFEncodeParam();
         if (blackWhite) {
             if (rleRadioButton.isSelected()) {
                 param.setCompression(TIFFEncodeParam.COMPRESSION_GROUP3_1D);
@@ -125,12 +129,13 @@ public class TIFFEncodeParamPanel extends JPanel {
      *
      * @param args The command line arguments
      */
-    public static void main(String[] args) {
-        TIFFEncodeParamPanel panel = new TIFFEncodeParamPanel();
+    public static void main(final String[] args) {
+        final TIFFEncodeParamPanel panel = new TIFFEncodeParamPanel();
 
-        JFrame frame = new JFrame("TIFFEncodeParamPanel");
+        final JFrame frame = new JFrame("TIFFEncodeParamPanel");
         frame.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
+            @Override
+            public void windowClosing(final WindowEvent e) {
                 System.exit(0);
             }
         });
@@ -141,8 +146,8 @@ public class TIFFEncodeParamPanel extends JPanel {
 
 
     private void jbInit() {
-        TitledBorder titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Compression");
-        TitledBorder titledBorder2 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Black/White Images Only");
+        final TitledBorder titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Compression");
+        final TitledBorder titledBorder2 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Black/White Images Only");
         this.setLayout(gridBagLayout3);
         optionsPanel.setBorder(titledBorder1);
         optionsPanel.setLayout(gridBagLayout4);

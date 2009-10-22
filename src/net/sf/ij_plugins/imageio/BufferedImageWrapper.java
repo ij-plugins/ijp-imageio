@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 
 package net.sf.ij_plugins.imageio;
@@ -56,10 +56,10 @@ public class BufferedImageWrapper {
      * @param prefferBinary Preferr to save two level binary images using 1 bit per pixel.
      * @return New BufferedImage.
      */
-    public static BufferedImage create(ImagePlus src, int sliceNb, boolean prefferBinary) {
+    public static BufferedImage create(final ImagePlus src, final int sliceNb, final boolean prefferBinary) {
 
         // Get slice image processor
-        int oldSliceNb = src.getCurrentSlice();
+        final int oldSliceNb = src.getCurrentSlice();
         src.setSlice(sliceNb + 1);
         final ImageProcessor ip = src.getProcessor().duplicate();
         src.setSlice(oldSliceNb);
@@ -287,21 +287,21 @@ public class BufferedImageWrapper {
      * @param src FloatProcessor source.
      * @return BufferedImage.
      */
-    public static BufferedImage create(FloatProcessor src) {
+    public static BufferedImage create(final FloatProcessor src) {
 
-        int w = src.getWidth();
-        int h = src.getHeight();
+        final int w = src.getWidth();
+        final int h = src.getHeight();
 
-        int nbBands = 1;
-        int[] rgbOffset = new int[nbBands];
-        SampleModel sampleModel = RasterFactory.createPixelInterleavedSampleModel(DataBuffer.TYPE_FLOAT, w, h, nbBands, nbBands * w, rgbOffset);
+        final int nbBands = 1;
+        final int[] rgbOffset = new int[nbBands];
+        final SampleModel sampleModel = RasterFactory.createPixelInterleavedSampleModel(DataBuffer.TYPE_FLOAT, w, h, nbBands, nbBands * w, rgbOffset);
 
-        ColorModel colorModel = ImageCodec.createComponentColorModel(sampleModel);
+        final ColorModel colorModel = ImageCodec.createComponentColorModel(sampleModel);
 
-        float[] pixels = (float[]) src.getPixels();
-        DataBufferFloat dataBuffer = new DataBufferFloat(pixels, pixels.length);
+        final float[] pixels = (float[]) src.getPixels();
+        final DataBufferFloat dataBuffer = new DataBufferFloat(pixels, pixels.length);
 
-        WritableRaster raster = RasterFactory.createWritableRaster(sampleModel,
+        final WritableRaster raster = RasterFactory.createWritableRaster(sampleModel,
                 dataBuffer, new Point(0, 0));
 
         return new BufferedImage(colorModel, raster, false, null);
@@ -314,23 +314,23 @@ public class BufferedImageWrapper {
      * @param src ColorProcessor source.
      * @return BufferedImage.
      */
-    public static BufferedImage create(ColorProcessor src) {
-        ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-        int[] bits = {8, 8, 8};
-        ColorModel cm = new ComponentColorModel(cs, bits, false, false,
+    public static BufferedImage create(final ColorProcessor src) {
+        final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+        final int[] bits = {8, 8, 8};
+        final ColorModel cm = new ComponentColorModel(cs, bits, false, false,
                 Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
-        WritableRaster raster = cm.createCompatibleWritableRaster(src.getWidth(),
+        final WritableRaster raster = cm.createCompatibleWritableRaster(src.getWidth(),
                 src.getHeight());
-        DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
+        final DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
 
-        byte[] data = dataBuffer.getData();
-        int n = ((int[]) src.getPixels()).length;
-        byte[] r = new byte[n];
-        byte[] g = new byte[n];
-        byte[] b = new byte[n];
+        final byte[] data = dataBuffer.getData();
+        final int n = ((int[]) src.getPixels()).length;
+        final byte[] r = new byte[n];
+        final byte[] g = new byte[n];
+        final byte[] b = new byte[n];
         src.getRGB(r, g, b);
         for (int i = 0; i < n; ++i) {
-            int offset = i * 3;
+            final int offset = i * 3;
             data[offset] = r[i];
             data[offset + 1] = g[i];
             data[offset + 2] = b[i];

@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.plugin;
 
@@ -58,7 +58,7 @@ public class RemoveOldPlugins implements PlugIn {
     };
 
 
-    public void run(String string) {
+    public void run(final String string) {
         // Notify about intent to uninstall obsolete files, give
         // option to cancel.
         boolean ok = IJ.showMessageWithCancel(CAPTION,
@@ -75,7 +75,7 @@ public class RemoveOldPlugins implements PlugIn {
         IJ.showStatus("Searching for obsolete components.");
 
         foundComponents = new ArrayList<File>();
-        String pluginsDir = Menus.getPlugInsPath();
+        final String pluginsDir = Menus.getPlugInsPath();
 
         // Search for files in plugins folder
         for (final String aROOT_FILES : ROOT_FILES) {
@@ -83,7 +83,7 @@ public class RemoveOldPlugins implements PlugIn {
         }
 
         // Search for files in plugins folder subdirectory
-        File subdir = new File(pluginsDir, SUBDIR);
+        final File subdir = new File(pluginsDir, SUBDIR);
         if (subdir.exists() && subdir.isDirectory()) {
             for (final String aSUBDIR_FILES : SUBDIR_FILES) {
                 lookFor(subdir.getPath(), aSUBDIR_FILES);
@@ -98,7 +98,7 @@ public class RemoveOldPlugins implements PlugIn {
         }
 
         // Prepare message listing files to be removed
-        StringBuffer messageBuffer = new StringBuffer();
+        final StringBuffer messageBuffer = new StringBuffer();
         messageBuffer.append("Following files will be uninstalled: \n");
         for (final File foundComponent : foundComponents) {
             messageBuffer.append(foundComponent.getAbsolutePath()).append("\n");
@@ -112,15 +112,15 @@ public class RemoveOldPlugins implements PlugIn {
         }
 
         // Remove files
-        StringBuffer errorBuffer = new StringBuffer();
-        for (File file : foundComponents) {
+        final StringBuffer errorBuffer = new StringBuffer();
+        for (final File file : foundComponents) {
             if (!file.delete()) {
                 errorBuffer.append(file.getAbsolutePath()).append("\n");
             }
         }
 
         if (subdir.exists() || subdir.isDirectory()) {
-            String[] list = subdir.list();
+            final String[] list = subdir.list();
             if (list != null && list.length == 0) {
                 if (!subdir.delete()) {
                     errorBuffer.append(subdir.getAbsolutePath()).append("\n");
@@ -146,8 +146,8 @@ public class RemoveOldPlugins implements PlugIn {
      * @param dir      directory to search.
      * @param fileName file to look for.
      */
-    private void lookFor(String dir, String fileName) {
-        File file = new File(dir, fileName);
+    private void lookFor(final String dir, final String fileName) {
+        final File file = new File(dir, fileName);
         if (file.exists() && !file.isDirectory()) {
             foundComponents.add(file);
         }

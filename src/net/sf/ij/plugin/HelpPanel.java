@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.plugin;
 
@@ -39,12 +39,17 @@ import java.net.URL;
 public final class HelpPanel extends JPanel {
 
     /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
      * Default constructor.
      *
      * @throws IOException If help content cannot be loaded.
      */
     public HelpPanel() throws IOException {
-        URL helpURL = HelpPanel.class.getResource("/docs/index.html");
+        final URL helpURL = HelpPanel.class.getResource("/docs/index.html");
         if (helpURL == null) {
             throw new IOException("Couldn't find Image IO help file.");
         }
@@ -63,7 +68,7 @@ public final class HelpPanel extends JPanel {
 //            throw new RuntimeException(e);
 //        }
 
-        JEditorPane editorPane = new JEditorPane();
+        final JEditorPane editorPane = new JEditorPane();
 //        editorPane.setEditorKit(htmlEditorKit);
 //        editorPane.read(is, "Image IO Help file");
         editorPane.setPage(helpURL);
@@ -89,8 +94,8 @@ public final class HelpPanel extends JPanel {
 //        });
 
         //Put the editor pane in a scroll pane.
-        JScrollPane editorScrollPane = new JScrollPane(editorPane);
-        editorScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        final JScrollPane editorScrollPane = new JScrollPane(editorPane);
+        editorScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         editorScrollPane.setPreferredSize(new Dimension(600, 400));
 
         setLayout(new BorderLayout());
@@ -102,13 +107,13 @@ public final class HelpPanel extends JPanel {
      *
      * @param exitOnClose if <code>true</code> closing the help window will exit the application.
      */
-    static void showHelpWindow(boolean exitOnClose) {
+    static void showHelpWindow(final boolean exitOnClose) {
         // Create window to host help panel
         final JFrame frame = new JFrame("About Image IO plugins");
 
         // Load icon for close button
-        String iconResourceName = "exit16.png";
-        URL iconURL = HelpPanel.class.getResource(iconResourceName);
+        final String iconResourceName = "exit16.png";
+        final URL iconURL = HelpPanel.class.getResource(iconResourceName);
         ImageIcon icon = null;
         if (iconURL != null) {
             System.out.println("Button icon URL: " + iconURL);
@@ -117,20 +122,20 @@ public final class HelpPanel extends JPanel {
             System.out.println("Unable to locate resource for icon: " + iconResourceName);
         }
 
-        JButton closeButton = new JButton("Close", icon);
+        final JButton closeButton = new JButton("Close", icon);
         closeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 frame.setVisible(false);
             }
         });
-        JPanel buttonPanel = new JPanel();
+        final JPanel buttonPanel = new JPanel();
         buttonPanel.add(closeButton);
 
         // Create help panel
         final HelpPanel aboutImageIO;
         try {
             aboutImageIO = new HelpPanel();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException("Failed to create Image IO help window.", e);
         }
 
@@ -139,7 +144,7 @@ public final class HelpPanel extends JPanel {
         frame.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
 
-        frame.setDefaultCloseOperation(exitOnClose ? JFrame.EXIT_ON_CLOSE : JFrame.DISPOSE_ON_CLOSE);
+        frame.setDefaultCloseOperation(exitOnClose ? JFrame.EXIT_ON_CLOSE : WindowConstants.DISPOSE_ON_CLOSE);
 
         // Display help window, to ensure thread safety run it in the Event Dispatch Thread.
         SwingUtilities.invokeLater(new Runnable() {
@@ -150,7 +155,7 @@ public final class HelpPanel extends JPanel {
         });
     }
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         HelpPanel.showHelpWindow(true);
     }
 

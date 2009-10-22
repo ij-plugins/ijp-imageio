@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij_plugins.imageio;
 
@@ -39,7 +39,7 @@ import java.util.Iterator;
  * @version $Revision: 1.3 $
  */
 public class IJImageIOInfoPlugin implements PlugIn {
-    public void run(String arg) {
+    public void run(final String arg) {
         String message =
                 "--------------------------------------------\n"
                         + serviceProviderInfo(ImageReaderSpi.class, false)
@@ -65,12 +65,12 @@ public class IJImageIOInfoPlugin implements PlugIn {
     }
 
 
-    private static String serviceProviderInfo(Class category, boolean useOrdering) {
+    private static String serviceProviderInfo(final Class category, final boolean useOrdering) {
         final Iterator categories = IIORegistry.getDefaultInstance().getServiceProviders(category, useOrdering);
         final StringBuffer buf = new StringBuffer();
         while (categories.hasNext()) {
-            Object o = categories.next();
-            IIOServiceProvider iioServiceProvider = (IIOServiceProvider) o;
+            final Object o = categories.next();
+            final IIOServiceProvider iioServiceProvider = (IIOServiceProvider) o;
             buf.append(iioServiceProvider.getDescription(null));
             buf.append(" : ");
             buf.append(o.getClass().getName());

@@ -19,6 +19,7 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
+
 package net.sf.ij.jaiio;
 
 import com.sun.media.jai.codec.ImageCodec;
@@ -54,10 +55,10 @@ public class BufferedImageCreator {
      * @param prefferBinary Prefer to save two level binary images using 1 bit per pixel.
      * @return New BufferedImage.
      */
-    public static BufferedImage create(ImagePlus src, int sliceNb, boolean prefferBinary) {
+    public static BufferedImage create(final ImagePlus src, final int sliceNb, final boolean prefferBinary) {
 
         // Get slice image processor
-        int oldSliceNb = src.getCurrentSlice();
+        final int oldSliceNb = src.getCurrentSlice();
         if (oldSliceNb != (sliceNb + 1)) {
             src.setSlice(sliceNb + 1);
         }
@@ -126,16 +127,16 @@ public class BufferedImageCreator {
         final DataBufferByte dataBuffer = (DataBufferByte) wr.getDataBuffer();
         final byte[] destPixels = dataBuffer.getData();
         // Double check that dest data are large enough
-        int srcWidth = src.getWidth();
-        int destWidth = (src.getWidth() + 7) / 8;
-        int expectedDestSize = destWidth * src.getHeight();
+        final int srcWidth = src.getWidth();
+        final int destWidth = (src.getWidth() + 7) / 8;
+        final int expectedDestSize = destWidth * src.getHeight();
         if (destPixels.length != expectedDestSize) {
             throw new IllegalStateException("Internal error: wrong size of destPixels.");
         }
         // Single bit image, pack bits
         for (int i = 0; i < destPixels.length; ++i) {
             byte destByte = 0x00;
-            int offset = (i / destWidth) * srcWidth + (i % destWidth) * 8;
+            final int offset = (i / destWidth) * srcWidth + (i % destWidth) * 8;
             for (int j = 0; j < 8 && ((j + offset) < srcPixels.length); ++j) {
                 if (srcPixels[j + offset] != 0) {
                     destByte += bitsOn[j];
@@ -316,19 +317,19 @@ public class BufferedImageCreator {
      */
     public static BufferedImage create(final FloatProcessor src) {
 
-        int w = src.getWidth();
-        int h = src.getHeight();
+        final int w = src.getWidth();
+        final int h = src.getHeight();
 
-        int nbBands = 1;
-        int[] rgbOffset = new int[nbBands];
-        SampleModel sampleModel = RasterFactory.createPixelInterleavedSampleModel(DataBuffer.TYPE_FLOAT, w, h, nbBands, nbBands * w, rgbOffset);
+        final int nbBands = 1;
+        final int[] rgbOffset = new int[nbBands];
+        final SampleModel sampleModel = RasterFactory.createPixelInterleavedSampleModel(DataBuffer.TYPE_FLOAT, w, h, nbBands, nbBands * w, rgbOffset);
 
-        ColorModel colorModel = ImageCodec.createComponentColorModel(sampleModel);
+        final ColorModel colorModel = ImageCodec.createComponentColorModel(sampleModel);
 
-        float[] pixels = (float[]) src.getPixels();
-        DataBufferFloat dataBuffer = new DataBufferFloat(pixels, pixels.length);
+        final float[] pixels = (float[]) src.getPixels();
+        final DataBufferFloat dataBuffer = new DataBufferFloat(pixels, pixels.length);
 
-        WritableRaster raster = RasterFactory.createWritableRaster(sampleModel,
+        final WritableRaster raster = RasterFactory.createWritableRaster(sampleModel,
                 dataBuffer, new Point(0, 0));
 
         return new BufferedImage(colorModel, raster, false, null);
@@ -341,24 +342,24 @@ public class BufferedImageCreator {
      * @param src ColorProcessor source.
      * @return BufferedImage.
      */
-    public static BufferedImage create(ColorProcessor src) {
+    public static BufferedImage create(final ColorProcessor src) {
         // FIXME: share pixels with source
 
-        ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
-        int[] bits = {8, 8, 8};
-        ColorModel cm = new ComponentColorModel(cs, bits, false, false,
+        final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+        final int[] bits = {8, 8, 8};
+        final ColorModel cm = new ComponentColorModel(cs, bits, false, false,
                 Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
-        WritableRaster raster = cm.createCompatibleWritableRaster(src.getWidth(), src.getHeight());
-        DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
+        final WritableRaster raster = cm.createCompatibleWritableRaster(src.getWidth(), src.getHeight());
+        final DataBufferByte dataBuffer = (DataBufferByte) raster.getDataBuffer();
 
-        byte[] data = dataBuffer.getData();
-        int n = ((int[]) src.getPixels()).length;
-        byte[] r = new byte[n];
-        byte[] g = new byte[n];
-        byte[] b = new byte[n];
+        final byte[] data = dataBuffer.getData();
+        final int n = ((int[]) src.getPixels()).length;
+        final byte[] r = new byte[n];
+        final byte[] g = new byte[n];
+        final byte[] b = new byte[n];
         src.getRGB(r, g, b);
         for (int i = 0; i < n; ++i) {
-            int offset = i * 3;
+            final int offset = i * 3;
             data[offset] = r[i];
             data[offset + 1] = g[i];
             data[offset + 2] = b[i];

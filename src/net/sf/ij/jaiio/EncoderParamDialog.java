@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.jaiio;
 
@@ -31,6 +31,10 @@ import java.awt.event.WindowEvent;
 /**
  */
 public class EncoderParamDialog extends JDialog {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     private boolean accepted;
     JPanel buttonPanel = new JPanel();
     JButton okButton = new JButton();
@@ -43,7 +47,7 @@ public class EncoderParamDialog extends JDialog {
         try {
             jbInit();
             pack();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
     }
@@ -62,24 +66,24 @@ public class EncoderParamDialog extends JDialog {
         optionsTabbedPane.add(tiffEncodeParamPanel, "TIFF");
     }
 
-    void okButton_actionPerformed(ActionEvent e) {
+    void okButton_actionPerformed(final ActionEvent e) {
         accepted = true;
         setVisible(false);
     }
 
-    void cancelButton_actionPerformed(ActionEvent e) {
+    void cancelButton_actionPerformed(final ActionEvent e) {
         accepted = false;
         setVisible(false);
     }
 
-    public static void main(String[] args) {
-        EncoderParamDialog dialog = new EncoderParamDialog();
+    public static void main(final String[] args) {
+        final EncoderParamDialog dialog = new EncoderParamDialog();
         dialog.setVisible(true);
         System.out.println("Accepted = " + dialog.isAccepted());
         System.exit(0);
     }
 
-    void this_windowOpened(WindowEvent e) {
+    void this_windowOpened(final WindowEvent e) {
         // Assume that dialog will be cancelled
         accepted = false;
     }
@@ -88,7 +92,7 @@ public class EncoderParamDialog extends JDialog {
         return accepted;
     }
 
-    public ImageEncodeParam getImageEncodeParam(boolean binary) {
+    public ImageEncodeParam getImageEncodeParam(final boolean binary) {
         return tiffEncodeParamPanel.getImageEncodeParam(binary);
     }
 
@@ -97,11 +101,11 @@ public class EncoderParamDialog extends JDialog {
 class EncoderParamDialog_okButton_actionAdapter implements java.awt.event.ActionListener {
     EncoderParamDialog adaptee;
 
-    EncoderParamDialog_okButton_actionAdapter(EncoderParamDialog adaptee) {
+    EncoderParamDialog_okButton_actionAdapter(final EncoderParamDialog adaptee) {
         this.adaptee = adaptee;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         adaptee.okButton_actionPerformed(e);
     }
 }
@@ -109,11 +113,11 @@ class EncoderParamDialog_okButton_actionAdapter implements java.awt.event.Action
 class EncoderParamDialog_cancelButton_actionAdapter implements java.awt.event.ActionListener {
     EncoderParamDialog adaptee;
 
-    EncoderParamDialog_cancelButton_actionAdapter(EncoderParamDialog adaptee) {
+    EncoderParamDialog_cancelButton_actionAdapter(final EncoderParamDialog adaptee) {
         this.adaptee = adaptee;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(final ActionEvent e) {
         adaptee.cancelButton_actionPerformed(e);
     }
 }
@@ -121,11 +125,12 @@ class EncoderParamDialog_cancelButton_actionAdapter implements java.awt.event.Ac
 class EncoderParamDialog_this_windowAdapter extends java.awt.event.WindowAdapter {
     EncoderParamDialog adaptee;
 
-    EncoderParamDialog_this_windowAdapter(EncoderParamDialog adaptee) {
+    EncoderParamDialog_this_windowAdapter(final EncoderParamDialog adaptee) {
         this.adaptee = adaptee;
     }
 
-    public void windowOpened(WindowEvent e) {
+    @Override
+    public void windowOpened(final WindowEvent e) {
         adaptee.this_windowOpened(e);
     }
 }

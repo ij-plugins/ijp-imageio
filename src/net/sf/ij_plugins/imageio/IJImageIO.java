@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij_plugins.imageio;
 
@@ -123,7 +123,7 @@ public class IJImageIO {
         final ImageInputStream iis;
         try {
             iis = ImageIO.createImageInputStream(file);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new IJImageIOException("Failed to create image input sttream for file: " + file.getAbsolutePath() + ". "
                     + e.getMessage(), e);
         }
@@ -153,7 +153,7 @@ public class IJImageIO {
                 IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
                 try {
                     bufferedImages = read(reader, iis);
-                } catch (Exception ex) {
+                } catch (final Exception ex) {
                     errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage()).append("\n");
                 }
             }
@@ -175,12 +175,12 @@ public class IJImageIO {
     }
 
 
-    public static boolean write(final ImagePlus imp, final String formatName, final File file, boolean prefferBinary) throws IJImageIOException {
+    public static boolean write(final ImagePlus imp, final String formatName, final File file, final boolean prefferBinary) throws IJImageIOException {
 
         final BufferedImage bi = BufferedImageCreator.create(imp, 0, prefferBinary);
         try {
             return ImageIO.write(bi, formatName, file);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new IJImageIOException("Unable to write image file :" + file.getAbsolutePath()
                     + "\n" + e.getMessage(), e);
         }
@@ -194,7 +194,7 @@ public class IJImageIO {
         //                iis.reset();
         try {
             iis.seek(0);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new IJImageIOException("Unable to reset input stream to position 0. ", e);
         }
         reader.setInput(iis, false, false);
@@ -203,7 +203,7 @@ public class IJImageIO {
         final int numImages;
         try {
             numImages = reader.getNumImages(true);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new IJImageIOException("Failed to retrieve number of images in the file. ", e);
         }
         final int minIndex = reader.getMinIndex();
@@ -215,7 +215,7 @@ public class IJImageIO {
             final BufferedImage bi;
             try {
                 bi = reader.read(j);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new IJImageIOException("Error reading image with internal index " + j
                         + ". Min internal index is " + minIndex + ". ", e);
             }
@@ -284,7 +284,7 @@ public class IJImageIO {
         final int h = firstImage.getHeight();
         int count = 1;
         for (int i = startIndex + 1; i < imageList.size(); i++) {
-            ImagePlus imp = imageList.get(i);
+            final ImagePlus imp = imageList.get(i);
             if (fileType == imp.getFileInfo().fileType && w == imp.getWidth() && h == imp.getHeight()) {
                 count++;
             } else {

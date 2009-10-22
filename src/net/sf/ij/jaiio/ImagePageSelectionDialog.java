@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.jaiio;
 
@@ -35,24 +35,28 @@ import java.awt.event.ComponentEvent;
 
 public class ImagePageSelectionDialog extends JDialog {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     private int numPages = 1;
     private int[] pageIndex = null;
 
-    private JPanel jPanel1 = new JPanel();
-    private BorderLayout borderLayout1 = new BorderLayout();
-    private JTextField pageIncrementTF = new JTextField();
-    private JTextField lastPageTF = new JTextField();
-    private JTextField firstPageTF = new JTextField();
-    private JTextField numPagesTF = new JTextField();
-    private JPanel panel1 = new JPanel();
-    private GridBagLayout gridBagLayout1 = new GridBagLayout();
-    private JLabel pageIncrementLabel = new JLabel();
-    private JLabel lastPageLabel = new JLabel();
-    private JLabel firstPageLabel = new JLabel();
-    private JLabel jLabel1 = new JLabel();
-    private JPanel jPanel2 = new JPanel();
-    private JButton cancelButton = new JButton();
-    private JButton okButton = new JButton();
+    private final JPanel jPanel1 = new JPanel();
+    private final BorderLayout borderLayout1 = new BorderLayout();
+    private final JTextField pageIncrementTF = new JTextField();
+    private final JTextField lastPageTF = new JTextField();
+    private final JTextField firstPageTF = new JTextField();
+    private final JTextField numPagesTF = new JTextField();
+    private final JPanel panel1 = new JPanel();
+    private final GridBagLayout gridBagLayout1 = new GridBagLayout();
+    private final JLabel pageIncrementLabel = new JLabel();
+    private final JLabel lastPageLabel = new JLabel();
+    private final JLabel firstPageLabel = new JLabel();
+    private final JLabel jLabel1 = new JLabel();
+    private final JPanel jPanel2 = new JPanel();
+    private final JButton cancelButton = new JButton();
+    private final JButton okButton = new JButton();
 
 
     /**
@@ -62,17 +66,17 @@ public class ImagePageSelectionDialog extends JDialog {
      * @param title Description of Parameter
      * @param modal Description of Parameter
      */
-    public ImagePageSelectionDialog(Frame frame, String title, boolean modal) {
+    public ImagePageSelectionDialog(final Frame frame, final String title, final boolean modal) {
         super(frame, title, modal);
         try {
             jbInit();
             pack();
-            Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
-            Rectangle r = getBounds();
+            final Dimension d = Toolkit.getDefaultToolkit().getScreenSize();
+            final Rectangle r = getBounds();
             r.x = d.width / 2 - r.width / 2;
             r.y = d.height / 2 - r.height / 2;
             setBounds(r);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -92,7 +96,7 @@ public class ImagePageSelectionDialog extends JDialog {
      *
      * @param numPages Number of pages in the current image file.
      */
-    public void setNumPages(int numPages) {
+    public void setNumPages(final int numPages) {
         if (numPages < 1) {
             throw new RuntimeException("Number of pages cannot be less then 1 (got "
                     + numPages + ").");
@@ -135,13 +139,13 @@ public class ImagePageSelectionDialog extends JDialog {
     void jbInit() {
         okButton.setText("OK");
         okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 okButton_actionPerformed(e);
             }
         });
         cancelButton.setText("Cancel");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 cancelButton_actionPerformed(e);
             }
         });
@@ -165,7 +169,8 @@ public class ImagePageSelectionDialog extends JDialog {
         pageIncrementTF.setHorizontalAlignment(SwingConstants.CENTER);
         jPanel1.setLayout(borderLayout1);
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentShown(ComponentEvent e) {
+            @Override
+            public void componentShown(final ComponentEvent e) {
                 this_componentShown(e);
             }
         });
@@ -197,7 +202,7 @@ public class ImagePageSelectionDialog extends JDialog {
     /*
      *
      */
-    void okButton_actionPerformed(ActionEvent e) {
+    void okButton_actionPerformed(final ActionEvent e) {
         int firstPage;
         int lastPage;
         int pageIncrement;
@@ -208,13 +213,13 @@ public class ImagePageSelectionDialog extends JDialog {
                     lastPageLabel.getText(), firstPage, numPages);
             pageIncrement = parseInt(pageIncrementTF.getText(),
                     pageIncrementLabel.getText(), 1, numPages);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), this.getTitle(),
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        int indexSize = 1 + (lastPage - firstPage) / pageIncrement;
+        final int indexSize = 1 + (lastPage - firstPage) / pageIncrement;
         if (indexSize < 1) {
             pageIndex = null;
         } else {
@@ -232,7 +237,7 @@ public class ImagePageSelectionDialog extends JDialog {
     /*
      *
      */
-    void cancelButton_actionPerformed(ActionEvent e) {
+    void cancelButton_actionPerformed(final ActionEvent e) {
         pageIndex = null;
         setVisible(false);
     }
@@ -241,7 +246,7 @@ public class ImagePageSelectionDialog extends JDialog {
     /*
      *
      */
-    void this_componentShown(ComponentEvent e) {
+    void this_componentShown(final ComponentEvent e) {
         numPagesTF.setText("" + numPages);
         firstPageTF.setText("1");
         lastPageTF.setText("" + numPages);
@@ -252,12 +257,12 @@ public class ImagePageSelectionDialog extends JDialog {
     /*
      *
      */
-    private int parseInt(String intString, String name, int min, int max)
+    private int parseInt(final String intString, final String name, final int min, final int max)
             throws Exception {
         int r;
         try {
             r = Integer.parseInt(intString);
-        } catch (NumberFormatException ex) {
+        } catch (final NumberFormatException ex) {
             throw new Exception("Error parsing " + name + ". Value of '"
                     + intString + "' can not be parsed as integer");
         }

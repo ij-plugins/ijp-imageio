@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.jaiio;
 
@@ -65,10 +65,10 @@ public class JAIWriter {
      * @return The FormatNames value
      */
     public static String[] getFormatNames() {
-        Enumeration codecs = ImageCodec.getCodecs();
-        ArrayList<String> l = new ArrayList<String>();
+        final Enumeration codecs = ImageCodec.getCodecs();
+        final ArrayList<String> l = new ArrayList<String>();
         while (codecs.hasMoreElements()) {
-            ImageCodec imageCodec = (ImageCodec) codecs.nextElement();
+            final ImageCodec imageCodec = (ImageCodec) codecs.nextElement();
             l.add(imageCodec.getFormatName());
         }
         return l.toArray(new String[l.size()]);
@@ -78,7 +78,7 @@ public class JAIWriter {
     /*
      *
      */
-    private static long[][] toRational(double x) {
+    private static long[][] toRational(final double x) {
         return new long[][]{{
                 (long) (TIFF_RATIONAL_SCALE * x),
                 (long) TIFF_RATIONAL_SCALE}};
@@ -90,7 +90,7 @@ public class JAIWriter {
      *
      * @param formatName The new FormatName value
      */
-    public void setFormatName(String formatName) {
+    public void setFormatName(final String formatName) {
         this.formatName = formatName;
     }
 
@@ -121,7 +121,7 @@ public class JAIWriter {
      * @throws IllegalArgumentException When trying to save having multiple slices using file format
      *                                  different then TIFF.
      */
-    public void write(final String fileName, final ImagePlus im, boolean prefferBinary)
+    public void write(final String fileName, final ImagePlus im, final boolean prefferBinary)
             throws IOException, IllegalArgumentException {
 
         boolean successfulWrite = false;
@@ -141,7 +141,7 @@ public class JAIWriter {
 
                 // Create list of extra images in the file
                 final BufferedImage bi = BufferedImageCreator.create(im, 0, prefferBinary);
-                ArrayList<BufferedImage> list = new ArrayList<BufferedImage>();
+                final ArrayList<BufferedImage> list = new ArrayList<BufferedImage>();
                 for (int i = 1; i < im.getStackSize(); ++i) {
                     list.add(BufferedImageCreator.create(im, i, prefferBinary));
                 }
@@ -150,8 +150,8 @@ public class JAIWriter {
                 }
 
                 // Construct extra TIFF tags
-                ArrayList<TIFFField> extraTags = new ArrayList<TIFFField>();
-                String[] description = {DescriptionStringCoder.encode(im)};
+                final ArrayList<TIFFField> extraTags = new ArrayList<TIFFField>();
+                final String[] description = {DescriptionStringCoder.encode(im)};
                 extraTags.add(new TIFFField(TiffDecoder.IMAGE_DESCRIPTION,
                         TIFFField.TIFF_ASCII, 1, description));
 
@@ -167,7 +167,7 @@ public class JAIWriter {
                                 TIFFField.TIFF_RATIONAL, 1, toRational(1 / calibration.pixelHeight)));
                     }
 
-                    String unitName = calibration.getUnit();
+                    final String unitName = calibration.getUnit();
                     short unitCode = 0;
                     if (unitName == null || unitName.trim().length() == 0) {
                         // no meaningful units
@@ -179,7 +179,7 @@ public class JAIWriter {
                     }
 
                     if (unitCode > 0) {
-                        int[] unit = {(int) unitCode};
+                        final int[] unit = {unitCode};
                         extraTags.add(new TIFFField(TIFFImageDecoder.TIFF_RESOLUTION_UNIT,
                                 TIFFField.TIFF_SHORT, 1, intsToChars(unit)));
                     }
@@ -195,7 +195,7 @@ public class JAIWriter {
                             + " format does not support multi-image files. "
                             + "Image was not saved.");
                 }
-                BufferedImage bi = BufferedImageCreator.create(im, 0, prefferBinary);
+                final BufferedImage bi = BufferedImageCreator.create(im, 0, prefferBinary);
                 imageEncoder.encode(bi);
             }
             successfulWrite = true;
@@ -216,16 +216,16 @@ public class JAIWriter {
      * @param intArray Integer array representing unsigned short values.
      * @return Input array represented as char (16 bit).
      */
-    private static char[] intsToChars(int[] intArray) {
-        int arrayLength = intArray.length;
-        char[] charArray = new char[arrayLength];
+    private static char[] intsToChars(final int[] intArray) {
+        final int arrayLength = intArray.length;
+        final char[] charArray = new char[arrayLength];
         for (int i = 0; i < arrayLength; i++) {
             charArray[i] = (char) (intArray[i] & 0x0000ffff);
         }
         return charArray;
     }
 
-    public void setImageEncodeParam(ImageEncodeParam encodeParam) {
+    public void setImageEncodeParam(final ImageEncodeParam encodeParam) {
         this.encodeParam = encodeParam;
     }
 

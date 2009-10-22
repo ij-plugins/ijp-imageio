@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.jaiio;
 
@@ -38,6 +38,10 @@ import java.io.IOException;
 public class JAIFilePreviewer extends JPanel
         implements PropertyChangeListener {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     static final String FILE_SIZE_PREFIX = "";
     static final long SIZE_KB = 1024;
     static final long SIZE_MB = SIZE_KB * 1024;
@@ -58,16 +62,16 @@ public class JAIFilePreviewer extends JPanel
 
     private JAIReader.ImageInfo imageInfo;
     private int[] pageIndex = null;
-    private ImagePageSelectionDialog
+    private final ImagePageSelectionDialog
             imagePageSelectionDialog = new ImagePageSelectionDialog();
     private JFileChooser parentChooser;
 
-    private JPanel infoPanel = new JPanel();
-    private JLabel fileSizeLabel = new JLabel();
-    private BorderLayout borderLayout1 = new BorderLayout();
-    private JLabel ImageIconLabel = new JLabel();
-    private JButton selectPagesButton = new JButton();
-    private GridBagLayout gridBagLayout1 = new GridBagLayout();
+    private final JPanel infoPanel = new JPanel();
+    private final JLabel fileSizeLabel = new JLabel();
+    private final BorderLayout borderLayout1 = new BorderLayout();
+    private final JLabel ImageIconLabel = new JLabel();
+    private final JButton selectPagesButton = new JButton();
+    private final GridBagLayout gridBagLayout1 = new GridBagLayout();
 
 
     /**
@@ -76,11 +80,11 @@ public class JAIFilePreviewer extends JPanel
     public JAIFilePreviewer() {
         try {
             jbInit();
-            ij.ImagePlus imp = new ij.ImagePlus("", new ij.process.ByteProcessor(iconSizeX, iconSizeY));
-            ImageIcon imageIcon = new ImageIcon(imp.getImage());
+            final ij.ImagePlus imp = new ij.ImagePlus("", new ij.process.ByteProcessor(iconSizeX, iconSizeY));
+            final ImageIcon imageIcon = new ImageIcon(imp.getImage());
             ImageIconLabel.setIcon(imageIcon);
             validate();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
     }
@@ -91,11 +95,11 @@ public class JAIFilePreviewer extends JPanel
      *
      * @param fc File chooser that this object is associated with.
      */
-    public JAIFilePreviewer(JFileChooser fc) {
+    public JAIFilePreviewer(final JFileChooser fc) {
         parentChooser = fc;
         try {
             jbInit();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace();
         }
         fc.addPropertyChangeListener(this);
@@ -126,8 +130,8 @@ public class JAIFilePreviewer extends JPanel
      *
      * @param e Event.
      */
-    public void propertyChange(PropertyChangeEvent e) {
-        String prop = e.getPropertyName();
+    public void propertyChange(final PropertyChangeEvent e) {
+        final String prop = e.getPropertyName();
         if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(prop)) {
             file = (File) e.getNewValue();
             if (isShowing()) {
@@ -138,7 +142,7 @@ public class JAIFilePreviewer extends JPanel
     }
 
 
-    void selectPagesButton_actionPerformed(ActionEvent e) {
+    void selectPagesButton_actionPerformed(final ActionEvent e) {
         if (imageInfo == null) {
             return;
         }
@@ -161,7 +165,7 @@ public class JAIFilePreviewer extends JPanel
     /*
      *
      */
-    private String getFileSizeString(long fileSize) {
+    private String getFileSizeString(final long fileSize) {
         String fileSizeString;
         if (fileSize < SIZE_KB) {
             fileSizeString = FILE_SIZE_PREFIX + fileSize;
@@ -197,19 +201,19 @@ public class JAIFilePreviewer extends JPanel
 
         try {
             imageInfo = JAIReader.readFirstImageAndInfo(file);
-        } catch (UnsupportedImageModelException e) {
+        } catch (final UnsupportedImageModelException e) {
             ImageIconLabel.setIcon(null);
             fileSizeLabel.setText("Unsupported image model");
             return null;
-        } catch (UnsupportedImageFileFormatException e) {
+        } catch (final UnsupportedImageFileFormatException e) {
             ImageIconLabel.setIcon(null);
             fileSizeLabel.setText("Unsupported file format");
             return null;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             ImageIconLabel.setIcon(null);
             fileSizeLabel.setText("I/O Error");
             return null;
-        } catch (RuntimeException e) {
+        } catch (final RuntimeException e) {
             ImageIconLabel.setIcon(null);
             fileSizeLabel.setText("Error decoding image");
             return null;
@@ -218,16 +222,16 @@ public class JAIFilePreviewer extends JPanel
         Image image = imageInfo.previewImage;
 
         // Set image size label
-        StringBuffer label = new StringBuffer(getFileSizeString(file.length()));
+        final StringBuffer label = new StringBuffer(getFileSizeString(file.length()));
         if (image != null) {
-            int w = image.getWidth(null);
-            int h = image.getHeight(null);
+            final int w = image.getWidth(null);
+            final int h = image.getHeight(null);
             if (w > 0 && h > 0) {
                 label.append("  [").append(w).append("x").append(h);
                 if (imageInfo.numberOfPages > 1) {
                     label.append("x").append(imageInfo.numberOfPages).append("]");
-                    File[] selectedFiles = parentChooser.getSelectedFiles();
-                    File selectedFile = parentChooser.getSelectedFile();
+                    final File[] selectedFiles = parentChooser.getSelectedFiles();
+                    final File selectedFile = parentChooser.getSelectedFile();
                     if ((selectedFiles != null && selectedFiles.length == 1)
                             || ((selectedFiles == null || selectedFiles.length == 0)
                             && selectedFile != null)) {
@@ -241,12 +245,12 @@ public class JAIFilePreviewer extends JPanel
                 }
             }
 
-            int xSizeBuffered = image.getWidth(null);
-            int ySizeBuffered = image.getHeight(null);
+            final int xSizeBuffered = image.getWidth(null);
+            final int ySizeBuffered = image.getHeight(null);
             if (xSizeBuffered > iconSizeX || ySizeBuffered > iconSizeY) {
                 // Replace image by its scaled version
-                double scaleX = (double) iconSizeX / xSizeBuffered;
-                double scaleY = (double) iconSizeY / ySizeBuffered;
+                final double scaleX = (double) iconSizeX / xSizeBuffered;
+                final double scaleY = (double) iconSizeY / ySizeBuffered;
                 if (scaleX < scaleY) {
                     image = image.getScaledInstance(iconSizeX, -1, Image.SCALE_DEFAULT);
                 } else {
@@ -254,7 +258,7 @@ public class JAIFilePreviewer extends JPanel
                 }
             }
 
-            ImageIcon imageIcon = new ImageIcon(image);
+            final ImageIcon imageIcon = new ImageIcon(image);
             ImageIconLabel.setIcon(imageIcon);
         } else {
             ImageIconLabel.setIcon(null);
@@ -283,7 +287,7 @@ public class JAIFilePreviewer extends JPanel
         selectPagesButton.setEnabled(false);
         selectPagesButton.setText("Select pages...");
         selectPagesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(final ActionEvent e) {
                 selectPagesButton_actionPerformed(e);
             }
         });

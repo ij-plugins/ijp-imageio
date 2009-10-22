@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 
 package net.sf.ij.jaiio;
@@ -69,7 +69,7 @@ public class JAIFileFilter extends FileFilter {
      *
      * @param codecName Codec name.
      */
-    public JAIFileFilter(String codecName) {
+    public JAIFileFilter(final String codecName) {
         setupFilter(codecName);
     }
 
@@ -77,12 +77,12 @@ public class JAIFileFilter extends FileFilter {
     /*
      *
      */
-    private static void readHeaderSample(File file, byte[] headerBytes)
+    private static void readHeaderSample(final File file, final byte[] headerBytes)
             throws IOException {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(file);
-            int bytesRead = fis.read(headerBytes);
+            final int bytesRead = fis.read(headerBytes);
             if (bytesRead < headerBytes.length) {
                 throw new EOFException("File to short to read header.");
             }
@@ -99,6 +99,7 @@ public class JAIFileFilter extends FileFilter {
      *
      * @return The Description value
      */
+    @Override
     public String getDescription() {
         return decription;
     }
@@ -122,7 +123,8 @@ public class JAIFileFilter extends FileFilter {
      * @return true is it is a directory or a file that can be accessed by
      *         associated codec.
      */
-    public boolean accept(File file) {
+    @Override
+    public boolean accept(final File file) {
         if (file == null || !file.exists() || !file.canRead()) {
             return false;
         }
@@ -136,7 +138,7 @@ public class JAIFileFilter extends FileFilter {
         // Read file header
         try {
             readHeaderSample(file, headerBytes);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             return false;
         }
 
@@ -154,7 +156,7 @@ public class JAIFileFilter extends FileFilter {
     /*
      *
      */
-    private void setupFilter(String codecName) {
+    private void setupFilter(final String codecName) {
         this.codecName = codecName;
         decription = "All Supported Images";
         activeCodecs = null;
@@ -162,14 +164,14 @@ public class JAIFileFilter extends FileFilter {
         // Get handles filter codecs
         if (codecName == null) {
             // All supported formats.
-            Enumeration codecEnumeration = ImageCodec.getCodecs();
+            final Enumeration codecEnumeration = ImageCodec.getCodecs();
             final List<ImageCodec> codecArray = new ArrayList<ImageCodec>();
             while (codecEnumeration.hasMoreElements()) {
                 codecArray.add((ImageCodec) codecEnumeration.nextElement());
             }
             activeCodecs = codecArray.toArray(new ImageCodec[codecArray.size()]);
         } else {
-            ImageCodec codec = ImageCodec.getCodec(codecName);
+            final ImageCodec codec = ImageCodec.getCodec(codecName);
             if (codec != null) {
                 activeCodecs = new ImageCodec[1];
                 activeCodecs[0] = codec;
@@ -184,7 +186,7 @@ public class JAIFileFilter extends FileFilter {
 
         // Find how large header size is needed for file type detection.
         for (final ImageCodec activeCodec : activeCodecs) {
-            int h = activeCodec.getNumHeaderBytes();
+            final int h = activeCodec.getNumHeaderBytes();
             if (h == 0) {
                 throw new RuntimeException("Codec "
                         + activeCodec.getFormatName()

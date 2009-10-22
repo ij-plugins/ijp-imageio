@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.jaiio;
 
@@ -46,15 +46,15 @@ public class ImagePlusCreator {
      * @param ri image that may need tile update.
      * @return WritableRaster with all tiles updated.
      */
-    public static WritableRaster forceTileUpdate(RenderedImage ri) {
+    public static WritableRaster forceTileUpdate(final RenderedImage ri) {
         Raster r = ri.getData();
         if (!(r instanceof WritableRaster)) {
             r = Raster.createWritableRaster(r.getSampleModel(), r.getDataBuffer(), null);
         }
 
-        WritableRaster wr = (WritableRaster) r;
-        int xTiles = ri.getNumXTiles();
-        int yTiles = ri.getNumYTiles();
+        final WritableRaster wr = (WritableRaster) r;
+        final int xTiles = ri.getNumXTiles();
+        final int yTiles = ri.getNumYTiles();
         for (int ty = 0; ty < yTiles; ++ty) {
             for (int tx = 0; tx < xTiles; ++tx) {
                 wr.setRect(ri.getTile(tx, ty));
@@ -75,8 +75,8 @@ public class ImagePlusCreator {
      * @return Image processor object.
      * @throws UnsupportedImageModelException If data buffer is in unknown format.
      */
-    public static ImageProcessor createProcessor(int w, int h, DataBuffer buffer,
-                                                 ColorModel cm) throws UnsupportedImageModelException {
+    public static ImageProcessor createProcessor(final int w, final int h, final DataBuffer buffer,
+                                                 final ColorModel cm) throws UnsupportedImageModelException {
 
         if (buffer.getOffset() != 0) {
             throw new UnsupportedImageModelException("Expecting BufferData with no offset.");
@@ -88,7 +88,7 @@ public class ImagePlusCreator {
             case DataBuffer.TYPE_USHORT:
                 return new ShortProcessor(w, h, ((DataBufferUShort) buffer).getData(), cm);
             case DataBuffer.TYPE_SHORT:
-                short[] pixels = ((DataBufferShort) buffer).getData();
+                final short[] pixels = ((DataBufferShort) buffer).getData();
                 for (int i = 0; i < pixels.length; ++i) {
                     pixels[i] = (short) (pixels[i] + 32768);
                 }
@@ -96,7 +96,7 @@ public class ImagePlusCreator {
             case DataBuffer.TYPE_INT:
                 return new FloatProcessor(w, h, ((DataBufferInt) buffer).getData());
             case DataBuffer.TYPE_FLOAT: {
-                DataBufferFloat dbFloat = (DataBufferFloat) buffer;
+                final DataBufferFloat dbFloat = (DataBufferFloat) buffer;
                 return new FloatProcessor(w, h, dbFloat.getData(), cm);
             }
             case DataBuffer.TYPE_DOUBLE:

@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.plugin;
 
@@ -84,7 +84,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
             ImageEncodeParam encodeParam = null;
 
             // Check with ImageJ if macro options are present
-            String macroOptions = Macro.getOptions();
+            final String macroOptions = Macro.getOptions();
             if (macroOptions != null) {
                 // Running from macro so try to extract macro options
                 codecName = Macro.getValue(macroOptions, MACRO_OPTION_CODECNAME, null);
@@ -133,9 +133,9 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                         return;
                     }
 
-                    FileFilter fileFilter = jaiChooser.getFileFilter();
+                    final FileFilter fileFilter = jaiChooser.getFileFilter();
                     if (fileFilter instanceof JAIFileFilter) {
-                        JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
+                        final JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
                         codecName = jaiFileFilter.getCodecName();
                         Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
                     }
@@ -153,7 +153,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                     }
                     fileName = file.getAbsolutePath();
                 } else if (fileName == null) {
-                    SaveDialog saveDialog = new SaveDialog("Save As " + codecName + "...", imp.getTitle(),
+                    final SaveDialog saveDialog = new SaveDialog("Save As " + codecName + "...", imp.getTitle(),
                             "." + getFileExtension(codecName));
                     // Make only single call to saveDialog.getFileName(). When recording a macro,
                     // each call records path in a macro (ImageJ 1.33k)
@@ -186,7 +186,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
                         return;
                     }
 
-                    boolean isBinary = imp.getType() != ImagePlus.COLOR_256
+                    final boolean isBinary = imp.getType() != ImagePlus.COLOR_256
                             && JaiioUtil.isBinary(imp.getProcessor());
 
                     if (isBinary) {
@@ -205,7 +205,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
             try {
                 IJ.showStatus("Writing image as " + codecName.toUpperCase() + " to " + fileName);
                 write(imp, fileName, codecName, encodeParam, useOneBitCompression);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 e.printStackTrace();
                 Macro.abort();
                 String msg = "Error writing file: " + fileName + ".\n\n";
@@ -225,13 +225,13 @@ public class ImageIOSaveAsPlugin implements PlugIn {
      * @throws IOException
      * @throws FileNotFoundException
      */
-    private static void write(ImagePlus imp,
-                              String fileName,
-                              String codecName,
-                              ImageEncodeParam encodeParam,
-                              boolean useOneBitCompression)
+    private static void write(final ImagePlus imp,
+                              final String fileName,
+                              final String codecName,
+                              final ImageEncodeParam encodeParam,
+                              final boolean useOneBitCompression)
             throws IOException {
-        JAIWriter jaiWriter = new JAIWriter();
+        final JAIWriter jaiWriter = new JAIWriter();
         jaiWriter.setFormatName(codecName);
         jaiWriter.setImageEncodeParam(encodeParam);
         jaiWriter.write(fileName, imp, useOneBitCompression);
@@ -241,7 +241,7 @@ public class ImageIOSaveAsPlugin implements PlugIn {
     /*
      *  Return typically used extension for given codec name.
      */
-    private String getFileExtension(String codecName) {
+    private String getFileExtension(final String codecName) {
         if (codecName.compareToIgnoreCase(TIFF) == 0) {
             return "tif";
         } else if (codecName.compareToIgnoreCase(JPEG) == 0) {

@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.plugin;
 
@@ -61,7 +61,7 @@ public class ImageIOOpenPlugin implements PlugIn {
     /*
      *
      */
-    private void open(File[] files, int[] pageIndex) {
+    private void open(final File[] files, final int[] pageIndex) {
         List<ImagePlus> imageList = null;
         if (combineIntoStack) {
             imageList = new ArrayList<ImagePlus>();
@@ -70,16 +70,17 @@ public class ImageIOOpenPlugin implements PlugIn {
         for (final File file : files) {
             IJ.showStatus("Opening: " + file.getName());
             try {
-                ImagePlus[] images = JAIReader.read(file, pageIndex);
+                final ImagePlus[] images = JAIReader.read(file, pageIndex);
                 if (images != null) {
                     for (final ImagePlus image : images) {
-                        if (imageList != null)
+                        if (imageList != null) {
                             imageList.add(image);
-                        else
+                        } else {
                             image.show();
+                        }
                     }
                 }
-            } catch (Exception ex) {
+            } catch (final Exception ex) {
                 ex.printStackTrace();
                 String msg = "Error opening file: " + file.getName() + ".\n\n";
                 msg += (ex.getMessage() == null) ? ex.toString() : ex.getMessage();
@@ -88,7 +89,7 @@ public class ImageIOOpenPlugin implements PlugIn {
         }
 
         if (imageList != null && imageList.size() > 0) {
-            ImagePlus stackImage = combineImages(imageList);
+            final ImagePlus stackImage = combineImages(imageList);
             if (stackImage != null) {
                 stackImage.show();
             } else {
@@ -113,24 +114,25 @@ public class ImageIOOpenPlugin implements PlugIn {
      */
     private static ImagePlus combineImages(final List<ImagePlus> imageList) {
         // TODO: in unable to combine throw exception with error message, do not return null.
-        if (imageList == null || imageList.size() < 1)
+        if (imageList == null || imageList.size() < 1) {
             return null;
+        }
 
         if (imageList.size() == 1) {
             return imageList.get(0);
         }
 
-        ImagePlus firstImage = imageList.get(0);
+        final ImagePlus firstImage = imageList.get(0);
         if (firstImage.getStackSize() != 1) {
             return null;
         }
 
-        int fileType = firstImage.getFileInfo().fileType;
-        int w = firstImage.getWidth();
-        int h = firstImage.getHeight();
-        ImageStack stack = firstImage.getStack();
+        final int fileType = firstImage.getFileInfo().fileType;
+        final int w = firstImage.getWidth();
+        final int h = firstImage.getHeight();
+        final ImageStack stack = firstImage.getStack();
         for (int i = 1; i < imageList.size(); ++i) {
-            ImagePlus im = imageList.get(i);
+            final ImagePlus im = imageList.get(i);
             if (im.getStackSize() != 1) {
                 return null;
             }
@@ -155,22 +157,23 @@ public class ImageIOOpenPlugin implements PlugIn {
      *
      * @param arg Can be user to specify type of the open dialog.
      */
-    public void run(String arg) {
+    public void run(final String arg) {
 
         IJ.showStatus("Starting \"" + TITLE + "\" plugin...");
 
-        String type = (arg == null) ? ARG_SIMPLE : arg.trim().toLowerCase();
+        final String type = (arg == null) ? ARG_SIMPLE : arg.trim().toLowerCase();
 
         files = null;
-        int[] pageIndex = null;
+        final int[] pageIndex = null;
         if (type.equals(ARG_IMAGE_PREVIEW)) {
             selectFilesWithImagePreview();
         } else {
             selectFiles();
         }
 
-        if (files == null)
+        if (files == null) {
             return;
+        }
 
         if (files.length > 1) {
             combineIntoStack = IJ.showMessageWithCancel(TITLE,
@@ -212,7 +215,7 @@ public class ImageIOOpenPlugin implements PlugIn {
      */
     private void selectFiles() {
 
-        OpenDialog openDialog = new OpenDialog(TITLE, null);
+        final OpenDialog openDialog = new OpenDialog(TITLE, null);
         if (openDialog.getFileName() == null) {
             // No selection
             files = null;

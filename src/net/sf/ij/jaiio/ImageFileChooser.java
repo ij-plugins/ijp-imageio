@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 
 package net.sf.ij.jaiio;
@@ -40,6 +40,10 @@ import java.util.TreeSet;
 public class ImageFileChooser
         extends JFileChooser {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     private final JAIFilePreviewer previewer = new JAIFilePreviewer(this);
 
 
@@ -63,7 +67,7 @@ public class ImageFileChooser
         // Sort codec names
         final TreeSet<String> codecSet = new TreeSet<String>();
         while (codecs.hasMoreElements()) {
-            ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
+            final ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
             codecSet.add(thisCodec.getFormatName());
         }
 
@@ -86,7 +90,7 @@ public class ImageFileChooser
      * @see ImagePageSelectionDialog
      */
     public int[] getPageIndex() {
-        File[] selection = getSelectedFiles();
+        final File[] selection = getSelectedFiles();
         if (selection != null && selection.length == 1) {
             return previewer.getPageIndex();
         } else {

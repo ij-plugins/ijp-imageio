@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij_plugins.imageio;
 
@@ -28,15 +28,20 @@ package net.sf.ij_plugins.imageio;
  * @version $Revision: 1.1 $
  */
 public class IJImageIOException extends Exception {
-    public IJImageIOException(String message) {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
+
+    public IJImageIOException(final String message) {
         super(message);
     }
 
-    public IJImageIOException(Throwable cause) {
+    public IJImageIOException(final Throwable cause) {
         super(cause);
     }
 
-    public IJImageIOException(String message, Throwable cause) {
+    public IJImageIOException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

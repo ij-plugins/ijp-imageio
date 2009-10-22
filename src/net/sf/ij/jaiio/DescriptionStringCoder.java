@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 
 package net.sf.ij.jaiio;
@@ -52,9 +52,9 @@ public class DescriptionStringCoder {
      * @param imp Image for which the description string should be created.
      * @return Description string.
      */
-    public static String encode(ImagePlus imp) {
-        FileInfo fi = imp.getFileInfo();
-        StringBuffer sb = new StringBuffer(100);
+    public static String encode(final ImagePlus imp) {
+        final FileInfo fi = imp.getFileInfo();
+        final StringBuffer sb = new StringBuffer(100);
         sb.append("ImageJ=" + ij.ImageJ.VERSION + "\n");
         if (fi.nImages > 1) {
             sb.append("images=").append(fi.nImages).append("\n");
@@ -76,7 +76,7 @@ public class DescriptionStringCoder {
                 sb.append("spacing=").append(fi.pixelDepth).append("\n");
             }
             if (fi.frameInterval != 0.0) {
-                double fps = 1.0 / fi.frameInterval;
+                final double fps = 1.0 / fi.frameInterval;
                 if ((int) fps == fps) {
                     sb.append("fps=").append((int) fps).append("\n");
                 } else {
@@ -100,36 +100,36 @@ public class DescriptionStringCoder {
      * @throws Exception If information stored in the description string is
      *                   inconsistent with image size.
      */
-    public static void decode(String description, ImagePlus imp)
+    public static void decode(final String description, final ImagePlus imp)
             throws Exception {
 
         if (description == null || !description.startsWith("ImageJ")) {
             return;
         }
 
-        Properties props = new Properties();
-        InputStream is = new ByteArrayInputStream(description.getBytes());
+        final Properties props = new Properties();
+        final InputStream is = new ByteArrayInputStream(description.getBytes());
         try {
             props.load(is);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException("Exception reading ByteArrayInputStream, this should never happen. Format error?");
         } finally {
             is.close();
         }
 
-        FileInfo fi = new FileInfo();
+        final FileInfo fi = new FileInfo();
 
         fi.unit = props.getProperty("unit", "");
 
-        Integer n_cf = getInteger(props, "cf");
+        final Integer n_cf = getInteger(props, "cf");
         if (n_cf != null) {
             fi.calibrationFunction = n_cf;
         }
 
-        double c[] = new double[5];
+        final double c[] = new double[5];
         int coefficientsCount = 0;
         for (int i = 0; i < 5; i++) {
-            Double n_ci = getDouble(props, "c" + i);
+            final Double n_ci = getDouble(props, "c" + i);
             if (n_ci == null) {
                 break;
             }
@@ -162,11 +162,11 @@ public class DescriptionStringCoder {
         calib.setUnit(fi.unit);
 
         if (fi.nImages > 1) {
-            Double n_spacing = getDouble(props, "spacing");
+            final Double n_spacing = getDouble(props, "spacing");
             if (n_spacing != null && n_spacing != 0.0) {
                 calib.pixelDepth = n_spacing;
             }
-            Double n_fps = getDouble(props, "fps");
+            final Double n_fps = getDouble(props, "fps");
             if (n_fps != null && n_fps != 0.0) {
                 calib.frameInterval = 1.0 / n_fps;
             }
@@ -179,12 +179,12 @@ public class DescriptionStringCoder {
     /*
      *
      */
-    private static Double getDouble(Properties props, String key) {
-        String s = props.getProperty(key);
+    private static Double getDouble(final Properties props, final String key) {
+        final String s = props.getProperty(key);
         if (s != null) {
             try {
                 return Double.valueOf(s);
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 e.printStackTrace();
             }
         }
@@ -195,12 +195,12 @@ public class DescriptionStringCoder {
     /*
      *
      */
-    private static Integer getInteger(Properties props, String key) {
-        String s = props.getProperty(key);
+    private static Integer getInteger(final Properties props, final String key) {
+        final String s = props.getProperty(key);
         if (s != null) {
             try {
                 return Integer.valueOf(s);
-            } catch (NumberFormatException e) {
+            } catch (final NumberFormatException e) {
                 e.printStackTrace();
             }
         }

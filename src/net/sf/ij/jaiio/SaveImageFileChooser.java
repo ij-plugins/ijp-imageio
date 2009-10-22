@@ -1,6 +1,7 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ * Copyright (C) 2002-2009 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
  */
 package net.sf.ij.jaiio;
 
@@ -44,6 +44,10 @@ public class SaveImageFileChooser
         extends JFileChooser
         implements PropertyChangeListener {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     private String selectedFileDirectory;
     private String selectedFileRootName;
 
@@ -52,7 +56,7 @@ public class SaveImageFileChooser
      *
      * @param currentDirectory initia directory.
      */
-    public SaveImageFileChooser(File currentDirectory) {
+    public SaveImageFileChooser(final File currentDirectory) {
         super(currentDirectory);
         this.addPropertyChangeListener(this);
 
@@ -61,34 +65,34 @@ public class SaveImageFileChooser
         this.setAcceptAllFileFilterUsed(false);
 
         // Set filters corresponding to each available codec
-        Enumeration codecs = ImageCodec.getCodecs();
+        final Enumeration codecs = ImageCodec.getCodecs();
 
         // Sort codec names
-        TreeSet<String> codecSet = new TreeSet<String>();
+        final TreeSet<String> codecSet = new TreeSet<String>();
         while (codecs.hasMoreElements()) {
-            ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
-            String formatName = thisCodec.getFormatName();
+            final ImageCodec thisCodec = (ImageCodec) codecs.nextElement();
+            final String formatName = thisCodec.getFormatName();
             try {
                 // Test if ImageEncoder can be instantiated.
-                ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
+                final ImageEncoder imageEncoder = ImageCodec.createImageEncoder(formatName,
                         null, null);
                 if (imageEncoder != null) {
                     codecSet.add(formatName);
                 }
-            } catch (Throwable t) {
+            } catch (final Throwable t) {
                 // Ignore ImageEncoders that cannot be instantiated
             }
         }
 
         JAIFileFilter defaultFilter = null;
-        for (String codecName : codecSet) {
+        for (final String codecName : codecSet) {
             try {
-                JAIFileFilter jaiFileFilter = new JAIFileFilter(codecName);
+                final JAIFileFilter jaiFileFilter = new JAIFileFilter(codecName);
                 addChoosableFileFilter(jaiFileFilter);
                 if (codecName.toUpperCase().indexOf("TIFF") > -1) {
                     defaultFilter = jaiFileFilter;
                 }
-            } catch (Throwable t) {
+            } catch (final Throwable t) {
                 t.printStackTrace();
             }
         }
@@ -124,15 +128,15 @@ public class SaveImageFileChooser
      * @param evt A PropertyChangeEvent object describing the event source and the property that has
      *            changed.
      */
-    public void propertyChange(PropertyChangeEvent evt) {
+    public void propertyChange(final PropertyChangeEvent evt) {
         final String propertyName = evt.getPropertyName();
 
         // File filter changed
         if (propertyName.equals(JFileChooser.FILE_FILTER_CHANGED_PROPERTY)) {
-            FileFilter fileFilter = this.getFileFilter();
+            final FileFilter fileFilter = this.getFileFilter();
 
             if (fileFilter instanceof JAIFileFilter) {
-                JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
+                final JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
 
                 if (selectedFileDirectory != null) {
                     final String fileName = selectedFileDirectory + File.separator
@@ -155,14 +159,14 @@ public class SaveImageFileChooser
             // relay on e assume that legitimate changes never set the selected
             // file to null.
 
-            File selectedFile = getSelectedFile();
+            final File selectedFile = getSelectedFile();
             if (selectedFile == null) {
                 // Attempt to set file name to null, try to recover using preserved
                 // information, if any.
                 if (selectedFileDirectory != null) {
-                    FileFilter fileFilter = this.getFileFilter();
-                    JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
-                    String name = selectedFileDirectory + File.separator + selectedFileRootName + "."
+                    final FileFilter fileFilter = this.getFileFilter();
+                    final JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
+                    final String name = selectedFileDirectory + File.separator + selectedFileRootName + "."
                             + jaiFileFilter.getCodecName().toLowerCase();
                     final File recoveredSelectedFile = new File(name);
 
@@ -176,8 +180,8 @@ public class SaveImageFileChooser
             } else {
                 // Preserve information about selected file
                 selectedFileDirectory = getCurrentDirectory().getAbsolutePath();
-                String name = selectedFile.getName();
-                int lastDot = name.lastIndexOf(".");
+                final String name = selectedFile.getName();
+                final int lastDot = name.lastIndexOf(".");
                 if (lastDot > -1) {
                     selectedFileRootName = name.substring(0, lastDot);
                 }
@@ -185,13 +189,13 @@ public class SaveImageFileChooser
         }
         // Track changes in current directory
         else if (evt.getPropertyName().equals(JFileChooser.DIRECTORY_CHANGED_PROPERTY)) {
-            File newValue = (File) evt.getNewValue();
+            final File newValue = (File) evt.getNewValue();
             if (newValue != null) {
                 selectedFileDirectory = newValue.getAbsolutePath();
             }
             if (selectedFileDirectory != null) {
-                FileFilter fileFilter = this.getFileFilter();
-                JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
+                final FileFilter fileFilter = this.getFileFilter();
+                final JAIFileFilter jaiFileFilter = (JAIFileFilter) fileFilter;
                 final String fileName = selectedFileDirectory + File.separator
                         + selectedFileRootName + "." + jaiFileFilter.getCodecName().toLowerCase();
                 final File selectedFile = new File(fileName);
