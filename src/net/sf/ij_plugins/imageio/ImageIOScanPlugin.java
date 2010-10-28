@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2010 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -30,11 +30,13 @@ import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.IIOServiceProvider;
 import java.util.Iterator;
 
+
 /**
  * @author Jarek Sacha
  * @version $Revision: 1.1 $
  */
 public class ImageIOScanPlugin implements PlugIn {
+
     public void run(final String arg) {
         final ClassLoader classLoader = this.getClass().getClassLoader();
 
@@ -50,10 +52,10 @@ public class ImageIOScanPlugin implements PlugIn {
         while (categories.hasNext()) {
             final Class c = (Class) categories.next();
             IJ.log("  Scanning category: " + c.getName());
-            final Iterator riter = Service.providers(c, classLoader);
-            if (riter.hasNext()) {
-                while (riter.hasNext()) {
-                    final IIOServiceProvider r = (IIOServiceProvider) riter.next();
+            final Iterator iterator = Service.providers(c, classLoader);
+            if (iterator.hasNext()) {
+                while (iterator.hasNext()) {
+                    final IIOServiceProvider r = (IIOServiceProvider) iterator.next();
                     IJ.log("    Registering service provider: " + r.getClass().getName());
                     IIORegistry.getDefaultInstance().registerServiceProvider(r);
                 }

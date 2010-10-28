@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2010 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -32,6 +32,7 @@ import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
 
+
 /**
  * Creates/converts BufferedImage objects from Image/J's ImageProcessor or ImagePlus. All Image/J
  * image types are supported.
@@ -43,6 +44,8 @@ public class BufferedImageWrapper {
     /*
      *  Made private to prevent sub-classing.
      */
+
+
     private BufferedImageWrapper() {
     }
 
@@ -51,12 +54,12 @@ public class BufferedImageWrapper {
      * Create BufferedImage from a slice <code>sliceNb</code> in image <code>src</code> . Indexing
      * starts at 0. New image has a copy of pixels in the source image.
      *
-     * @param src           Source image.
-     * @param sliceNb       Slice number, numbering starts at 0.
-     * @param prefferBinary Preferr to save two level binary images using 1 bit per pixel.
+     * @param src          Source image.
+     * @param sliceNb      Slice number, numbering starts at 0.
+     * @param preferBinary Prefer to save two level binary images using 1 bit per pixel.
      * @return New BufferedImage.
      */
-    public static BufferedImage create(final ImagePlus src, final int sliceNb, final boolean prefferBinary) {
+    public static BufferedImage create(final ImagePlus src, final int sliceNb, final boolean preferBinary) {
 
         // Get slice image processor
         final int oldSliceNb = src.getCurrentSlice();
@@ -69,7 +72,7 @@ public class BufferedImageWrapper {
             case ImagePlus.GRAY8:
                 // Do not use color model provided by ImageProcessor since it can be 16 bit even for 8 bit ByteProcessor.
                 final ByteProcessor bp = (ByteProcessor) ip;
-                if (JaiioUtil.isBinary(bp) && prefferBinary) {
+                if (JaiioUtil.isBinary(bp) && preferBinary) {
                     final ColorModel cm = ip.getColorModel();
                     if (cm instanceof IndexColorModel) {
                         return create(bp, (IndexColorModel) ip.getColorModel());
@@ -92,6 +95,7 @@ public class BufferedImageWrapper {
                 throw new IllegalArgumentException("Unrecognized image type: " + src.getType() + ".");
         }
     }
+
 
     public static BufferedImage createBinary(final ByteProcessor src) {
         // TODO: create destination BufferedImage directly without creating intermediate image (save memory and time)
@@ -177,6 +181,7 @@ public class BufferedImageWrapper {
 
         return createFrom256Index(src, icm256);
     }
+
 
     /**
      * Create BufferedImage from an 256 indexed color image. Share pixels with source.

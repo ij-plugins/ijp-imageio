@@ -1,6 +1,7 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2010 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,14 +33,17 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+
 /**
  * @author Jarek Sacha
  * @version $Revision: 1.1 $
  */
 public class ReaderTest extends TestCase {
+
     public ReaderTest(String test) {
         super(test);
     }
+
 
     /**
      * The fixture set up called before every test method.
@@ -47,11 +51,13 @@ public class ReaderTest extends TestCase {
     protected void setUp() throws Exception {
     }
 
+
     /**
      * The fixture clean up called after every test method.
      */
     protected void tearDown() throws Exception {
     }
+
 
     public void testTIFFStack() throws Exception {
         final String fileName = "test/data/mri-stack.tif";
@@ -60,7 +66,6 @@ public class ReaderTest extends TestCase {
         assertTrue("Exist: " + file.getAbsolutePath(), file.exists());
 
         final ImageInputStream iis = ImageIO.createImageInputStream(file);
-
         final Iterator readers = ImageIO.getImageReaders(iis);
 
         final ArrayList readerList = new ArrayList();
@@ -95,13 +100,11 @@ public class ReaderTest extends TestCase {
             System.out.println("Metadata: " + metadata);
             System.out.println("  Metadata format names: ");
             String[] formats = metadata.getMetadataFormatNames();
-            for (int j = 0; j < formats.length; j++) {
-                String format = formats[j];
+            for (final String format : formats) {
                 System.out.println("  " + format);
             }
 
-            for (int j = 0; j < formats.length; j++) {
-                String format = formats[j];
+            for (final String format : formats) {
                 System.out.println("Using format " + format);
                 displayMetadata(metadata.getAsTree(format));
             }
@@ -110,15 +113,18 @@ public class ReaderTest extends TestCase {
 
     }
 
+
     public void displayMetadata(Node root) {
         displayMetadata(root, 0);
     }
+
 
     void indent(int level) {
         for (int i = 0; i < level; i++) {
             System.out.print("  ");
         }
     }
+
 
     void displayMetadata(Node node, int level) {
         indent(level); // emit open tag
