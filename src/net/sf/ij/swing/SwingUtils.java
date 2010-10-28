@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2010 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -23,10 +23,12 @@ package net.sf.ij.swing;
 
 import java.awt.*;
 
+
 /**
  * @author Jarek Sacha
  */
 public class SwingUtils {
+
     /**
      * Center window on screen.
      *
@@ -43,19 +45,6 @@ public class SwingUtils {
             window.validate();
         }
 
-        //Center the frame window
-        final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        final Dimension frameSize = window.getSize();
-
-        if (frameSize.height > screenSize.height) {
-            frameSize.height = screenSize.height;
-        }
-
-        if (frameSize.width > screenSize.width) {
-            frameSize.width = screenSize.width;
-        }
-
-        window.setLocation((screenSize.width - frameSize.width) / 2,
-                (screenSize.height - frameSize.height) / 2);
+        window.setLocationRelativeTo(null);
     }
 }
