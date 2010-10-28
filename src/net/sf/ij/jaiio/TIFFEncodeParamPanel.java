@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2010 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -37,10 +37,9 @@ import java.awt.event.WindowEvent;
 
 
 /**
- * Component for editing TIFF encoding options represented by <code>non_com.media.jai.codec.TIFFEncodeParam</code>.
+ * Component for editing TIFF encoding options represented by {@code non_com.media.jai.codec.TIFFEncodeParam}.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.4 $
  */
 
 public class TIFFEncodeParamPanel extends JPanel {
@@ -147,7 +146,6 @@ public class TIFFEncodeParamPanel extends JPanel {
 
     private void jbInit() {
         final TitledBorder titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Compression");
-        final TitledBorder titledBorder2 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Black/White Images Only");
         this.setLayout(gridBagLayout3);
         optionsPanel.setBorder(titledBorder1);
         optionsPanel.setLayout(gridBagLayout4);
@@ -159,7 +157,7 @@ public class TIFFEncodeParamPanel extends JPanel {
         noneRadioButton.setToolTipText("");
         noneRadioButton.setSelected(true);
         noneRadioButton.setText("None");
-        bwCompressionPanel.setBorder(titledBorder2);
+        bwCompressionPanel.setBorder(new TitledBorder(null, "For black/white only", TitledBorder.LEADING, TitledBorder.TOP, null, null));
         bwCompressionPanel.setLayout(gridBagLayout2);
         fax4RadioButton.setText("CCITT Fax 4");
         fax3RadioButton.setText("CCITT Fax 3");
@@ -167,11 +165,11 @@ public class TIFFEncodeParamPanel extends JPanel {
         rleRadioButton.setText("Huffman RLE");
         jPanel1.setLayout(gridBagLayout5);
         this.add(optionsPanel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
-                , GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                , GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 5, 5));
         optionsPanel.add(compressionPanel, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0
                 , GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         optionsPanel.add(bwCompressionPanel, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0
-                , GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+                , GridBagConstraints.SOUTH, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 5, 5));
         bwCompressionPanel.add(rleRadioButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
                 , GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 0, 5), 0, 0));
         bwCompressionPanel.add(fax3RadioButton, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0
@@ -179,10 +177,10 @@ public class TIFFEncodeParamPanel extends JPanel {
         bwCompressionPanel.add(fax4RadioButton, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0
                 , GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 0, 5), 0, 0));
         optionsPanel.add(jPanel1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
-                , GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+                , GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 5, 5));
         jPanel1.add(noneRadioButton, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
-                , GridBagConstraints.SOUTHEAST, GridBagConstraints.NONE, new Insets(0, 10, 0, 0), 0, 0));
-        jPanel1.add(packbitRadioButton, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0
+                , GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 0, 5), 0, 0));
+        jPanel1.add(packbitRadioButton, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0
                 , GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 0, 5), 0, 0));
         jPanel1.add(jpegRadioButton, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0
                 , GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 5, 0, 5), 0, 0));
