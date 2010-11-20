@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2010 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -28,9 +28,12 @@ import net.sf.ij.jaiio.BufferedImageCreator;
 import net.sf.ij.jaiio.ImagePlusCreator;
 import net.sf.ij.jaiio.UnsupportedImageModelException;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
+import javax.imageio.*;
+import javax.imageio.event.IIOReadProgressListener;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -38,8 +41,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+
 /**
- * Helper class that for reading images using javax.imageio into ImageJ representation.
+ * Helper class that for reading images using {@code javax.imageio} into ImageJ representation.
  *
  * @author Jarek Sacha
  */
@@ -53,11 +57,11 @@ public class IJImageIO {
 
 
     /**
-     * Read image from file using using javax.imageio and convert it to ImageJ representation. All
+     * Read image from file using using {@code javax.imageio} and convert it to ImageJ representation. All
      * images contained in the file ill be read.
      *
      * @param file          input image file.
-     * @param combineStacks if {@code true} series of images of the same tyep and size will be combined into stacks (single ImagePlus).
+     * @param combineStacks if {@code true} series of images of the same type and size will be combined into stacks (single ImagePlus).
      * @return Array of images read from the file. If images are of the same type and size they will
      *         be combined into a stack and the returned ImagePlus array will have a single element
      *         with stack size equal to the number of images in the input file.
@@ -105,7 +109,7 @@ public class IJImageIO {
 
 
     /**
-     * Read image from file using using javax.imageio and convert it to ImageJ representation. All
+     * Read image from file using using {@code javax.imageio} and convert it to ImageJ representation. All
      * images contained in the file ill be read.
      *
      * @param file input image file.
@@ -124,11 +128,11 @@ public class IJImageIO {
         try {
             iis = ImageIO.createImageInputStream(file);
         } catch (final IOException e) {
-            throw new IJImageIOException("Failed to create image input sttream for file: " + file.getAbsolutePath() + ". "
+            throw new IJImageIOException("Failed to create image input stream for file: " + file.getAbsolutePath() + ". "
                     + e.getMessage(), e);
         }
         if (iis == null) {
-            throw new IJImageIOException("Failed to create image input sttream for file: " + file.getAbsolutePath() + ".");
+            throw new IJImageIOException("Failed to create image input stream for file: " + file.getAbsolutePath() + ".");
         }
 
         try {
@@ -149,6 +153,7 @@ public class IJImageIO {
             final StringBuffer errorBuffer = new StringBuffer();
             List<BufferedImage> bufferedImages = null;
             for (int i = 0; bufferedImages == null && i < readerList.size(); i++) {
+                double progress = 0;
                 final ImageReader reader = readerList.get(i);
                 IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
                 try {
@@ -167,22 +172,41 @@ public class IJImageIO {
             try {
                 iis.close();
             } catch (final IOException e) {
-                final String messsage = "Failed to close image input stream. " + e.getMessage();
+                final String message = "Failed to close image input stream. " + e.getMessage();
                 e.printStackTrace();
-                logDebug(messsage);
+                logDebug(message);
             }
         }
     }
 
 
-    public static boolean write(final ImagePlus imp, final String formatName, final File file, final boolean prefferBinary) throws IJImageIOException {
+    public static boolean write(final ImagePlus imp, final String formatName, final File file, final boolean preferBinary) throws IJImageIOException {
 
-        final BufferedImage bi = BufferedImageCreator.create(imp, 0, prefferBinary);
+        final BufferedImage bi = BufferedImageCreator.create(imp, 0, preferBinary);
         try {
             return ImageIO.write(bi, formatName, file);
         } catch (final IOException e) {
             throw new IJImageIOException("Unable to write image file :" + file.getAbsolutePath()
                     + "\n" + e.getMessage(), e);
+        }
+    }
+
+
+    public static void write(final BufferedImage image,
+                             final ImageWriter writer,
+                             final File file,
+                             final ImageWriteParam parameters,
+                             final IIOMetadata metadata) throws IOException {
+        final ImageOutputStream outputStream = new FileImageOutputStream(file);
+        try {
+            writer.setOutput(outputStream);
+
+            final IIOImage iioImage = new IIOImage(image, null, metadata);
+
+            // Write image
+            writer.write(null, iioImage, parameters);
+        } finally {
+            outputStream.close();
         }
     }
 
@@ -201,6 +225,7 @@ public class IJImageIO {
 
         // How many images are in the file and what is the first image index
         final int numImages;
+//        reader.addIIOReadProgressListener(new ProgressListener(numImages));
         try {
             numImages = reader.getNumImages(true);
         } catch (final IOException e) {
@@ -211,6 +236,7 @@ public class IJImageIO {
         // Read each image and add it to list 'images'
         final List<BufferedImage> images = new ArrayList<BufferedImage>();
         for (int j = minIndex; j < numImages + minIndex; j++) {
+            IJ.showProgress(j - minIndex, numImages);
             // Read using javax.imageio
             final BufferedImage bi;
             try {
@@ -306,6 +332,71 @@ public class IJImageIO {
     private static void logDebug(final String message) {
         if (IJ.debugMode) {
             IJ.log(message);
+        }
+    }
+
+
+    private static final class ProgressListener implements IIOReadProgressListener {
+
+        final private int numberOfImages;
+
+
+        private ProgressListener(int numberOfImages) {
+            this.numberOfImages = numberOfImages;
+        }
+
+
+        @Override
+        public void sequenceStarted(ImageReader source, int minIndex) {
+            System.out.println("IJImageIO.sequenceStarted");
+        }
+
+
+        @Override
+        public void sequenceComplete(ImageReader source) {
+            System.out.println("IJImageIO.sequenceComplete");
+        }
+
+
+        @Override
+        public void imageStarted(ImageReader source, int imageIndex) {
+            System.out.println("IJImageIO.imageStarted: " + imageIndex);
+        }
+
+
+        @Override
+        public void imageProgress(ImageReader source, float percentageDone) {
+            System.out.println("IJImageIO.imageProgress: " + percentageDone);
+        }
+
+
+        @Override
+        public void imageComplete(ImageReader source) {
+            System.out.println("IJImageIO.imageComplete");
+        }
+
+
+        @Override
+        public void thumbnailStarted(ImageReader source, int imageIndex, int thumbnailIndex) {
+            System.out.println("IJImageIO.thumbnailStarted");
+        }
+
+
+        @Override
+        public void thumbnailProgress(ImageReader source, float percentageDone) {
+            System.out.println("IJImageIO.thumbnailProgress: " + percentageDone);
+        }
+
+
+        @Override
+        public void thumbnailComplete(ImageReader source) {
+            System.out.println("IJImageIO.thumbnailComplete");
+        }
+
+
+        @Override
+        public void readAborted(ImageReader source) {
+            System.out.println("IJImageIO.readAborted");
         }
     }
 

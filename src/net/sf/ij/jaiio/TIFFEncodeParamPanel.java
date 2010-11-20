@@ -19,6 +19,7 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
+
 package net.sf.ij.jaiio;
 
 import com.sun.media.jai.codec.ImageEncodeParam;
@@ -147,7 +148,7 @@ public class TIFFEncodeParamPanel extends JPanel {
     private void jbInit() {
         final TitledBorder titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white, new Color(148, 145, 140)), "Compression");
         this.setLayout(gridBagLayout3);
-        optionsPanel.setBorder(titledBorder1);
+        optionsPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Compression", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
         optionsPanel.setLayout(gridBagLayout4);
         zipRadioButton.setText("ZIP");
         jpegRadioButton.setText("JPEG");
@@ -157,7 +158,7 @@ public class TIFFEncodeParamPanel extends JPanel {
         noneRadioButton.setToolTipText("");
         noneRadioButton.setSelected(true);
         noneRadioButton.setText("None");
-        bwCompressionPanel.setBorder(new TitledBorder(null, "For black/white only", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+        bwCompressionPanel.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "For black/white only", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
         bwCompressionPanel.setLayout(gridBagLayout2);
         fax4RadioButton.setText("CCITT Fax 4");
         fax3RadioButton.setText("CCITT Fax 3");

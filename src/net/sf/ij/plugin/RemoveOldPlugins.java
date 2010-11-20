@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2010 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -34,6 +34,7 @@ import java.util.List;
  *
  * @author Jarek Sacha
  * @version $Revision: 1.3 $
+ * @deprecated
  */
 public class RemoveOldPlugins implements PlugIn {
     private List<File> foundComponents;
