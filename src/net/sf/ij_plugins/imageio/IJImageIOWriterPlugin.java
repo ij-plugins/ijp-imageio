@@ -19,6 +19,7 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
+
 package net.sf.ij_plugins.imageio;
 
 import ij.IJ;
@@ -80,21 +81,13 @@ public class IJImageIOWriterPlugin implements PlugIn {
             return;
         }
 
-        final SaveDialog saveDialog = new SaveDialog("Save As " + codecName + "...", imp.getTitle(), "." + codecName);
-        final String saveDialogFileName = saveDialog.getFileName();
-        if (saveDialogFileName == null) {
+        final File file = askForFile("Save As " + codecName + "...", imp.getTitle(), "." + codecName);
+        if (file == null) {
             return;
         }
 
-        final String fileName;
-        if (saveDialog.getDirectory() != null) {
-            fileName = saveDialog.getDirectory() + File.separator + saveDialogFileName;
-        } else {
-            fileName = saveDialogFileName;
-        }
-
         try {
-            final boolean ok = IJImageIO.write(imp, codecName, new File(fileName), true);
+            final boolean ok = IJImageIO.write(imp, codecName, file, true);
             if (!ok) {
                 throw new IJImageIOException("Writer for format '" + codecName + "' not available.");
             }
@@ -103,9 +96,9 @@ public class IJImageIOWriterPlugin implements PlugIn {
         }
     }
 
-    public static void saveAs(final String title,
-                              final String formatName, final String formatExtension,
-                              final String defaultCompression) {
+    private static void saveAs(final String title,
+                               final String formatName, final String formatExtension,
+                               final String defaultCompression) {
 
         IJ.showStatus("Starting \"" + title + "\" plugin...");
 
@@ -224,7 +217,7 @@ public class IJImageIOWriterPlugin implements PlugIn {
 
     }
 
-    public static File askForFile(final String title, final String defaultName, final String extension) {
+    private static File askForFile(final String title, final String defaultName, final String extension) {
         final SaveDialog saveDialog = new SaveDialog(title, defaultName, extension);
 
         // Make only single call to saveDialog.getFileName(). When recording a macro,
@@ -244,7 +237,7 @@ public class IJImageIOWriterPlugin implements PlugIn {
         return file;
     }
 
-    public static ImageWriter findWriter(final String codecName) {
+    private static ImageWriter findWriter(final String codecName) {
 
         {
             final Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(codecName);
@@ -257,10 +250,4 @@ public class IJImageIOWriterPlugin implements PlugIn {
         return writers.hasNext() ? writers.next() : null;
 
     }
-
-    private static String toString(final Object object) {
-        return object == null ? "" : object.toString();
-    }
-
-
 }
