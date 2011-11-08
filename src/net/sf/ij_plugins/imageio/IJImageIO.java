@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2010 Jarek Sacha
+ * Copyright (C) 2002-2011 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -34,6 +34,7 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -124,36 +125,16 @@ public class IJImageIO {
             throw new IllegalArgumentException("Argument 'file' cannot be null.");
         }
 
-        final ImageInputStream iis;
-        try {
-            iis = ImageIO.createImageInputStream(file);
-        } catch (final IOException e) {
-            throw new IJImageIOException("Failed to create image input stream for file: " + file.getAbsolutePath() + ". "
-                    + e.getMessage(), e);
-        }
-        if (iis == null) {
-            throw new IJImageIOException("Failed to create image input stream for file: " + file.getAbsolutePath() + ".");
-        }
+        final ImageInputStream iis = createImageInputStream(file);
 
         try {
             // Locate all available readers
-            final Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-            final List<ImageReader> readerList = new ArrayList<ImageReader>();
-            while (readers.hasNext()) {
-                final ImageReader reader = readers.next();
-                readerList.add(reader);
-            }
-
-            // Verify that there is at least one reader available.
-            if (readerList.isEmpty()) {
-                throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.");
-            }
+            final List<ImageReader> readerList = getImageReaderList(iis);
 
             // Try available readers till one of them reads images with no errors
             final StringBuffer errorBuffer = new StringBuffer();
             List<BufferedImage> bufferedImages = null;
             for (int i = 0; bufferedImages == null && i < readerList.size(); i++) {
-                double progress = 0;
                 final ImageReader reader = readerList.get(i);
                 IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
                 try {
@@ -177,6 +158,87 @@ public class IJImageIO {
                 logDebug(message);
             }
         }
+    }
+
+    private static List<ImageReader> getImageReaderList(ImageInputStream iis) throws IJImageIOException {
+        final Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+        final List<ImageReader> readerList = new ArrayList<ImageReader>();
+        while (readers.hasNext()) {
+            final ImageReader reader = readers.next();
+            readerList.add(reader);
+        }
+
+        // Verify that there is at least one reader available.
+        if (readerList.isEmpty()) {
+            throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.");
+        }
+        return readerList;
+    }
+
+    /**
+     * IJImageIOException
+     * Read only the first image in the <code>file</code>.
+     *
+     * @param file Image file.
+     * @return ImageInfo object.
+     * @throws IJImageIOException In case of I/O error.
+     */
+    public static ImageInfo readPreviewAndInfo(final File file) throws IJImageIOException {
+
+
+        if (file == null) {
+            throw new IllegalArgumentException("Argument 'file' cannot be null.");
+        }
+
+        final ImageInputStream iis = createImageInputStream(file);
+
+        try {
+            // Locate all available readers
+            final List<ImageReader> readerList = getImageReaderList(iis);
+
+            // Try available readers till one of them reads images with no errors
+            final StringBuffer errorBuffer = new StringBuffer();
+            List<BufferedImage> bufferedImages = null;
+            ImageInfo imageInfo = null;
+            for (int i = 0; bufferedImages == null && i < readerList.size(); i++) {
+                final ImageReader reader = readerList.get(i);
+                IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
+                try {
+                    imageInfo = readInfo(reader, iis);
+                } catch (final Exception ex) {
+                    errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage()).append("\n");
+                }
+            }
+
+            if (imageInfo != null) {
+                return imageInfo;
+            } else {
+                throw new IJImageIOException("Unable to read images from file: " + file.getAbsoluteFile() + ". " + errorBuffer.toString());
+            }
+        } finally {
+            try {
+                iis.close();
+            } catch (final IOException e) {
+                final String message = "Failed to close image input stream. " + e.getMessage();
+                e.printStackTrace();
+                logDebug(message);
+            }
+        }
+
+    }
+
+    private static ImageInputStream createImageInputStream(File file) throws IJImageIOException {
+        final ImageInputStream iis;
+        try {
+            iis = ImageIO.createImageInputStream(file);
+        } catch (final IOException e) {
+            throw new IJImageIOException("Failed to create image input stream for file: " + file.getAbsolutePath() + ". "
+                    + e.getMessage(), e);
+        }
+        if (iis == null) {
+            throw new IJImageIOException("Failed to create image input stream for file: " + file.getAbsolutePath() + ".");
+        }
+        return iis;
     }
 
 
@@ -255,6 +317,34 @@ public class IJImageIO {
         }
 
         return images;
+    }
+
+    private static ImageInfo readInfo(final ImageReader reader,
+                                      final ImageInputStream iis)
+            throws IJImageIOException {
+
+        //                iis.reset();
+        try {
+            iis.seek(0);
+        } catch (final IOException e) {
+            throw new IJImageIOException("Unable to reset input stream to position 0. ", e);
+        }
+        reader.setInput(iis, false, false);
+
+        final ImageInfo imageInfo = new ImageInfo();
+        try {
+            imageInfo.numberOfPages = reader.getNumImages(true);
+            imageInfo.codecName = reader.getFormatName();
+            if (reader.hasThumbnails(0)) {
+                imageInfo.previewImage = reader.readThumbnail(0, 0);
+            } else {
+                imageInfo.previewImage = reader.read(0);
+            }
+        } catch (final IOException ex) {
+            throw new IJImageIOException(ex);
+        }
+
+        return imageInfo;
     }
 
 
@@ -399,5 +489,15 @@ public class IJImageIO {
             System.out.println("IJImageIO.readAborted");
         }
     }
+
+    /*
+     *  Basic image information including first image in the file.
+     */
+    public static class ImageInfo {
+        public Image previewImage;
+        public int numberOfPages;
+        public String codecName;
+    }
+
 
 }

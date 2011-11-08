@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2010 Jarek Sacha
+ * Copyright (C) 2002-2011 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -64,12 +64,10 @@ public class IJImageIOOpenPlugin implements PlugIn {
 
         IJ.showStatus("Starting \"" + TITLE + "\" plugin...");
 
-        final File[] files;
-        if (ARG_IMAGE_PREVIEW.equalsIgnoreCase(arg)) {
-            throw new UnsupportedOperationException("Open dialog with preview not implemented.");
-        } else {
-            files = selectFile();
-        }
+        final File[] files = ARG_IMAGE_PREVIEW.equalsIgnoreCase(arg)
+                ? selectFilesWithPreview()
+                : selectFile();
+
         final int[] pageIndex = null;
 
         if (files.length < 1) {
@@ -121,6 +119,10 @@ public class IJImageIOOpenPlugin implements PlugIn {
         IJ.showStatus("");
     }
 
+
+    private File[] selectFilesWithPreview() {
+        throw new UnsupportedOperationException("Open dialog with preview not implemented.");
+    }
 
     /*
     *

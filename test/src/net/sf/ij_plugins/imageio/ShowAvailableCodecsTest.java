@@ -1,6 +1,7 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2004 Jarek Sacha
+ * Copyright (C) 2002-2011 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +21,7 @@
  */
 package net.sf.ij_plugins.imageio;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -29,69 +30,64 @@ import javax.imageio.spi.IIOServiceProvider;
 import javax.imageio.spi.ImageWriterSpi;
 import java.util.Iterator;
 
+import static net.sf.ij_plugins.imageio.Console.println;
+
 /**
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
  */
-public class ShowAvailableCodecsTest extends TestCase {
-    public ShowAvailableCodecsTest(String test) {
-        super(test);
-    }
+public class ShowAvailableCodecsTest {
 
-    /**
-     * The fixture set up called before every test method.
-     */
-    protected void setUp() throws Exception {
-    }
 
-    /**
-     * The fixture clean up called after every test method.
-     */
-    protected void tearDown() throws Exception {
-    }
-
-    public void testSomething() throws Exception {
-        String[] readerFormatNames = ImageIO.getReaderFormatNames();
+    @Test
+    public void testReaders() throws Exception {
+        final String[] readerFormatNames = ImageIO.getReaderFormatNames();
         printStrings("readerFormatNames", readerFormatNames);
 
-        String[] readerMIMETypes = ImageIO.getReaderMIMETypes();
+        final String[] readerMIMETypes = ImageIO.getReaderMIMETypes();
         printStrings("readerMIMETypes", readerMIMETypes);
 
-        for (int i = 0; i < readerMIMETypes.length; i++) {
-            String readerMIMEType = readerMIMETypes[i];
-            Iterator iterator = ImageIO.getImageReadersByMIMEType(readerMIMEType);
-            System.out.println("Reader MIME Type: " + readerMIMEType);
+        for (String readerMIMEType : readerMIMETypes) {
+            final Iterator iterator = ImageIO.getImageReadersByMIMEType(readerMIMEType);
+            println("Reader MIME Type: " + readerMIMEType);
             while (iterator.hasNext()) {
                 ImageReader reader = (ImageReader) iterator.next();
-                System.out.println("  format: " + reader.getFormatName());
-                System.out.println("  class:  " + reader.getClass().getName());
+                println("  format: " + reader.getFormatName());
+                println("  class:  " + reader.getClass().getName());
             }
         }
+    }
 
-        final Iterator categories = IIORegistry.getDefaultInstance().getServiceProviders(ImageWriterSpi.class, true);
-        System.out.println("Categories: ");
-        while (categories.hasNext()) {
-            Object o = categories.next();
-            System.out.println("  " + o);
-            IIOServiceProvider iioServiceProvider = (IIOServiceProvider) o;
-            System.out.println("  " + iioServiceProvider + " : " + iioServiceProvider.getDescription(null));
-
-        }
-
-        String[] writerFormatNames = ImageIO.getWriterFormatNames();
+    @Test
+    public void testWriters() throws Exception {
+        final String[] writerFormatNames = ImageIO.getWriterFormatNames();
         printStrings("writerFormatNames", writerFormatNames);
 
-        String[] writerMIMETypes = ImageIO.getWriterMIMETypes();
+        final String[] writerMIMETypes = ImageIO.getWriterMIMETypes();
         printStrings("writerMIMETypes", writerMIMETypes);
-
-
     }
 
-    private void printStrings(String message, String[] strings) {
-        System.out.println(message);
-        for (int i = 0; i < strings.length; i++) {
-            String string = strings[i];
-            System.out.println("    " + string);
+
+    @Test
+    public void testServiceProviders() throws Exception {
+
+        final Iterator categories = IIORegistry.getDefaultInstance().getServiceProviders(ImageWriterSpi.class, true);
+        println("Categories: ");
+        while (categories.hasNext()) {
+            final Object o = categories.next();
+            println("  " + o);
+            IIOServiceProvider iioServiceProvider = (IIOServiceProvider) o;
+            println("  " + iioServiceProvider + " : " + iioServiceProvider.getDescription(null));
+
         }
     }
+
+
+    private void printStrings(final String message, final String[] strings) {
+        println(message);
+        for (final String string : strings) {
+            println("    " + string);
+        }
+    }
+
+
 }
