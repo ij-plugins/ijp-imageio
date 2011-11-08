@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2011 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -24,10 +24,12 @@ package net.sf.ij.jaiio;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+
 
 /**
  * A utility for JAIFIleChooser that displays preview image, image file size, and image dimensions.
@@ -42,23 +44,23 @@ public class JAIFilePreviewer extends JPanel
      *
      */
     private static final long serialVersionUID = 1L;
-    static final String FILE_SIZE_PREFIX = "";
-    static final long SIZE_KB = 1024;
-    static final long SIZE_MB = SIZE_KB * 1024;
-    static final long SIZE_GB = SIZE_MB * 1024;
+    private static final String FILE_SIZE_PREFIX = "";
+    private static final long SIZE_KB = 1024;
+    private static final long SIZE_MB = SIZE_KB * 1024;
+    private static final long SIZE_GB = SIZE_MB * 1024;
 
     /**
      * Description of the Field
      */
-    protected File file;
+    private File file;
     /**
      * Description of the Field
      */
-    protected int iconSizeX = 150;
+    private final int iconSizeX = 150;
     /**
      * Description of the Field
      */
-    protected int iconSizeY = 100;
+    private final int iconSizeY = 100;
 
     private JAIReader.ImageInfo imageInfo;
     private int[] pageIndex = null;
@@ -219,13 +221,13 @@ public class JAIFilePreviewer extends JPanel
             return null;
         }
 
-        Image image = imageInfo.previewImage;
+        final BufferedImage image = imageInfo.previewImage;
 
         // Set image size label
-        final StringBuffer label = new StringBuffer(getFileSizeString(file.length()));
+        final StringBuilder label = new StringBuilder(getFileSizeString(file.length()));
         if (image != null) {
-            final int w = image.getWidth(null);
-            final int h = image.getHeight(null);
+            final int w = image.getWidth();
+            final int h = image.getHeight();
             if (w > 0 && h > 0) {
                 label.append("  [").append(w).append("x").append(h);
                 if (imageInfo.numberOfPages > 1) {
@@ -245,20 +247,26 @@ public class JAIFilePreviewer extends JPanel
                 }
             }
 
-            final int xSizeBuffered = image.getWidth(null);
-            final int ySizeBuffered = image.getHeight(null);
-            if (xSizeBuffered > iconSizeX || ySizeBuffered > iconSizeY) {
-                // Replace image by its scaled version
-                final double scaleX = (double) iconSizeX / xSizeBuffered;
-                final double scaleY = (double) iconSizeY / ySizeBuffered;
-                if (scaleX < scaleY) {
-                    image = image.getScaledInstance(iconSizeX, -1, Image.SCALE_DEFAULT);
+            final ImageIcon imageIcon;
+            {
+                final int xSizeBuffered = image.getWidth();
+                final int ySizeBuffered = image.getHeight();
+                if (xSizeBuffered > iconSizeX || ySizeBuffered > iconSizeY) {
+                    // Replace image by its scaled version
+                    final double scaleX = (double) iconSizeX / xSizeBuffered;
+                    final double scaleY = (double) iconSizeY / ySizeBuffered;
+                    if (scaleX < scaleY) {
+                        final int newYSize = (int) Math.floor(scaleX * ySizeBuffered);
+                        imageIcon = new ImageIcon(createThumbnail(image, iconSizeX, newYSize));
+                    } else {
+                        final int newXSize = (int) Math.floor(scaleY * xSizeBuffered);
+                        imageIcon = new ImageIcon(createThumbnail(image, newXSize, iconSizeY));
+                    }
                 } else {
-                    image = image.getScaledInstance(-1, iconSizeY, Image.SCALE_DEFAULT);
+                    imageIcon = new ImageIcon(image);
                 }
             }
 
-            final ImageIcon imageIcon = new ImageIcon(image);
             ImageIconLabel.setIcon(imageIcon);
         } else {
             ImageIconLabel.setIcon(null);
@@ -299,5 +307,138 @@ public class JAIFilePreviewer extends JPanel
         this.add(selectPagesButton, new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0
                 , GridBagConstraints.SOUTH, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
     }
+
+    /**
+     * [[from org.jdesktop.swingx.graphics]]
+     * <p>Returns a thumbnail of a source image.</p>
+     * <p>This method offers a good trade-off between speed and quality.
+     * The result looks better than
+     * {@code #createThumbnailFast(java.awt.image.BufferedImage, int)} when
+     * the new size is less than half the longest dimension of the source
+     * image, yet the rendering speed is almost similar.</p>
+     *
+     * @param image     the source image
+     * @param newWidth  the width of the thumbnail
+     * @param newHeight the height of the thumbnail
+     * @return a new compatible <code>BufferedImage</code> containing a
+     *         thumbnail of <code>image</code>
+     * @throws IllegalArgumentException if <code>newWidth</code> is larger than
+     *                                  the width of <code>image</code> or if code>newHeight</code> is larger
+     *                                  than the height of <code>image or if one the dimensions is not &gt; 0</code>
+     */
+    private static BufferedImage createThumbnail(BufferedImage image,
+                                                 int newWidth, int newHeight) {
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        boolean isTranslucent = image.getTransparency() != Transparency.OPAQUE;
+
+        if (newWidth >= width || newHeight >= height) {
+            throw new IllegalArgumentException("newWidth and newHeight cannot" +
+                    " be greater than the image" +
+                    " dimensions");
+        } else if (newWidth <= 0 || newHeight <= 0) {
+            throw new IllegalArgumentException("newWidth and newHeight must" +
+                    " be greater than 0");
+        }
+
+        BufferedImage thumb = image;
+        BufferedImage temp = null;
+
+        Graphics2D g2 = null;
+
+        try {
+            int previousWidth = width;
+            int previousHeight = height;
+
+            do {
+                if (width > newWidth) {
+                    width /= 2;
+                    if (width < newWidth) {
+                        width = newWidth;
+                    }
+                }
+
+                if (height > newHeight) {
+                    height /= 2;
+                    if (height < newHeight) {
+                        height = newHeight;
+                    }
+                }
+
+                if (temp == null || isTranslucent) {
+                    if (g2 != null) {
+                        //do not need to wrap with finally
+                        //outer finally block will ensure
+                        //that resources are properly reclaimed
+                        g2.dispose();
+                    }
+                    temp = createCompatibleImage(image, width, height);
+                    g2 = temp.createGraphics();
+                    g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                }
+                g2.drawImage(thumb, 0, 0, width, height,
+                        0, 0, previousWidth, previousHeight, null);
+
+                previousWidth = width;
+                previousHeight = height;
+
+                thumb = temp;
+            } while (width != newWidth || height != newHeight);
+        } finally {
+            g2.dispose();
+        }
+
+        if (width != thumb.getWidth() || height != thumb.getHeight()) {
+            temp = createCompatibleImage(image, width, height);
+            g2 = temp.createGraphics();
+
+            try {
+                g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+                g2.drawImage(thumb, 0, 0, width, height, 0, 0, width, height, null);
+            } finally {
+                g2.dispose();
+            }
+
+            thumb = temp;
+        }
+
+        return thumb;
+    }
+
+
+    /**
+     * [[from org.jdesktop.swingx.graphics]]
+     * <p>Returns a new compatible image of the specified width and height, and
+     * the same transparency setting as the image specified as a parameter.
+     * That is, the returned <code>BufferedImage</code> is compatible with
+     * the graphics hardware. If the method is called in a headless
+     * environment, then the returned BufferedImage will be compatible with
+     * the source image.</p>
+     *
+     * @param width  the width of the new image
+     * @param height the height of the new image
+     * @param image  the reference image from which the transparency of the new
+     *               image is obtained
+     * @return a new compatible <code>BufferedImage</code> with the same
+     *         transparency as <code>image</code> and the specified dimension
+     * @see java.awt.Transparency
+     */
+    private static BufferedImage createCompatibleImage(BufferedImage image,
+                                                       int width, int height) {
+        return isHeadless() ?
+                new BufferedImage(width, height, image.getType()) :
+                GraphicsEnvironment.getLocalGraphicsEnvironment().
+                        getDefaultScreenDevice().
+                        getDefaultConfiguration().
+                        createCompatibleImage(width, height, image.getTransparency());
+    }
+
+    private static boolean isHeadless() {
+        return GraphicsEnvironment.isHeadless();
+    }
+
 }
 
