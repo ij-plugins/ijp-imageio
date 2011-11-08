@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2011 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -33,11 +33,11 @@ import ij.io.Opener;
 import ij.io.TiffDecoder;
 import ij.measure.Calibration;
 
-import java.awt.*;
 import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+
 
 /**
  * Read image files using JAI image I/O codec
@@ -66,7 +66,7 @@ public class JAIReader {
      * @throws UnsupportedImageFileFormatException
      *                                        If file is not in a supported image format
      * @throws IOException                    In case of I/O error.
-     * @throws UnsupportedImageModelException when conversion failes.
+     * @throws UnsupportedImageModelException when conversion failed.
      */
     public static ImageInfo readFirstImageAndInfo(final File file)
             throws
@@ -91,15 +91,15 @@ public class JAIReader {
         imageInfo.numberOfPages = decoder.getNumPages();
         imageInfo.codecName = decoders[0];
 
-        if (renderedImage instanceof Image) {
-            imageInfo.previewImage = (Image) renderedImage;
+        if (renderedImage instanceof BufferedImage) {
+            imageInfo.previewImage = (BufferedImage) renderedImage;
         } else {
             final ColorModel cm = renderedImage.getColorModel();
             if (cm == null || cm instanceof FloatDoubleColorModel) {
                 final WritableRaster writableRaster
                         = ImagePlusCreator.forceTileUpdate(renderedImage);
                 final ImagePlus imagePlus = ImagePlusCreator.create(file.getName(), writableRaster, null);
-                imageInfo.previewImage = imagePlus.getImage();
+                imageInfo.previewImage = (BufferedImage) imagePlus.getImage();
             } else {
                 final Raster raster = renderedImage.getData();
                 WritableRaster writableRaster;
@@ -109,8 +109,7 @@ public class JAIReader {
                     writableRaster = raster.createCompatibleWritableRaster();
                 }
 
-                imageInfo.previewImage = new BufferedImage(cm, writableRaster, false,
-                        null);
+                imageInfo.previewImage = new BufferedImage(cm, writableRaster, false, null);
             }
         }
 
@@ -394,7 +393,8 @@ public class JAIReader {
      *  Basic image information including first image in the file.
      */
     public static class ImageInfo {
-        public Image previewImage;
+
+        public BufferedImage previewImage;
         public int numberOfPages;
         public String codecName;
     }
