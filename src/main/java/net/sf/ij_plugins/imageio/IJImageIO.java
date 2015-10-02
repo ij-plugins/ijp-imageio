@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2011 Jarek Sacha
+ * Copyright (C) 2002-2015 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -64,14 +64,30 @@ public class IJImageIO {
      * @param file          input image file.
      * @param combineStacks if {@code true} series of images of the same type and size will be combined into stacks (single ImagePlus).
      * @return Array of images read from the file. If images are of the same type and size they will
-     *         be combined into a stack and the returned ImagePlus array will have a single element
-     *         with stack size equal to the number of images in the input file.
+     * be combined into a stack and the returned ImagePlus array will have a single element
+     * with stack size equal to the number of images in the input file.
      * @throws IJImageIOException when images cannot be read or represented as ImagePlus.
      */
     public static ImagePlus[] read(final File file, final boolean combineStacks) throws IJImageIOException {
+        return read(file, combineStacks, null);
+    }
+
+    /**
+     * Read image from file using using {@code javax.imageio} and convert it to ImageJ representation. All
+     * images contained in the file ill be read.
+     *
+     * @param file          input image file.
+     * @param combineStacks if {@code true} series of images of the same type and size will be combined into stacks (single ImagePlus).
+     * @param pageIndex     index of pages to read from the file. if {@code null} all pages will be read.
+     * @return Array of images read from the file. If images are of the same type and size they will
+     * be combined into a stack and the returned ImagePlus array will have a single element
+     * with stack size equal to the number of images in the input file.
+     * @throws IJImageIOException when images cannot be read or represented as ImagePlus.
+     */
+    public static ImagePlus[] read(final File file, final boolean combineStacks, final int[] pageIndex) throws IJImageIOException {
 
         // Load images
-        final List<BufferedImage> bufferedImages = readAsBufferedImages(file);
+        final List<BufferedImage> bufferedImages = readAsBufferedImages(file, pageIndex);
 
         // Convert to ImageJ representation
         final List<ImagePlus> images = new ArrayList<ImagePlus>();
@@ -99,8 +115,8 @@ public class IJImageIO {
      *
      * @param file input image file.
      * @return Array of images read from the file. If images are of the same type and size they will
-     *         be combined into a stack and the returned ImagePlus array will have a single element
-     *         with stack size equal to the number of images in the input file.
+     * be combined into a stack and the returned ImagePlus array will have a single element
+     * with stack size equal to the number of images in the input file.
      * @throws IJImageIOException when images cannot be read or represented as ImagePlus.
      * @see #read(java.io.File, boolean)
      */
@@ -115,11 +131,26 @@ public class IJImageIO {
      *
      * @param file input image file.
      * @return Array of images read from the file. If images are of the same type and size they will
-     *         be combined into a stack and the returned ImagePlus array will have a single element
-     *         with stack size equal to the number of images in the input file.
+     * be combined into a stack and the returned ImagePlus array will have a single element
+     * with stack size equal to the number of images in the input file.
      * @throws IJImageIOException when I/O error occurs.
      */
     public static List<BufferedImage> readAsBufferedImages(final File file) throws IJImageIOException {
+        return readAsBufferedImages(file, null);
+    }
+
+    /**
+     * Read image from file using using {@code javax.imageio} and convert it to ImageJ representation. All
+     * images contained in the file ill be read.
+     *
+     * @param file      input image file.
+     * @param pageIndex index of pages to read from the file. if {@code null} all pages will be read.
+     * @return Array of images read from the file. If images are of the same type and size they will
+     * be combined into a stack and the returned ImagePlus array will have a single element
+     * with stack size equal to the number of images in the input file.
+     * @throws IJImageIOException when I/O error occurs.
+     */
+    public static List<BufferedImage> readAsBufferedImages(final File file, final int[] pageIndex) throws IJImageIOException {
 
         if (file == null) {
             throw new IllegalArgumentException("Argument 'file' cannot be null.");
@@ -132,13 +163,13 @@ public class IJImageIO {
             final List<ImageReader> readerList = getImageReaderList(iis);
 
             // Try available readers till one of them reads images with no errors
-            final StringBuffer errorBuffer = new StringBuffer();
+            final StringBuilder errorBuffer = new StringBuilder();
             List<BufferedImage> bufferedImages = null;
             for (int i = 0; bufferedImages == null && i < readerList.size(); i++) {
                 final ImageReader reader = readerList.get(i);
                 IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
                 try {
-                    bufferedImages = read(reader, iis);
+                    bufferedImages = read(reader, iis, pageIndex);
                 } catch (final Exception ex) {
                     errorBuffer.append(reader.getClass().getName()).append(": ").append(ex.getMessage()).append("\n");
                 }
@@ -274,7 +305,8 @@ public class IJImageIO {
 
 
     private static List<BufferedImage> read(final ImageReader reader,
-                                            final ImageInputStream iis)
+                                            final ImageInputStream iis,
+                                            int[] pageIndex)
             throws IJImageIOException {
 
         //                iis.reset();
@@ -295,16 +327,23 @@ public class IJImageIO {
         }
         final int minIndex = reader.getMinIndex();
 
+        if (pageIndex == null) {
+            pageIndex = new int[numImages - minIndex];
+            for (int i = minIndex; i < numImages; ++i) {
+                pageIndex[i] = i;
+            }
+        }
+
         // Read each image and add it to list 'images'
         final List<BufferedImage> images = new ArrayList<BufferedImage>();
-        for (int j = minIndex; j < numImages + minIndex; j++) {
-            IJ.showProgress(j - minIndex, numImages);
-            // Read using javax.imageio
+        for (int i = 0; i < pageIndex.length; i++) {
+            IJ.showProgress(i, pageIndex.length);
+
             final BufferedImage bi;
             try {
-                bi = reader.read(j);
+                bi = reader.read(i);
             } catch (final IOException e) {
-                throw new IJImageIOException("Error reading image with internal index " + j
+                throw new IJImageIOException("Error reading image with internal index " + i
                         + ". Min internal index is " + minIndex + ". ", e);
             }
 
@@ -314,6 +353,7 @@ public class IJImageIO {
 //            final IIOMetadata metadata = a.getMetadata();
 
             images.add(bi);
+            IJ.showProgress(i + 1, pageIndex.length);
         }
 
         return images;

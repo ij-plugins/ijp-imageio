@@ -2,7 +2,7 @@ import java.net.URL
 
 name         := "ij-plugins_imageio"
 organization := "net.sf.ij-plugins"
-version      := "1.10.0-SNAPSHOT" // + svnRevision.value.revision
+version := "2.0.0-SNAPSHOT" // + svnRevision.value.revision
 
 homepage := Some(new URL("https://ij-plugins.sf.net"))
 startYear := Some(2002)
@@ -21,7 +21,7 @@ description := "<html>" +
 
 libraryDependencies ++= Seq(
   "net.imagej"        % "ij"                % "1.49v",
-  "com.github.jai-imageio" % "jai-imageio-core" % "1.3.0",
+  //  "com.github.jai-imageio" % "jai-imageio-core" % "1.3.0",
   // Test
   "junit"             % "junit"             % "4.12" % "test",
   // JUnit runner SBT plugin

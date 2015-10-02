@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2011 Jarek Sacha
+ * Copyright (C) 2002-2015 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -27,12 +27,13 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
-import net.sf.ij.jaiio.JAIReader;
 
+import javax.swing.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 
 /**
  * Opens file chooser dialog and reads images using {@link IJImageIO}.
@@ -43,13 +44,11 @@ public class IJImageIOOpenPlugin implements PlugIn {
     private static final String TITLE = "Image IO Open";
 
     /**
-     * Argument passed to <code>run</code> method to use standard Image/J open dialog.
-     */
-    public static final String ARG_SIMPLE = "simple";
-    /**
      * Argument passed to <code>run</code> method to use open dialog with an image preview.
      */
     public static final String ARG_IMAGE_PREVIEW = "preview";
+
+    private static ImageFileChooser jaiChooser;
 
 
     /**
@@ -64,28 +63,27 @@ public class IJImageIOOpenPlugin implements PlugIn {
 
         IJ.showStatus("Starting \"" + TITLE + "\" plugin...");
 
-        final File[] files = ARG_IMAGE_PREVIEW.equalsIgnoreCase(arg)
+        final FilesAndPageIndex fpi = ARG_IMAGE_PREVIEW.equalsIgnoreCase(arg)
                 ? selectFilesWithPreview()
                 : selectFile();
 
-        final int[] pageIndex = null;
 
-        if (files.length < 1) {
+        if (fpi.files.length < 1) {
             return;
         }
 
-        final boolean combineIntoStack = files.length > 1
+        final boolean combineIntoStack = fpi.files.length > 1
                 && IJ.showMessageWithCancel(TITLE,
-                "" + files.length + " files selected.\n"
+                "" + fpi.files.length + " files selected.\n"
                         + "Should the images be combined into a stack?");
 
 
         if (combineIntoStack) {
             // Open images
 //            open(files, pageIndex, combineIntoStack);
-            final List<ImagePlus> imageList = new ArrayList<ImagePlus>();
-            for (final File file : files) {
-                final ImagePlus[] images = open(file);
+            final List<ImagePlus> imageList = new ArrayList<>();
+            for (final File file : fpi.files) {
+                final ImagePlus[] images = open(file, fpi.pageIndex);
                 imageList.addAll(Arrays.asList(images));
             }
 
@@ -108,8 +106,8 @@ public class IJImageIOOpenPlugin implements PlugIn {
                 }
             }
         } else {
-            for (final File file : files) {
-                final ImagePlus[] images = open(file);
+            for (final File file : fpi.files) {
+                final ImagePlus[] images = open(file, fpi.pageIndex);
                 for (final ImagePlus imp : images) {
                     imp.show();
                 }
@@ -120,30 +118,43 @@ public class IJImageIOOpenPlugin implements PlugIn {
     }
 
 
-    private File[] selectFilesWithPreview() {
-        throw new UnsupportedOperationException("Open dialog with preview not implemented.");
+    private FilesAndPageIndex selectFilesWithPreview() {
+        if (jaiChooser == null) {
+            jaiChooser = JAIFileChooserFactory.createJAIOpenChooser();
+            final String dirName = OpenDialog.getDefaultDirectory();
+            final File dirFile = new File(dirName != null ? dirName : ".");
+            jaiChooser.setCurrentDirectory(dirFile);
+            jaiChooser.setMultiSelectionEnabled(true);
+        }
+
+        if (jaiChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+            return new FilesAndPageIndex(jaiChooser.getSelectedFiles(), jaiChooser.getPageIndex());
+        } else {
+            return new FilesAndPageIndex(new File[0], null);
+        }
+
     }
 
     /*
     *
     */
-    private File[] selectFile() {
+    private FilesAndPageIndex selectFile() {
 
         final OpenDialog openDialog = new OpenDialog(TITLE, null);
         if (openDialog.getFileName() == null) {
-            return new File[0];
+            return new FilesAndPageIndex(new File[0], null);
         }
 
         final File[] files = new File[1];
         files[0] = new File(openDialog.getDirectory(), openDialog.getFileName());
-        return files;
+        return new FilesAndPageIndex(files, null);
     }
 
 
-    private ImagePlus[] open(final File file) {
+    private ImagePlus[] open(final File file, int[] pageIndex) {
         IJ.showStatus("Opening: " + file.getName());
         try {
-            return IJImageIO.read(file, true);
+            return IJImageIO.read(file, true, pageIndex);
         } catch (final Exception ex) {
             ex.printStackTrace();
             String message = "Error opening file: " + file.getName() + ".\n\n";
@@ -154,54 +165,54 @@ public class IJImageIOOpenPlugin implements PlugIn {
     }
 
 
-    /*
-    *
-    */
-    private void open(final File[] files, final int[] pageIndex, final boolean combineIntoStack) {
-
-        IJ.showStatus("Opening selected image file...");
-
-        List<ImagePlus> imageList = null;
-        if (combineIntoStack) {
-            imageList = new ArrayList<ImagePlus>();
-        }
-
-        for (final File file : files) {
-            IJ.showStatus("Opening: " + file.getName());
-            try {
-                final ImagePlus[] images = JAIReader.read(file, pageIndex);
-                if (images != null) {
-                    for (final ImagePlus image : images) {
-                        if (imageList != null) {
-                            imageList.add(image);
-                        } else {
-                            image.show();
-                        }
-                    }
-                }
-            } catch (final Exception ex) {
-                ex.printStackTrace();
-                String msg = "Error opening file: " + file.getName() + ".\n\n";
-                msg += (ex.getMessage() == null) ? ex.toString() : ex.getMessage();
-                IJ.showMessage(TITLE, msg);
-            }
-        }
-
-        if (imageList != null && imageList.size() > 0) {
-            final ImagePlus stackImage = combineImages(imageList);
-            if (stackImage != null) {
-                stackImage.show();
-            } else {
-                if (imageList.size() > 1) {
-                    IJ.showMessage(TITLE, "Unable to combine images into a stack.\n" +
-                            "Loading each separately.");
-                }
-                for (final ImagePlus anImageList : imageList) {
-                    anImageList.show();
-                }
-            }
-        }
-    }
+//    /*
+//    *
+//    */
+//    private void open(final File[] files, final int[] pageIndex, final boolean combineIntoStack) {
+//
+//        IJ.showStatus("Opening selected image file...");
+//
+//        List<ImagePlus> imageList = null;
+//        if (combineIntoStack) {
+//            imageList = new ArrayList<ImagePlus>();
+//        }
+//
+//        for (final File file : files) {
+//            IJ.showStatus("Opening: " + file.getName());
+//            try {
+//                final ImagePlus[] images = JAIReader.read(file, pageIndex);
+//                if (images != null) {
+//                    for (final ImagePlus image : images) {
+//                        if (imageList != null) {
+//                            imageList.add(image);
+//                        } else {
+//                            image.show();
+//                        }
+//                    }
+//                }
+//            } catch (final Exception ex) {
+//                ex.printStackTrace();
+//                String msg = "Error opening file: " + file.getName() + ".\n\n";
+//                msg += (ex.getMessage() == null) ? ex.toString() : ex.getMessage();
+//                IJ.showMessage(TITLE, msg);
+//            }
+//        }
+//
+//        if (imageList != null && imageList.size() > 0) {
+//            final ImagePlus stackImage = combineImages(imageList);
+//            if (stackImage != null) {
+//                stackImage.show();
+//            } else {
+//                if (imageList.size() > 1) {
+//                    IJ.showMessage(TITLE, "Unable to combine images into a stack.\n" +
+//                            "Loading each separately.");
+//                }
+//                for (final ImagePlus anImageList : imageList) {
+//                    anImageList.show();
+//                }
+//            }
+//        }
+//    }
 
 
     /**
@@ -248,5 +259,14 @@ public class IJImageIOOpenPlugin implements PlugIn {
         return firstImage;
     }
 
+    private static class FilesAndPageIndex {
+        final File[] files;
+        final int[] pageIndex;
+
+        public FilesAndPageIndex(File[] files, int[] pageIndex) {
+            this.files = files;
+            this.pageIndex = pageIndex;
+        }
+    }
 
 }

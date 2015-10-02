@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2010 Jarek Sacha
+ * Copyright (C) 2002-2015 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -26,7 +26,6 @@ import com.sun.media.jai.codec.ImageCodec;
 import com.sun.media.jai.codecimpl.util.RasterFactory;
 import ij.ImagePlus;
 import ij.process.*;
-import net.sf.ij.jaiio.JaiioUtil;
 
 import java.awt.*;
 import java.awt.color.ColorSpace;
@@ -41,11 +40,9 @@ import java.awt.image.*;
  */
 public class BufferedImageWrapper {
 
-    /*
+    /**
      *  Made private to prevent sub-classing.
      */
-
-
     private BufferedImageWrapper() {
     }
 
@@ -72,7 +69,7 @@ public class BufferedImageWrapper {
             case ImagePlus.GRAY8:
                 // Do not use color model provided by ImageProcessor since it can be 16 bit even for 8 bit ByteProcessor.
                 final ByteProcessor bp = (ByteProcessor) ip;
-                if (JaiioUtil.isBinary(bp) && preferBinary) {
+                if (IJIOUtils.isBinary(bp) && preferBinary) {
                     final ColorModel cm = ip.getColorModel();
                     if (cm instanceof IndexColorModel) {
                         return create(bp, (IndexColorModel) ip.getColorModel());

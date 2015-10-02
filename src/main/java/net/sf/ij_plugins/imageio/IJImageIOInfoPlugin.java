@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2015 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -54,7 +54,7 @@ public class IJImageIOInfoPlugin implements PlugIn {
         }
         message += "\n";
 
-        message += "Reader format names: ";
+        message += "Writer format names: ";
         final String[] writers = ImageIO.getWriterFormatNames();
         for (final String writer : writers) {
             message += writer + ", ";
@@ -72,6 +72,10 @@ public class IJImageIOInfoPlugin implements PlugIn {
             final Object o = categories.next();
             final IIOServiceProvider iioServiceProvider = (IIOServiceProvider) o;
             buf.append(iioServiceProvider.getDescription(null));
+            buf.append(" v.");
+            buf.append(iioServiceProvider.getVersion());
+            buf.append(" - ");
+            buf.append(iioServiceProvider.getVendorName());
             buf.append(" : ");
             buf.append(o.getClass().getName());
             buf.append("\n");
