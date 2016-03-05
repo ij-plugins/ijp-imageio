@@ -21,19 +21,39 @@
  */
 package net.sf.ij_plugins.imageio;
 
+import ij.process.ColorProcessor;
+import ij.process.ImageProcessor;
+import junit.framework.TestCase;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
 /**
+ * Date: Apr 20, 2006
+ * Time: 10:40:54 AM
+ *
  * @author Jarek Sacha
- * @since 11/20/10 8:34 AM
  */
-final class Console {
-    private Console() {
+public class ImagePlusFactoryTest extends TestCase {
+
+    public ImagePlusFactoryTest(final String test) {
+        super(test);
     }
 
-    public static void print(final String x) {
-        System.out.print(x);
-    }
 
-    public static void println(final String x) {
-        System.out.println(x);
+    public void testCreateProcessor1() throws Exception {
+        final File inFile = new File("../imageio/test/data/clown.png");
+        assertTrue("Input file exist: " + inFile.getAbsolutePath(), inFile.exists());
+
+        final BufferedImage src = ImageIO.read(inFile);
+        assertNotNull(src);
+
+        final ImageProcessor dest = ImagePlusFactory.createProcessor(src);
+        assertNotNull(dest);
+
+        assertTrue(dest instanceof ColorProcessor);
+        assertEquals(src.getWidth(), dest.getWidth());
+        assertEquals(src.getHeight(), dest.getHeight());
     }
 }

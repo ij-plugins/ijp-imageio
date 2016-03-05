@@ -1,0 +1,98 @@
+<!--
+  ~ Image/J Plugins
+  ~ Copyright (C) 2002-2016 Jarek Sacha
+  ~ Author's email: jsacha at users dot sourceforge dot net
+  ~
+  ~ This library is free software; you can redistribute it and/or
+  ~ modify it under the terms of the GNU Lesser General Public
+  ~ License as published by the Free Software Foundation; either
+  ~ version 2.1 of the License, or (at your option) any later version.
+  ~
+  ~ This library is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this library; if not, write to the Free Software
+  ~ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  ~
+  ~ Latest release available at http://sourceforge.net/projects/ij-plugins/
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+    <meta name="generator" content="HTML Tidy, see www.w3.org">
+    <title></title>
+</head>
+<body>
+<p>Image I/O library implements core functionality of <a href=
+        "http://ij-plugins.sourceforge.net/plugins/imageio">ij-plugins&nbsp;
+    Image I/O bundle</a>. The library adds to ImageJ support for
+    additional image file formats and their variants. Most important
+    additions include:<br>
+</p>
+
+<ul>
+    <li>Extended TIFF support</li>
+
+    <li style="list-style: none">
+        <ul>
+            <li><span class="bold"><b>Reading of compressed and tiled TIFF
+                files</b></span></li>
+
+            <li><span class="bold"><span class="bold"><b>Reading of TIFF
+                images with 1 bit, 8 bit, 16 bit, 32 bit, and float pixel formats
+                from compressed and tiled files</b></span>. Images are converted
+to closest corresponding ImageProcessor representation (). Note
+that related set of <a href=
+                    "http://rsb.info.nih.gov/ij/plugins/jimi.html" target="_top">JIMI
+                plugins</a> converts all images to 8 bit images (ByteProcessor)
+regardless of their actual pixel formats and does not support
+tiled images.</span></li>
+
+            <li><span class="bold"><span class="bold"><b>Saving as compressed
+                TIFF</b></span>; supports Packbit, JPEG, and ZIP compression.
+Saving with LZW compression is not supported for the usual reason
+of the patent on the algorithm.</span></li>
+
+            <li><span class="bold"><span class="bold"><b>Saving of binary
+                images in 1 bit compressed TIFF format</b></span>. Compared to
+saving as uncompressed 8bit images can get 1:100 or higher
+compression ratios.</span></li>
+        </ul>
+    </li>
+
+    <li><span class="bold"><span class="bold"><b>Correct reading of
+        16bit PNG images</b></span> (without conversion to 8
+bit)</span></li>
+
+    <li><span class="bold"><span class="bold"><b>Saving in PNG
+        format</b></span>, includes support for compression.</span></li>
+
+    <li><span class="bold"><span class="bold"><b>Saving in PNM
+        format</b></span>.</span></li>
+</ul>
+
+
+<p>Image I/O plugins can read/write image calibration information
+    from TIFF files. Standard TIFF image calibration tags are
+    supported (X_RESOLUTION, Y_RESOLUTION, RESOLUTION_UNIT).</p>
+
+<p>Additionally Image I/O can read images in BMP, FlashPiX, GIF,
+    JPEG, PNG, and PNM formats; and save images in BMP, and JPEG
+    formats.</p>
+
+<p>Image I/O makes use of <a href=
+        "http://java.sun.com/products/java-media/jai/index.html" target=
+        "_top">Java Advance Imaging</a> (JAI) codecs released by SUN as
+    <a href="http://developer.java.sun.com/developer/sampsource/jai/"
+       target="_top">uncommitted source code for JAI 1.1.1 codecs</a> .
+    The plugin bundle is completely self contained. All used codec
+    classes are included in the bundle and there is no need to
+    install JAI itself to use the bundle.</p>
+</body>
+</html>
+
+

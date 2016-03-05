@@ -20,27 +20,19 @@
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
 
-package net.sf.ij_plugins.imageio;
+package net.sf.ij_plugins.imageio.plugins.old;
 
 import ij.process.BinaryProcessor;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 
-import javax.imageio.spi.IIORegistry;
-import javax.imageio.spi.ImageWriterSpi;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
 
 /**
- * @author Jarek Sacha
  */
-final public class IJIOUtils {
-
-    private IJIOUtils() {
+public class JaiioUtil {
+    private JaiioUtil() {
     }
 
     /**
@@ -73,53 +65,4 @@ final public class IJIOUtils {
 
         return false;
     }
-
-    static public List<ImageWriterSpi> getImageWriterSpis() {
-        List<ImageWriterSpi> spis = new ArrayList<>();
-
-        final Iterator<ImageWriterSpi> categories = IIORegistry.getDefaultInstance().getServiceProviders(ImageWriterSpi.class, true);
-        while (categories.hasNext()) {
-            final ImageWriterSpi spi = categories.next();
-            if (spi.getFileSuffixes().length > 0) {
-                spis.add(spi);
-            }
-        }
-
-//        // Sort by file suffix
-//        Collections.sort(spis, (o1, o2) -> {
-//            String[] f1 = o1.getFileSuffixes();
-//            String[] f2 = o2.getFileSuffixes();
-//            return f1[0].compareTo(f2[0]);
-//        });
-        return spis;
-    }
-
-
-    /**
-     * Find the first {@link ImageWriterSpi} that has given {@code formatName}. Matches are done ignoring case.
-     *
-     * @param formatName desired writer format
-     * @return first matching {@link ImageWriterSpi} or empty.
-     */
-    static public Optional<ImageWriterSpi> writerSpiByFormatName(final String formatName) {
-
-        // Find first SPI matching the format name
-        final List<ImageWriterSpi> spis = IJIOUtils.getImageWriterSpis();
-        Optional<ImageWriterSpi> matchingSpi = Optional.empty();
-        for (ImageWriterSpi spi : spis) {
-            String[] formats = spi.getFormatNames();
-            for (String thisFormatName : formats) {
-                if (formatName.equalsIgnoreCase(thisFormatName)) {
-                    matchingSpi = Optional.of(spi);
-                    break;
-                }
-            }
-            if (matchingSpi.isPresent()) {
-                break;
-            }
-        }
-
-        return matchingSpi;
-    }
-
 }

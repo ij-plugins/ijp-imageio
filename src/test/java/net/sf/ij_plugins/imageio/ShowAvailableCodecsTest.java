@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2011 Jarek Sacha
+ * Copyright (C) 2002-2016 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -25,10 +25,11 @@ import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.imageio.spi.IIORegistry;
-import javax.imageio.spi.IIOServiceProvider;
 import javax.imageio.spi.ImageWriterSpi;
-import java.util.Iterator;
+import java.util.*;
 
 import static net.sf.ij_plugins.imageio.Console.println;
 
@@ -68,16 +69,70 @@ public class ShowAvailableCodecsTest {
 
 
     @Test
-    public void testServiceProviders() throws Exception {
+    public void testWriterServiceProviders() throws Exception {
 
-        final Iterator categories = IIORegistry.getDefaultInstance().getServiceProviders(ImageWriterSpi.class, true);
+        List<ImageWriterSpi> spis = IJIOUtils.getImageWriterSpis();
+
         println("Categories: ");
-        while (categories.hasNext()) {
-            final Object o = categories.next();
-            println("  " + o);
-            IIOServiceProvider iioServiceProvider = (IIOServiceProvider) o;
-            println("  " + iioServiceProvider + " : " + iioServiceProvider.getDescription(null));
+        for (ImageWriterSpi spi : spis) {
+            println("  " + Arrays.toString(spi.getFileSuffixes()) + " : " + spi.getDescription(null));
+        }
+    }
 
+
+    @Test
+    public void testWriterServiceProvidersInfo() throws Exception {
+
+        List<ImageWriterSpi> spis = IJIOUtils.getImageWriterSpis();
+
+        for (ImageWriterSpi spi : spis) {
+            ImageWriter writer = spi.createWriterInstance();
+            println("  " + Arrays.toString(spi.getFileSuffixes()) + " : " + spi.getDescription(null));
+            println("    canWriteSequence   : " + writer.canWriteSequence());
+            ImageWriteParam param = writer.getDefaultWriteParam();
+            println("    canWriteCompressed : " + param.canWriteCompressed());
+            if (param.canWriteCompressed()) {
+                String[] types = param.getCompressionTypes();
+                println("      CompressionTypes               : " + Arrays.toString(types));
+                param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                for (String type : types) {
+                    param.setCompressionType(type);
+                    println("        CompressionType   : " + type);
+                    println("        CompressionQuality: " + param.getCompressionQuality());
+                    if (param.getCompressionQualityDescriptions() != null) {
+                        println("          CompressionQualityDescriptions : " + Arrays.toString(param.getCompressionQualityDescriptions()));
+                        println("          CompressionQualityValues       : " + Arrays.toString(param.getCompressionQualityValues()));
+                    }
+                }
+            }
+            println("    canWriteProgressive: " + param.canWriteProgressive());
+        }
+    }
+
+
+    @Test
+    public void testGroupingWriters() {
+        String[] formats = ImageIO.getWriterFormatNames();
+        HashMap<ImageWriter, List<String>> writerMap = new HashMap<>();
+        for (String format : formats) {
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(format);
+            while (writers.hasNext()) {
+                ImageWriter writer = writers.next();
+                if (writerMap.containsKey(writer)) {
+                    List<String> names = writerMap.get(writer);
+                    names.add(format);
+                } else {
+                    List<String> l = new ArrayList<>();
+                    l.add(format);
+                    writerMap.put(writer, l);
+                }
+            }
+        }
+
+        // Print
+        for (ImageWriter writer : writerMap.keySet()) {
+            List<String> l = writerMap.get(writer);
+            System.out.println("Writer: " + l.size() + ": " + writer);
         }
     }
 
@@ -87,6 +142,18 @@ public class ShowAvailableCodecsTest {
         for (final String string : strings) {
             println("    " + string);
         }
+    }
+
+    private static List<ImageWriterSpi> serviceProviders() {
+        final Iterator<ImageWriterSpi> categories =
+                IIORegistry.getDefaultInstance().getServiceProviders(ImageWriterSpi.class, true);
+        ArrayList<ImageWriterSpi> r = new ArrayList<>();
+        while (categories.hasNext()) {
+            final ImageWriterSpi o = categories.next();
+            r.add(o);
+        }
+
+        return r;
     }
 
 

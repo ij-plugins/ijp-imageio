@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2015 Jarek Sacha
+ * Copyright (C) 2002-2016 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -24,22 +24,22 @@ package net.sf.ij_plugins.imageio;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import net.sf.ij.jaiio.BufferedImageCreator;
-import net.sf.ij.jaiio.ImagePlusCreator;
-import net.sf.ij.jaiio.UnsupportedImageModelException;
+import ij.process.ImageProcessor;
 
 import javax.imageio.*;
 import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 
@@ -50,10 +50,65 @@ import java.util.List;
  */
 public class IJImageIO {
 
+    // TODO: Simplify API of this class, there are too many very similar looking methods for 'write'
+
+    static {
+        // Try to register all available ImageIO SPIs
+        IIORegistry.getDefaultInstance().registerApplicationClasspathSpis();
+    }
+
     /**
      * Default constructor intentionally made private to prevent instantiation of the class.
      */
     private IJImageIO() {
+    }
+
+    /**
+     * Return array of strings representing all supported image file extension that this data set can read.
+     *
+     * @return array of supported file extension.
+     */
+    public static String[] supportedImageReaderExtensions() {
+        final String[] formatNames = ImageIO.getReaderFormatNames();
+        final Set<String> extensions = new TreeSet<>();
+        for (final String formatName : formatNames) {
+            final Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName(formatName);
+            while (readers.hasNext()) {
+                final ImageReader reader = readers.next();
+                final String[] suffixes = reader.getOriginatingProvider().getFileSuffixes();
+                if (suffixes != null) {
+                    for (final String suffix : suffixes) {
+                        if (suffix != null && suffix.trim().length() > 0) {
+                            extensions.add(suffix);
+                        }
+                    }
+                }
+            }
+        }
+
+        return extensions.toArray(new String[extensions.size()]);
+    }
+
+
+    public static String[] supportedImageWriterExtensions() {
+        final String[] formatNames = ImageIO.getWriterFormatNames();
+        final Set<String> extensions = new TreeSet<>();
+        for (final String formatName : formatNames) {
+            final Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(formatName);
+            while (writers.hasNext()) {
+                final ImageWriter writer = writers.next();
+                final String[] suffixes = writer.getOriginatingProvider().getFileSuffixes();
+                if (suffixes != null) {
+                    for (final String suffix : suffixes) {
+                        if (suffix != null && suffix.trim().length() > 0) {
+                            extensions.add(suffix);
+                        }
+                    }
+                }
+            }
+        }
+
+        return extensions.toArray(new String[extensions.size()]);
     }
 
 
@@ -94,8 +149,8 @@ public class IJImageIO {
         for (final BufferedImage bi : bufferedImages) {
             final ImagePlus imp;
             try {
-                imp = ImagePlusCreator.create(file.getName(), bi);
-            } catch (final UnsupportedImageModelException e) {
+                imp = ImagePlusFactory.create(file.getName(), bi);
+            } catch (final IJImageIOException e) {
                 throw new IJImageIOException("Unable to convert loaded image to ImagePlus. " + e.getMessage(), e);
             }
             // Add converted to the list
@@ -273,34 +328,205 @@ public class IJImageIO {
     }
 
 
-    public static boolean write(final ImagePlus imp, final String formatName, final File file, final boolean preferBinary) throws IJImageIOException {
+    public static void write(final ImagePlus imp, final File file, final ImageWriterSpi imageWriterSpi) throws IJImageIOException {
 
-        final BufferedImage bi = BufferedImageCreator.create(imp, 0, preferBinary);
+
+        final ImageStack stack = imp.getStack();
+        final BufferedImage[] images = new BufferedImage[stack.getSize()];
+        for (int i = 0; i < images.length; ++i) {
+            images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1));
+        }
+        write(images, file, imageWriterSpi, null);
+    }
+
+    public static void write(final ImagePlus imp,
+                             final File file,
+                             final ImageWriter writer,
+                             final IIOMetadata metadata,
+                             final ImageWriteParam parameters) throws IJImageIOException {
+
+
+        final ImageStack stack = imp.getStack();
+        final BufferedImage[] images = new BufferedImage[stack.getSize()];
+        for (int i = 0; i < images.length; ++i) {
+            images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1));
+        }
+        write(images, file, writer, metadata, parameters);
+    }
+
+    public static void write(ImagePlus imp, File file, String format) throws IJImageIOException {
+        Optional<ImageWriterSpi> spi = IJIOUtils.writerSpiByFormatName(format);
+
+        if (!spi.isPresent()) {
+            throw new IJImageIOException("Cannot find writer for format: '" + format + "'.");
+        }
+
+        write(imp, file, spi.get());
+
+    }
+
+
+    /**
+     * Write image to a file using specified format.
+     * Supported formats can be obtained calling {@link #supportedImageWriterExtensions()}.
+     * <p>
+     * TIFF images will be saved with LZW compression.
+     *
+     * @param image  image to be saved.
+     * @param file   file where to save the image.
+     * @param format image format (extension)
+     * @throws IJImageIOException writing fails or file format is not supported.
+     */
+    public static void write(final BufferedImage image, final File file, final String format) throws IJImageIOException {
+        write(image, file, format, null);
+    }
+
+
+    /**
+     * Write image to a file using specified format and also save the metadata if provided.
+     * Supported formats can be obtained calling {@link #supportedImageWriterExtensions()}.
+     * <p>
+     * TIFF images will be saved with LZW compression.
+     *
+     * @param images   images to be saved.
+     * @param file     file where to save the image.
+     * @param format   image format (extension)
+     * @param metadata image meta data
+     * @throws IJImageIOException writing fails or file format is not supported.
+     */
+    public static void write(final BufferedImage[] images, final File file, final String format, final IIOMetadata metadata)
+            throws IJImageIOException {
+
+        Validate.notEmpty(images, "Argument 'image' cannot be null");
+        Validate.notNull(file, "Argument 'file' cannot be null");
+        Validate.notNull(format, "Argument 'format' cannot be null");
+
+        Optional<ImageWriterSpi> spi = IJIOUtils.writerSpiByFormatName(format);
+
+        if (!spi.isPresent()) {
+            throw new IJImageIOException("Cannot find writer for format: '" + format + "'.");
+        }
+
+        write(images, file, spi.get(), metadata);
+    }
+
+    public static void write(final BufferedImage[] images, final File file, final ImageWriterSpi imageWriterSpi, final IIOMetadata metadata)
+            throws IJImageIOException {
+        Validate.notEmpty(images, "Argument 'image' cannot be null");
+        Validate.notNull(file, "Argument 'file' cannot be null");
+        Validate.notNull(imageWriterSpi, "Argument 'format' cannot be null");
+
+
+        final ImageWriter imageWriter;
         try {
-            return ImageIO.write(bi, formatName, file);
-        } catch (final IOException e) {
-            throw new IJImageIOException("Unable to write image file :" + file.getAbsolutePath()
-                    + "\n" + e.getMessage(), e);
+            imageWriter = imageWriterSpi.createWriterInstance();
+        } catch (IOException e) {
+            throw new IJImageIOException("Failed to create image writer. " + e.getMessage(), e);
+        }
+
+        final ImageWriteParam parameters = imageWriter.getDefaultWriteParam();
+
+        write(images, file, imageWriter, metadata, parameters);
+
+    }
+
+    public static void write(final BufferedImage[] images,
+                             final File file,
+                             final ImageWriter writer,
+                             final IIOMetadata metadata,
+                             final ImageWriteParam parameters)
+            throws IJImageIOException {
+        Validate.notEmpty(images, "Argument 'image' cannot be null");
+        Validate.notNull(file, "Argument 'file' cannot be null");
+        Validate.notNull(writer, "Argument 'format' cannot be null");
+
+
+        try (ImageOutputStream outputStream = new FileImageOutputStream(file)) {
+
+            writer.setOutput(outputStream);
+
+            if (images.length <= 0) {
+                throw new IllegalArgumentException("There are no input images to write");
+            } else if (images.length == 1) {
+
+                final IIOImage iioImage = new IIOImage(images[0], null, metadata);
+                writer.write(null, iioImage, parameters);
+            } else {
+
+                writer.prepareWriteSequence(metadata);
+                for (BufferedImage image : images) {
+                    final IIOImage iioImage = new IIOImage(image, null, metadata);
+
+                    // Write image
+                    writer.writeToSequence(iioImage, parameters);
+                }
+                writer.endWriteSequence();
+            }
+
+        } catch (final FileNotFoundException ex) {
+            throw new IJImageIOException("Error creating file output stream '" + file.getAbsolutePath() + ". "
+                    + Objects.toString(ex.getMessage()), ex);
+
+        } catch (final IOException ex) {
+            throw new IJImageIOException("Error writing image to file '" + file.getAbsolutePath() + ". "
+                    + Objects.toString(ex.getMessage()), ex);
+        }
+
+    }
+
+    /**
+     * Write image to a file using specified format and also save the metadata if provided.
+     * Supported formats can be obtained calling {@link #supportedImageWriterExtensions()}.
+     * <p>
+     * TIFF images will be saved with LZW compression.
+     *
+     * @param image    image to be saved.
+     * @param file     file where to save the image.
+     * @param format   image format (extension)
+     * @param metadata image meta data
+     * @throws IJImageIOException writing fails or file format is not supported.
+     */
+    public static void write(final BufferedImage image, final File file, final String format, final IIOMetadata metadata)
+            throws IJImageIOException {
+        write(new BufferedImage[]{image}, file, format, metadata);
+    }
+
+
+    /**
+     * Write image in TIFF format with  LZW compression using ImageIO
+     *
+     * @param file  File to save to.
+     * @param image Image to save.
+     * @throws IJImageIOException writing fails or file format is not supported.
+     */
+    public static void writeAsTiff(final ImagePlus image, final File file) throws IJImageIOException {
+
+        final String format = "tif";
+        final IIOMetadata metadata = TiffMetaDataFactory.createFrom(image);
+        if (image.getStackSize() == 1) {
+            write(BufferedImageFactory.createFrom(image.getProcessor()), file, format, metadata);
+        } else {
+            final ImageStack stack = image.getStack();
+            final BufferedImage[] images = new BufferedImage[stack.getSize()];
+            for (int i = 0; i < images.length; ++i) {
+                images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1));
+            }
+            write(images, file, format, metadata);
         }
     }
 
 
-    public static void write(final BufferedImage image,
-                             final ImageWriter writer,
-                             final File file,
-                             final ImageWriteParam parameters,
-                             final IIOMetadata metadata) throws IOException {
-        final ImageOutputStream outputStream = new FileImageOutputStream(file);
-        try {
-            writer.setOutput(outputStream);
+    /**
+     * Write image in TIFF format with  LZW compression using ImageIO
+     *
+     * @param file File to save to.
+     * @param ip   Image to save.
+     * @throws IJImageIOException writing fails or file format is not supported.
+     */
+    public static void writeAsTiff(final ImageProcessor ip, final File file) throws IJImageIOException {
 
-            final IIOImage iioImage = new IIOImage(image, null, metadata);
-
-            // Write image
-            writer.write(null, iioImage, parameters);
-        } finally {
-            outputStream.close();
-        }
+        final String format = "tif";
+        write(BufferedImageFactory.createFrom(ip), file, format);
     }
 
 

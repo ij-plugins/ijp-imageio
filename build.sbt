@@ -14,7 +14,7 @@ description := "<html>" +
     "<li>3D Toolkit - operations on stacks interpreted as 3D images, including morphological operations.</li>" +
     "<li>Color - color space conversion, color edge detection (color and multi-band images).</li>" +
     "<li>Filters - fast median filters and various anisotropic diffusion filters.</li>" +
-    "<li>Graphics - Texture Synthesis - A plugin to perform texture synthesis using the image quilting algorithm of Efros and Freeman.</li>" +
+  "<li>Graphics - Texture Synthesis - A plugins to perform texture synthesis using the image quilting algorithm of Efros and Freeman.</li>" +
     "<li>Segmentation - image segmentation through clustering, thresholding, and region growing.</li>" +
     "</ul>" +
     "</html>"
@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
   //  "com.github.jai-imageio" % "jai-imageio-core" % "1.3.0",
   // Test
   "junit"             % "junit"             % "4.12" % "test",
-  // JUnit runner SBT plugin
+  // JUnit runner SBT plugins
   "com.novocode"      % "junit-interface"   % "0.11" % "test->default"
 )
 
@@ -39,7 +39,7 @@ javacOptions ++= Seq("-Xlint")
 shellPrompt in ThisBuild := { state => "sbt:" + Project.extract(state).currentRef.project + "> "}
 
 //
-// Setup sbt-imagej plugin
+// Setup sbt-imagej plugins
 //
 enablePlugins(SbtImageJ)
 ijRuntimeSubDir := "sandbox"

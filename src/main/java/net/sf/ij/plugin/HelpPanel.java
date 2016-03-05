@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2016 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
  */
 package net.sf.ij.plugin;
 
-import net.sf.ij.swing.SwingUtils;
+import net.sf.ij_plugins.imageio.plugins.SwingUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.net.URL;
 
 /**
- * A panel displaying help for the Image I/O plugin bundle.
+ * A panel displaying help for the Image I/O plugins bundle.
  *
  * @author Jarek Sacha
  * @version $Revision: 1.5 $

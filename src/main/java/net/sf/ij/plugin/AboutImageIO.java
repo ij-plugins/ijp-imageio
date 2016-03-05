@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2016 Jarek Sacha
  * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
@@ -42,7 +42,7 @@ public class AboutImageIO implements PlugIn {
     public void run(final String string) {
 
         try {
-            IJ.showStatus("Starting \"" + TITLE + "\" plugin...");
+            IJ.showStatus("Starting \"" + TITLE + "\" plugins...");
             HelpPanel.showHelpWindow(false);
         } catch (final RuntimeException e) {
             final String msg = MESAGE + "\n" +

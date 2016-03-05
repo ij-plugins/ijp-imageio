@@ -1,6 +1,7 @@
-/***
+/*
  * Image/J Plugins
- * Copyright (C) 2002-2005 Jarek Sacha
+ * Copyright (C) 2002-2016 Jarek Sacha
+ * Author's email: jsacha at users dot sourceforge dot net
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,6 +26,8 @@ import ij.ImagePlus;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
 import junit.framework.TestCase;
+import net.sf.ij_plugins.imageio.IJImageIO;
+import net.sf.ij_plugins.imageio.plugins.old.JAIWriter;
 
 import java.io.File;
 import java.util.Arrays;
@@ -45,7 +48,7 @@ public final class JAIWriterTest extends TestCase {
         final String inFilePath = "test/data/bug_1434311/testG4.tif";
         final File inFile = new File(inFilePath);
 
-        final ImagePlus[] imps = JAIReader.read(inFile);
+        final ImagePlus[] imps = IJImageIO.read(inFile);
         assertNotNull(imps);
         assertEquals(1, imps.length);
 
@@ -61,7 +64,7 @@ public final class JAIWriterTest extends TestCase {
         outFile.deleteOnExit();
         writer.write(outFile.getAbsolutePath(), imps[0], true);
 
-        final ImagePlus[] imps2 = JAIReader.read(outFile);
+        final ImagePlus[] imps2 = IJImageIO.read(outFile);
         assertNotNull(imps2);
         assertEquals(1, imps2.length);
 
