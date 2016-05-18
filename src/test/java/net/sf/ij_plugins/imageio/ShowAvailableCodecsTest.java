@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,6 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageWriterSpi;
 import java.util.*;
 
@@ -48,10 +47,10 @@ public class ShowAvailableCodecsTest {
         printStrings("readerMIMETypes", readerMIMETypes);
 
         for (String readerMIMEType : readerMIMETypes) {
-            final Iterator iterator = ImageIO.getImageReadersByMIMEType(readerMIMEType);
+            final Iterator<ImageReader> iterator = ImageIO.getImageReadersByMIMEType(readerMIMEType);
             println("Reader MIME Type: " + readerMIMEType);
             while (iterator.hasNext()) {
-                ImageReader reader = (ImageReader) iterator.next();
+                ImageReader reader = iterator.next();
                 println("  format: " + reader.getFormatName());
                 println("  class:  " + reader.getClass().getName());
             }
@@ -71,7 +70,7 @@ public class ShowAvailableCodecsTest {
     @Test
     public void testWriterServiceProviders() throws Exception {
 
-        List<ImageWriterSpi> spis = IJIOUtils.getImageWriterSpis();
+        List<ImageWriterSpi> spis = IJImageOUtils.getImageWriterSpis();
 
         println("Categories: ");
         for (ImageWriterSpi spi : spis) {
@@ -83,7 +82,7 @@ public class ShowAvailableCodecsTest {
     @Test
     public void testWriterServiceProvidersInfo() throws Exception {
 
-        List<ImageWriterSpi> spis = IJIOUtils.getImageWriterSpis();
+        List<ImageWriterSpi> spis = IJImageOUtils.getImageWriterSpis();
 
         for (ImageWriterSpi spi : spis) {
             ImageWriter writer = spi.createWriterInstance();
@@ -143,18 +142,4 @@ public class ShowAvailableCodecsTest {
             println("    " + string);
         }
     }
-
-    private static List<ImageWriterSpi> serviceProviders() {
-        final Iterator<ImageWriterSpi> categories =
-                IIORegistry.getDefaultInstance().getServiceProviders(ImageWriterSpi.class, true);
-        ArrayList<ImageWriterSpi> r = new ArrayList<>();
-        while (categories.hasNext()) {
-            final ImageWriterSpi o = categories.next();
-            r.add(o);
-        }
-
-        return r;
-    }
-
-
 }

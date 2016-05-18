@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2016 Jarek Sacha
  * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
@@ -19,29 +19,39 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
-package net.sf.ij_plugins.imageio;
+
+package net.sf.ij_plugins.imageio.impl;
+
+import javax.swing.*;
+import java.io.File;
 
 /**
- * Exception specific to package net.sf.ij_plugins.imageio.
+ * Factory for creation of JAI IO customized file choosers.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
  */
-public class IJImageIOException extends Exception {
+
+public class ImageFileChooserFactory {
+
     /**
+     * Creates an image file open chooser with an image preview. File filters correspond to
+     * registered JAI decoders.
      *
+     * @return Description of the Returned Value
      */
-    private static final long serialVersionUID = 1L;
-
-    public IJImageIOException(final String message) {
-        super(message);
+    public static OpenImageFileChooser createJAIOpenChooser() {
+        return new OpenImageFileChooser(new File(".").getAbsoluteFile());
     }
 
-    public IJImageIOException(final Throwable cause) {
-        super(cause);
-    }
 
-    public IJImageIOException(final String message, final Throwable cause) {
-        super(message, cause);
+    /**
+     * Creates file save chooser with file filters corresponding to JAI codecs supporting writing
+     * (encoders).
+     *
+     * @return Description of the Returned Value
+     */
+    public static JFileChooser createJAISaveChooser() {
+
+        return new SaveImageFileChooser(new File(".").getAbsoluteFile());
     }
 }

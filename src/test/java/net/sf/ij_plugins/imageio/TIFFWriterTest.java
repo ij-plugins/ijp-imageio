@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2010 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,6 +32,8 @@ import javax.imageio.ImageWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import static org.junit.Assert.assertNotNull;
+
 
 /**
  * @author Jarek Sacha
@@ -58,6 +60,8 @@ public final class TIFFWriterTest {
     @Test
     public void testSomething() throws Exception {
         final ImageWriter writer = findWriter("TIFF");
+        assertNotNull("Writer", writer);
+
         final ImageWriteParam writerParam = writer.getDefaultWriteParam();
 
         System.out.println("");

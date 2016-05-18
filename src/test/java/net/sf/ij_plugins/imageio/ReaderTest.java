@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2010 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,6 +32,7 @@ import javax.imageio.stream.ImageInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -66,19 +67,16 @@ public class ReaderTest extends TestCase {
         assertTrue("Exist: " + file.getAbsolutePath(), file.exists());
 
         final ImageInputStream iis = ImageIO.createImageInputStream(file);
-        final Iterator readers = ImageIO.getImageReaders(iis);
+        final List<ImageReader> readers = IJImageIO.getImageReaders(iis);
 
-        final ArrayList readerList = new ArrayList();
+        assertTrue("At least one reader available", !readers.isEmpty());
         System.out.println("Readers: ");
-        while (readers.hasNext()) {
-            final ImageReader reader = (ImageReader) readers.next();
+        for (ImageReader reader : readers) {
             System.out.println(reader.getFormatName() + " : " + reader.getClass().getName());
-            readerList.add(reader);
         }
 
-        assertTrue("At least one reader available", !readerList.isEmpty());
 
-        final ImageReader reader = (ImageReader) readerList.get(0);
+        final ImageReader reader = readers.get(0);
 
         reader.setInput(iis, false, false);
         int numImages = reader.getNumImages(true);

@@ -1,31 +1,26 @@
+// @formatter:off
 import java.net.URL
 
-name         := "ij-plugins_imageio"
+name         := "ijp_imageio"
 organization := "net.sf.ij-plugins"
-version := "2.0.0-SNAPSHOT" // + svnRevision.value.revision
+version      := "2.0.0-SNAPSHOT"
 
-homepage := Some(new URL("https://ij-plugins.sf.net"))
-startYear := Some(2002)
-licenses := Seq(("LGPL-2.1", new URL("http://opensource.org/licenses/LGPL-2.1")))
-description := "<html>" +
-    "IJ Plugins Toolkit is a set of ImageJ plugins grouped into:" +
-    "<ul>" +
-    "<li>3D IO - import and export of data in 3D formats.</li>" +
-    "<li>3D Toolkit - operations on stacks interpreted as 3D images, including morphological operations.</li>" +
-    "<li>Color - color space conversion, color edge detection (color and multi-band images).</li>" +
-    "<li>Filters - fast median filters and various anisotropic diffusion filters.</li>" +
-  "<li>Graphics - Texture Synthesis - A plugins to perform texture synthesis using the image quilting algorithm of Efros and Freeman.</li>" +
-    "<li>Segmentation - image segmentation through clustering, thresholding, and region growing.</li>" +
-    "</ul>" +
-    "</html>"
+homepage     := Some(new URL("https://github.com/ij-plugins/ijp-imageio"))
+organizationHomepage := Some(url("http://ij-plugins.sf.net"))
+startYear    := Some(2002)
+licenses     := Seq(("LGPL-2.1", new URL("http://opensource.org/licenses/LGPL-2.1")))
+description  := "ijp-ImageIO enable reading and writing images using Java ImageIO codecs. " +
+  "The core ImageIO formats: JPEG, PNG, BMP, WBMP, and GIF. IJP-ImageIO is also using JAI codes adding support for " +
+  "TIFF, JPEG200, PNM, and PCX. TIFF supports reading and writing using various compression schemes: LZW, JPEG, ZIP, " +
+  "and Deflate. For more detailed information see IJP-ImageIO home page: http://ij-plugins.sf.net/plugins/imageio."
+
 
 libraryDependencies ++= Seq(
-  "net.imagej"        % "ij"                % "1.49v",
-  //  "com.github.jai-imageio" % "jai-imageio-core" % "1.3.0",
-  // Test
-  "junit"             % "junit"             % "4.12" % "test",
-  // JUnit runner SBT plugins
-  "com.novocode"      % "junit-interface"   % "0.11" % "test->default"
+  "com.github.jai-imageio" % "jai-imageio-core"     % "1.3.1",
+  "com.github.jai-imageio" % "jai-imageio-jpeg2000" % "1.3.0",
+  "net.imagej"             % "ij"                   % "1.49v",
+  "junit"                  % "junit"                % "4.12"  % "test",
+  "com.novocode"           % "junit-interface"      % "0.11"  % "test->default"
 )
 
 // fork a new JVM for 'run' and 'test:run'
@@ -33,19 +28,24 @@ fork := true
 
 // add a JVM option to use when forking a JVM for 'run'
 javaOptions ++= Seq("-Xmx2G", "-server")
-javacOptions ++= Seq("-Xlint")
+javacOptions in(Compile, compile) ++= Seq("-Xlint")
+javacOptions in(Compile, doc    ) ++= Seq(
+  "-windowtitle", "IJP-ImageIO API v." + version.value,
+  "-header",      "IJP-ImageIO API v." + version.value,
+  "-exclude",     "net.sf.ij_plugins.imageio.impl"
+)
 
 // Set the prompt (for this build) to include the project id.
-shellPrompt in ThisBuild := { state => "sbt:" + Project.extract(state).currentRef.project + "> "}
+shellPrompt in ThisBuild := { state => "sbt:" + Project.extract(state).currentRef.project + "> " }
 
 //
 // Setup sbt-imagej plugins
 //
 enablePlugins(SbtImageJ)
-ijRuntimeSubDir := "sandbox"
-ijPluginsSubDir := "ij-plugins"
+ijRuntimeSubDir         := "sandbox"
+ijPluginsSubDir         := "ij-plugins"
 ijCleanBeforePrepareRun := true
-cleanFiles += ijPluginsDir.value
+cleanFiles              += ijPluginsDir.value
 
 baseDirectory in run := baseDirectory.value / "sandbox"
 
@@ -58,14 +58,30 @@ publishMavenStyle := true
 crossPaths        := false
 // This forbids including Scala related libraries into the dependency
 autoScalaLibrary  := false
+
+publishArtifact in(Test, packageBin) := false
+publishArtifact in(Test, packageDoc) := false
+publishArtifact in(Test, packageSrc) := false
+
+publishTo <<= version {
+  version: String =>
+    if (version.contains("-SNAPSHOT"))
+      Some("Sonatype Nexus Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots")
+    else
+      Some("Sonatype Nexus Releases"  at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
+}
+
+// @formatter:on
+
 pomExtra :=
-    <scm>
-      <url>https://sourceforge.net/p/ij-plugins/code/</url>
-      <connection>scm:svn://svn.code.sf.net/p/ij-plugins/code/trunk/ij-plugins</connection>
-    </scm>
+  <scm>
+    <url>https://github.com/ij-plugins/ijp-imageio</url>
+    <connection>https://github.com/ij-plugins/ijp-imageio.git</connection>
+  </scm>
     <developers>
       <developer>
-        <id>jsacha</id>
+        <id>jpsacha</id>
         <name>Jarek Sacha</name>
+        <url>https://github.com/jpsacha</url>
       </developer>
     </developers>

@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -29,6 +29,8 @@ import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
 
+import static net.sf.ij_plugins.imageio.IJImageOUtils.isBinary;
+
 
 /**
  * Creates/converts BufferedImage objects from ImageJ's ImageProcessor or ImagePlus. All Image/J
@@ -36,6 +38,7 @@ import java.awt.image.*;
  *
  * @author Jarek Sacha
  */
+@SuppressWarnings("WeakerAccess")
 public class BufferedImageFactory {
 
     private static final byte[][] grayIndexCmaps = {
@@ -80,34 +83,7 @@ public class BufferedImageFactory {
         // Convert image processor
         switch (src.getType()) {
             case ImagePlus.GRAY8:
-                // Do not use color model provided by ImageProcessor since it can be 16 bit even for 8 bit ByteProcessor.
-                final ByteProcessor bp = (ByteProcessor) ip;
-                if (bp.isBinary() && preferBinary) {
-
-                    final int width = bp.getWidth();
-                    final int height = bp.getHeight();
-                    BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY);
-                    WritableRaster raster = bi.getRaster();
-                    for (int y = 0; y < height; y++) {
-                        for (int x = 0; x < width; x++) {
-                            raster.setSample(x, y, 0, (bp.get(x, y) == 0) ? 0 : 1);
-                        }
-                    }
-                    return bi;
-
-//                    IndexColorModel cm = new IndexColorModel(1, 2, new byte[]{0, (byte) 255}, new byte[]{0, (byte) 255}, new byte[]{0, (byte) 255});
-//                    return createFrom(bp, cm);
-
-//                    final ColorModel cm = ip.getColorModel();
-//                    if (cm instanceof IndexColorModel) {
-//                        return createFrom(bp, (IndexColorModel) cm);
-//                    } else {
-//                        throw new RuntimeException("Expecting 'IndexColorModel', got: " + cm);
-//                    }
-                } else {
-                    return createFrom(bp);
-                }
-
+                return createFrom((ByteProcessor) ip, preferBinary);
             case ImagePlus.GRAY16:
                 return createFrom((ShortProcessor) ip);
             case ImagePlus.GRAY32:
@@ -159,12 +135,26 @@ public class BufferedImageFactory {
      * @see #createGraphicsCompatibleFrom(ij.process.ImageProcessor)
      */
     public static BufferedImage createFrom(final ImageProcessor src) {
+        return createFrom(src, false);
+    }
+
+    /**
+     * Create BufferedImage from ImageProcessor.
+     * If input is an instance of ByteProcessor it will share pixels with output.
+     * If this returned image is intended for display, it is safer to use {@link #createGraphicsCompatibleFrom(ij.process.ImageProcessor)}.
+     *
+     * @param src          ImageProcessor source.
+     * @param preferBinary Prefer to save two level binary images using 1 bit per pixel.
+     * @return new BufferedImage.
+     * @see #createGraphicsCompatibleFrom(ij.process.ImageProcessor)
+     */
+    public static BufferedImage createFrom(final ImageProcessor src, final boolean preferBinary) {
         Validate.notNull(src);
 
         if (src instanceof BinaryProcessor) {
             return createFrom((BinaryProcessor) src);
         } else if (src instanceof ByteProcessor) {
-            return createFrom((ByteProcessor) src);
+            return createFrom((ByteProcessor) src, preferBinary);
         } else if (src instanceof ShortProcessor) {
             return createFrom((ShortProcessor) src);
         } else if (src instanceof FloatProcessor) {
@@ -232,15 +222,48 @@ public class BufferedImageFactory {
      * @see ij.process.ByteProcessor#createBufferedImage()
      */
     public static BufferedImage createFrom(final ByteProcessor src) {
-        final byte[] r = new byte[256];
-        final byte[] g = new byte[256];
-        final byte[] b = new byte[256];
-        for (int i = 0; i < 256; ++i) {
-            r[i] = g[i] = b[i] = (byte) (i & 0xff);
-        }
-        final IndexColorModel icm = new IndexColorModel(8, 256, r, g, b);
+        return createFrom(src, false);
+    }
 
-        return createFrom(src, icm);
+    public static BufferedImage createFrom(final ByteProcessor src, final boolean preferBinary) {
+
+        // Do not use color model provided by ImageProcessor since it can be 16 bit even for 8 bit ByteProcessor.
+        if (isBinary(src) && preferBinary) {
+
+            final int width = src.getWidth();
+            final int height = src.getHeight();
+            BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_BINARY);
+            WritableRaster raster = bi.getRaster();
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    raster.setSample(x, y, 0, (src.get(x, y) == 0) ? 0 : 1);
+                }
+            }
+            return bi;
+
+//                    IndexColorModel cm = new IndexColorModel(1, 2, new byte[]{0, (byte) 255}, new byte[]{0, (byte) 255}, new byte[]{0, (byte) 255});
+//                    return createFrom(bp, cm);
+
+//                    final ColorModel cm = ip.getColorModel();
+//                    if (cm instanceof IndexColorModel) {
+//                        return createFrom(bp, (IndexColorModel) cm);
+//                    } else {
+//                        throw new RuntimeException("Expecting 'IndexColorModel', got: " + cm);
+//                    }
+        } else {
+
+            final byte[] r = new byte[256];
+            final byte[] g = new byte[256];
+            final byte[] b = new byte[256];
+            for (int i = 0; i < 256; ++i) {
+                r[i] = g[i] = b[i] = (byte) (i & 0xff);
+            }
+            final IndexColorModel icm = new IndexColorModel(8, 256, r, g, b);
+
+            return createFrom(src, icm);
+        }
+
+
     }
 
 

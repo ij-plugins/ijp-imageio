@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +28,8 @@ import ij.ImageStack;
 import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
 import net.sf.ij_plugins.imageio.IJImageIO;
+import net.sf.ij_plugins.imageio.impl.ImageFileChooserFactory;
+import net.sf.ij_plugins.imageio.impl.OpenImageFileChooser;
 
 import javax.swing.*;
 import java.io.File;
@@ -135,7 +137,7 @@ public class ImageIOOpenPlugin implements PlugIn {
         final File dirFile = new File(dirName != null ? dirName : ".");
         jaiChooser.setCurrentDirectory(dirFile);
 
-        if (jaiChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+        if (jaiChooser.showOpenDialog(IJ.getInstance()) == JFileChooser.APPROVE_OPTION) {
             OpenDialog.setDefaultDirectory(jaiChooser.getSelectedFile().getParentFile().getAbsolutePath());
             return new FilesAndPageIndex(jaiChooser.getSelectedFiles(), jaiChooser.getPageIndex());
         } else {

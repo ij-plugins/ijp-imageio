@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,248 +28,216 @@ import ij.Macro;
 import ij.WindowManager;
 import ij.io.OpenDialog;
 import ij.plugin.PlugIn;
-import net.sf.ij_plugins.imageio.BufferedImageFactory;
 import net.sf.ij_plugins.imageio.IJImageIO;
 import net.sf.ij_plugins.imageio.IJImageIOException;
+import net.sf.ij_plugins.imageio.TiffMetaDataFactory;
+import net.sf.ij_plugins.imageio.impl.EncoderParamDialog;
+import net.sf.ij_plugins.imageio.impl.ImageFileChooserFactory;
+import net.sf.ij_plugins.imageio.impl.ImageIOWriterFileFilter;
+import net.sf.ij_plugins.imageio.impl.SwingUtils;
 
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+
+import static net.sf.ij_plugins.imageio.IJImageOUtils.isBinary;
+import static net.sf.ij_plugins.imageio.impl.ImageIOWriter.askForCompressionParams;
 
 /**
  * @author Jarek Sacha
  */
 public final class ImageIOSaveAsPlugin implements PlugIn {
 
-    // TODO: add support for use in macros. Arecord/restore macro options as GenericDialog would do.
-
     public static final String PNG = "png";
     public static final String PNM = "pnm";
     public static final String TIFF = "tiff";
     public static final String JPEG = "jpeg";
-
-    public static final String MACRO_OPTION_FILENAME = "ImageIOSaveAs.fileName";
-    public static final String MACRO_OPTION_CODECNAME = "ImageIOSaveAs.codecName";
-
-    private static final String TITLE = "ImageIO Save As ...";
-
-    private static JFileChooser fileChooser;
-    private EncoderParamDialog paramDialog;
+    private static final String TITLE = "IJP-ImageIO Save As ...";
+    private static JFileChooser _fileChooser;
 
     public void run(final String arg) {
         IJ.showStatus("Starting \"" + TITLE + "\" plugins...");
 
-        boolean useOneBitCompression = false;
+        // Check if there is an image to save
+        final ImagePlus imp = WindowManager.getCurrentImage();
+        if (imp == null) {
+            IJ.noImage();
+            return;
+        }
+
         try {
-            final ImagePlus imp = WindowManager.getCurrentImage();
-            if (imp == null) {
-                IJ.noImage();
-                return;
-            }
 
-            String fileName = null;
-            ImageWriteParam writerParam = null;
-
-//            // Check with ImageJ if macro options are present
-//            final String macroOptions = Macro.getOptions();
-//            if (macroOptions != null) {
-//                // Running from macro so try to extract macro options
-//                codecName = Macro.getValue(macroOptions, MACRO_OPTION_CODECNAME, null);
-//                fileName = Macro.getValue(macroOptions, MACRO_OPTION_FILENAME, null);
-//
-//                // Sanity checks
-//                if (codecName == null) {
-//                    IJ.showMessage(TITLE,
-//                            "Macro option '" + MACRO_OPTION_CODECNAME + "' is missing");
-//                    Macro.abort();
-//                    return;
-//                }
-//                if (fileName == null) {
-//                    IJ.showMessage(TITLE,
-//                            "Macro option '" + MACRO_OPTION_FILENAME + "' is missing");
-//                    Macro.abort();
-//                    return;
-//                }
-//            } else {
-
-            // Get fileName and codecName showing save dialog
-            if (fileChooser == null) {
-                fileChooser = ImageFileChooserFactory.createJAISaveChooser();
-                final String dirName = OpenDialog.getDefaultDirectory();
-                fileChooser.setCurrentDirectory(new File(dirName != null ? dirName : "."));
-            }
-            final String dirName = OpenDialog.getDefaultDirectory();
-            fileChooser.setCurrentDirectory(new File(dirName != null ? dirName : "."));
-
-            String imageTitle = imp.getTitle();
-            File file;
-            if (imageTitle != null) {
-                file = new File(imp.getTitle());
-                fileChooser.setSelectedFile(file);
-            } else {
-                IJ.error("Image title cannot be null");
-                Macro.abort();
-                return;
-            }
-
-            // FIXME: use ImageJ window as parent
-            if (fileChooser.showSaveDialog(null) != JFileChooser.APPROVE_OPTION) {
-                Macro.abort();
-                return;
-            }
-
-            OpenDialog.setDefaultDirectory(fileChooser.getSelectedFile().getParentFile().getAbsolutePath());
-
-            ImageWriterSpi spi = null;
-            final FileFilter fileFilter = fileChooser.getFileFilter();
-            if (fileFilter instanceof ImageFileFilter) {
-                final ImageFileFilter imageFileFilter = (ImageFileFilter) fileFilter;
-                spi = imageFileFilter.getSPI();
-//                Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
-            } else {
-                IJ.log(TITLE + " - Internal error unexpected FileChooser filter: " + fileFilter);
-            }
-
-            if (spi == null) {
-                IJ.showMessage(TITLE, "File format not selected. File not saved.");
-                Macro.abort();
-                return;
-            }
-
-            file = fileChooser.getSelectedFile();
-//            if (!file.getName().contains(".")) {
-//                file = new File(file.getParent(),
-//                        file.getName() + "." + getFileExtension(codecName));
-//            }
-//            fileName = file.getAbsolutePath();
-
-//                Recorder.recordOption(MACRO_OPTION_CODECNAME, codecName);
-//                Recorder.recordOption(MACRO_OPTION_FILENAME, fileName);
-//
-            // Ask for file options
-//                if (codecName.equalsIgnoreCase(TIFF)) {
-//                    // TODO: detect if image is binary and give an option to save as 1bit compressed image
-//                    if (paramDialog == null) {
-//                        paramDialog = new EncoderParamDialog();
-//                    }
-//                    SwingUtils.centerOnScreen(paramDialog, false);
-//                    paramDialog.setVisible(true);
-//                    if (!paramDialog.isAccepted()) {
-//                        Macro.abort();
-//                        IJ.showMessage(TITLE, "Option dialog cancelled, image not saved.");
-//                        return;
-//                    }
-//
-//                    final boolean isBinary = imp.getType() != ImagePlus.COLOR_256
-//                            && JaiioUtil.isBinary(imp.getProcessor());
-//
-//                    if (isBinary) {
-//                        useOneBitCompression = IJ.showMessageWithCancel("Save as TIFF",
-//                                "Image seems to be two level binary. Do you want to save it using 1 bit per pixel?");
-//                    }
-//
-//                    encodeParam = paramDialog.getImageEncodeParam(useOneBitCompression);
-//                }
-//
-//            }
-            if ("com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriter".equals(spi.getPluginClassName())) {
-                IJ.log("TODO: show TIFF options dialog");
-                // TODO: detect if image is binary and give an option to save as 1bit compressed image
-                if (paramDialog == null) {
-                    paramDialog = new EncoderParamDialog();
-                }
-                SwingUtils.centerOnScreen(paramDialog, false);
-                paramDialog.setVisible(true);
-                if (!paramDialog.isAccepted()) {
-                    Macro.abort();
-                    IJ.showMessage(TITLE, "Option dialog cancelled, image not saved.");
+            // Ask for file
+            final FileChooserResult fcSelection;
+            {
+                final Optional<FileChooserResult> fcSelectionOpt = askForFile(imp.getTitle());
+                if (fcSelectionOpt.isPresent()) {
+                    fcSelection = fcSelectionOpt.get();
+                } else {
                     return;
                 }
-
-                final boolean isBinary = imp.getType() != ImagePlus.COLOR_256 && imp.getProcessor().isBinary();
-
-                if (isBinary) {
-                    useOneBitCompression = IJ.showMessageWithCancel("Save as TIFF",
-                            "Image seems to be two level binary. Do you want to save it using 1 bit per pixel?");
-                }
-
-//                com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriterSpi
-//                com.sun.media.imageioimpl.plugins.tiff.TIFFImageWriter
-
-                writerParam = paramDialog.getImageWriteParam(useOneBitCompression);
-//                spi.createWriterInstance().setOutput();
             }
 
-
-            //
-            // Now ready to write the image to a file
-            //
+            // Create writer
+            final File file = fcSelection.file;
+            final ImageWriterSpi spi = fcSelection.spi;
+            final ImageWriter writer;
             try {
-                IJ.showStatus("Writing image as " + spi.getDescription(Locale.US) + " to " + file.getName());
-                IJ.log("Saving using SPI: " + spi.getPluginClassName());
-                IJ.log("Saving using SPI: " + spi.getClass().getCanonicalName());
-
-                ImageWriter writer = null;
-                try {
-                    writer = spi.createWriterInstance();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                final BufferedImage[] bis = new BufferedImage[imp.getNSlices()];
-                for (int s = 0; s < imp.getNSlices(); s++) {
-                    bis[s] = BufferedImageFactory.createFrom(imp, s, useOneBitCompression);
-                }
-
-                IJImageIO.write(bis, file.getAbsoluteFile(), writer, null, writerParam);
-
-
-            } catch (final IJImageIOException e) {
-                e.printStackTrace();
-                Macro.abort();
-                String msg = "Error writing file: " + file.getAbsolutePath() + ".\n\n";
-                msg += (e.getMessage() == null) ? e.toString() : e.getMessage();
-                IJ.showMessage(TITLE, msg);
-                IJ.log(e.toString());
+                writer = spi.createWriterInstance();
+            } catch (IOException e) {
+                throw new IJImageIOException(
+                        "Error creating image writer '" + spi.getDescription(Locale.US) + "'. " + e.getMessage());
             }
 
+            // Ask for file options
+            final WriterOptions writerOptions;
+            {
+                final Optional<WriterOptions> writerOptionsOpt = askForWriterOptions(imp, writer);
+                if (!writerOptionsOpt.isPresent()) {
+                    return;
+                } else {
+                    writerOptions = writerOptionsOpt.get();
+                }
+            }
 
+            // Write the image to a file
+            IJ.showStatus("Writing image as " + spi.getDescription(Locale.US) + " to " + file.getName());
+            try {
+                if (IJ.debugMode) {
+                    IJ.log("Saving using SPI   : " + spi.getPluginClassName());
+                    IJ.log("Saving using SPI   : " + spi.getClass().getCanonicalName());
+                    IJ.log("Saving using writer: " + writer.getClass().getCanonicalName());
+                }
+                IJImageIO.write(imp, file, writer, writerOptions.metadata, writerOptions.param,
+                        writerOptions.useOneBitCompression);
+            } catch (final IJImageIOException e) {
+                throw new IJImageIOException(
+                        "Error writing file: " + file.getAbsolutePath() + ".\n\n" + Objects.toString(e.getMessage()),
+                        e);
+            }
+        } catch (IJImageIOException ex) {
+            ex.printStackTrace();
+            IJ.showMessage(TITLE, ex.getMessage());
         } finally {
             IJ.showStatus("");
         }
     }
 
-//    /**
-//     */
-//    private static void write(final ImagePlus imp,
-//                              final String fileName,
-//                              final ImageWriterSpi spi,
-//                              final ImageEncodeParam encodeParam,
-//                              final boolean useOneBitCompression)
-//            throws IOException {
-//
-//        final ImageIOWriter imageioWriter = new ImageIOWriter();
-//        imageioWriter.setFormatName(codecName);
-//        imageioWriter.setImageEncodeParam(encodeParam);
-//        imageioWriter.write(fileName, imp, useOneBitCompression);
-//    }
+    private Optional<FileChooserResult> askForFile(final String imageTitle) {
 
-    /*
-     *  Return typically used extension for given codec name.
-     */
-    private String getFileExtension(final String codecName) {
-        if (codecName.compareToIgnoreCase(TIFF) == 0) {
-            return "tif";
-        } else if (codecName.compareToIgnoreCase(JPEG) == 0) {
-            return "jpg";
+        // Get fileName and codecName showing save dialog
+        final String dirName = OpenDialog.getDefaultDirectory();
+        fileChooser().setCurrentDirectory(new File(dirName != null ? dirName : "."));
+
+        File file;
+        if (imageTitle != null) {
+            file = new File(imageTitle);
+            fileChooser().setSelectedFile(file);
         } else {
-            return codecName.toLowerCase();
+            IJ.error("Image title cannot be null");
+            return Optional.empty();
+        }
+
+        if (fileChooser().showSaveDialog(IJ.getInstance()) != JFileChooser.APPROVE_OPTION) {
+            return Optional.empty();
+        }
+
+        OpenDialog.setDefaultDirectory(fileChooser().getSelectedFile().getParentFile().getAbsolutePath());
+
+        final ImageWriterSpi spi;
+        final FileFilter fileFilter = fileChooser().getFileFilter();
+        if (fileFilter instanceof ImageIOWriterFileFilter) {
+            final ImageIOWriterFileFilter imageFileFilter = (ImageIOWriterFileFilter) fileFilter;
+            spi = imageFileFilter.getSPI();
+        } else {
+            IJ.log(TITLE + " - Internal error unexpected FileChooser filter: " + fileFilter);
+            spi = null;
+        }
+
+        if (spi == null) {
+            IJ.showMessage(TITLE, "File format not selected. File not saved.");
+            return Optional.empty();
+        }
+
+        file = fileChooser().getSelectedFile();
+
+        return Optional.of(new FileChooserResult(file, spi));
+    }
+
+    private JFileChooser fileChooser() {
+        if (_fileChooser == null) {
+            _fileChooser = ImageFileChooserFactory.createJAISaveChooser();
+            final String dirName = OpenDialog.getDefaultDirectory();
+            _fileChooser.setCurrentDirectory(new File(dirName != null ? dirName : "."));
+        }
+        return _fileChooser;
+    }
+
+    private Optional<WriterOptions> askForWriterOptions(final ImagePlus imp, final ImageWriter writer) {
+
+        final String spiPluginClassName = writer.getOriginatingProvider().getPluginClassName();
+        final ImageWriteParam writerParam;
+        final boolean useOneBitCompression;
+        final IIOMetadata metadata;
+        if (spiPluginClassName != null && spiPluginClassName.endsWith(".TIFFImageWriter")) {
+
+            // Detect if image is binary and give an option to save as 1bit compressed image
+            useOneBitCompression = isBinary(imp) &&
+                    IJ.showMessageWithCancel(
+                            "Save as TIFF",
+                            "Image seems to be two level binary. Do you want to save it using 1 bit per pixel?");
+
+            final EncoderParamDialog paramDialog = new EncoderParamDialog(useOneBitCompression);
+            SwingUtils.centerOnScreen(paramDialog, false);
+            paramDialog.setVisible(true);
+            if (!paramDialog.isAccepted()) {
+                Macro.abort();
+                IJ.showMessage(TITLE, "Option dialog cancelled, image not saved.");
+                return Optional.empty();
+            }
+
+            writerParam = paramDialog.getImageWriteParam(useOneBitCompression);
+            metadata = TiffMetaDataFactory.createFrom(imp);
+        } else {
+            final Optional<ImageWriteParam> writerParamOpt = askForCompressionParams(writer, TITLE, null);
+            if (!writerParamOpt.isPresent()) {
+                return Optional.empty();
+            }
+            writerParam = writerParamOpt.get();
+            useOneBitCompression = false;
+            metadata = null;
+        }
+
+        return Optional.of(new WriterOptions(writerParam, useOneBitCompression, metadata));
+    }
+
+    private class FileChooserResult {
+        final public File file;
+        final public ImageWriterSpi spi;
+
+        FileChooserResult(final File file, final ImageWriterSpi spi) {
+            this.file = file;
+            this.spi = spi;
+        }
+    }
+
+    private class WriterOptions {
+        final ImageWriteParam param;
+        final boolean useOneBitCompression;
+        final IIOMetadata metadata;
+
+        WriterOptions(final ImageWriteParam param, final boolean useOneBitCompression, final IIOMetadata metadata) {
+            this.param = param;
+            this.useOneBitCompression = useOneBitCompression;
+            this.metadata = metadata;
         }
     }
 }

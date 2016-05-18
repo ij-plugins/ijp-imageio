@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2016 Jarek Sacha
  * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
@@ -19,29 +19,32 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
-package net.sf.ij_plugins.imageio;
+package net.sf.ij_plugins.imageio.impl;
+
+import java.awt.*;
+
 
 /**
- * Exception specific to package net.sf.ij_plugins.imageio.
- *
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
  */
-public class IJImageIOException extends Exception {
+public class SwingUtils {
+
     /**
+     * Center window on screen.
      *
+     * @param window    window to be centered.
+     * @param packFrame if <code>true</code> call window's <code>pack()</code>
+     *                  method before centering.
      */
-    private static final long serialVersionUID = 1L;
+    public static void centerOnScreen(final Window window, final boolean packFrame) {
+        //Validate frames that have preset sizes
+        //Pack frames that have useful preferred size info, e.g. from their layout
+        if (packFrame) {
+            window.pack();
+        } else {
+            window.validate();
+        }
 
-    public IJImageIOException(final String message) {
-        super(message);
-    }
-
-    public IJImageIOException(final Throwable cause) {
-        super(cause);
-    }
-
-    public IJImageIOException(final String message, final Throwable cause) {
-        super(message, cause);
+        window.setLocationRelativeTo(null);
     }
 }

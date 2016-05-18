@@ -1,21 +1,21 @@
 /***
  * Image/J Plugins
  * Copyright (C) 2002-2005 Jarek Sacha
- *
+ * <p>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * <p>
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
 package net.sf.ij_plugins.imageio;
@@ -28,7 +28,7 @@ import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Iterator;
+import java.util.List;
 
 /**
  * ImageJ 1.33 and ij-imageio v.1.2.4 cannot read TIFF images created by Adobe Photshop 7 using
@@ -47,8 +47,7 @@ public class AdobeDeflateTest extends TestCase {
     }
 
     /**
-     * Test if javax.imageio can access can read TIFF image with AdobeDeflation compression. This
-     * requires jai-imageio.
+     * Test if javax.imageio can access can read TIFF image with AdobeDeflation compression.
      *
      * @throws Exception
      */
@@ -71,8 +70,7 @@ public class AdobeDeflateTest extends TestCase {
 
 
     /**
-     * Test if javax.imageio can access can read TIFF image with AdobeDeflation compression. This
-     * requires jai-imageio.
+     * Test if javax.imageio can access can read TIFF image with AdobeDeflation compression.
      *
      * @throws Exception
      */
@@ -84,11 +82,11 @@ public class AdobeDeflateTest extends TestCase {
         assertTrue("Input file exists: " + inFile.getAbsolutePath(), inFile.exists());
 
         ImageInputStream iis = new FileImageInputStream(inFile);
-        Iterator readers = ImageIO.getImageReaders(iis);
-        assertTrue(readers.hasNext());
+        List<ImageReader> readers = IJImageIO.getImageReaders(iis);
+        assertFalse(readers.isEmpty());
 
         // Use the first reader
-        ImageReader reader = (ImageReader) readers.next();
+        ImageReader reader = readers.get(0);
         reader.setInput(iis);
         // Find out how many images are in the file and what is the first index.
         assertEquals("Min index", 0, reader.getMinIndex());

@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,6 @@ import java.util.Iterator;
  * providers.
  *
  * @author Jarek Sacha
- * @version $Revision: 1.3 $
  */
 public class ImageIOInfoPlugin implements PlugIn {
     public void run(final String arg) {
@@ -65,8 +64,8 @@ public class ImageIOInfoPlugin implements PlugIn {
     }
 
 
-    private static String serviceProviderInfo(final Class category, final boolean useOrdering) {
-        final Iterator categories = IIORegistry.getDefaultInstance().getServiceProviders(category, useOrdering);
+    private static <T> String serviceProviderInfo(final Class<T> category, final boolean useOrdering) {
+        final Iterator<T> categories = IIORegistry.getDefaultInstance().getServiceProviders(category, useOrdering);
         final StringBuilder buf = new StringBuilder();
         while (categories.hasNext()) {
             final Object o = categories.next();

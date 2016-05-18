@@ -1,6 +1,6 @@
 /*
  * Image/J Plugins
- * Copyright (C) 2002-2009 Jarek Sacha
+ * Copyright (C) 2002-2016 Jarek Sacha
  * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
@@ -19,29 +19,26 @@
  *
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
-package net.sf.ij_plugins.imageio;
+
+package net.sf.ij_plugins.imageio.impl;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
 
 /**
- * Exception specific to package net.sf.ij_plugins.imageio.
- *
  * @author Jarek Sacha
- * @version $Revision: 1.1 $
  */
-public class IJImageIOException extends Exception {
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-
-    public IJImageIOException(final String message) {
-        super(message);
-    }
-
-    public IJImageIOException(final Throwable cause) {
-        super(cause);
-    }
-
-    public IJImageIOException(final String message, final Throwable cause) {
-        super(message, cause);
+final public class SaveImageFileChooserDemo {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            SaveImageFileChooser chooser = new SaveImageFileChooser(new File("."));
+            int ok = chooser.showSaveDialog(null);
+            if (ok == JFileChooser.APPROVE_OPTION) {
+                FileFilter fileFilter = chooser.getFileFilter();
+                ImageIOWriterFileFilter imageFileFilter = (ImageIOWriterFileFilter) fileFilter;
+                System.out.println("SPI: " + imageFileFilter.getSPI());
+            }
+        });
     }
 }

@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2015 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -77,7 +77,7 @@ public final class TransparentImageTest {
 
         ImageIO.write(bi, "PNG", new File("test/data/clown-alpha.png"));
         ImageIO.write(bi, "BMP", new File("test/data/clown-alpha.bmp"));
-//        ImageIO.write(bi, "GIF", new File("test/data/clown-alpha.gif"));
+//        ImageIO.write(image, "GIF", new File("test/data/clown-alpha.gif"));
     }
 
 

@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,6 +21,9 @@
  */
 package net.sf.ij_plugins.imageio;
 
+import com.github.jaiimageio.impl.plugins.tiff.TIFFImageMetadata;
+import com.github.jaiimageio.plugins.tiff.BaselineTIFFTagSet;
+import com.github.jaiimageio.plugins.tiff.TIFFField;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.process.*;
@@ -158,7 +161,7 @@ public class ImagePlusFactory {
      * @param title name of the output image.
      * @param bi    source buffered image
      * @return ImagePlus object created from WritableRaster r and
-     *         ColorModel cm
+     * ColorModel cm
      * @throws IJImageIOException when enable to create ImagePlus.
      * @see #create(String, WritableRaster, ColorModel)
      */
@@ -166,6 +169,39 @@ public class ImagePlusFactory {
         return create(title, bi.getRaster(), bi.getColorModel());
     }
 
+    public static ImagePlus create(final String title, final IJImageIO.ImageAndMetadata mi) throws IJImageIOException {
+        ImagePlus imp = create(title, mi.image.getRaster(), mi.image.getColorModel());
+
+        if (mi.metadata instanceof TIFFImageMetadata) {
+            TIFFImageMetadata tmd = (TIFFImageMetadata) mi.metadata;
+
+            TIFFField xResField = tmd.getTIFFField(BaselineTIFFTagSet.TAG_X_RESOLUTION);
+            if (xResField != null) {
+                long[] ls = xResField.getAsRational(0);
+                Calibration cal = imp.getCalibration();
+                cal.pixelWidth = ls[1] / (double) ls[0];
+                imp.setCalibration(cal);
+            }
+
+            TIFFField yResField = tmd.getTIFFField(BaselineTIFFTagSet.TAG_Y_RESOLUTION);
+            if (yResField != null) {
+                long[] ls = yResField.getAsRational(0);
+                Calibration cal = imp.getCalibration();
+                cal.pixelHeight = ls[1] / (double) ls[0];
+                imp.setCalibration(cal);
+            }
+
+            {
+                TIFFField field = tmd.getTIFFField(BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION);
+                if (field != null && field.getCount() > 0) {
+                    String description = field.getAsString(0);
+                    DescriptionStringCoder.decode(description, imp);
+                }
+            }
+        }
+
+        return imp;
+    }
 
     /**
      * Create instance of ImagePlus from WritableRaster r and ColorModel cm.
@@ -174,7 +210,7 @@ public class ImagePlusFactory {
      * @param r     Raster containing pixel data.
      * @param cm    Image color model (can be null).
      * @return ImagePlus object created from WritableRaster r and
-     *         ColorModel cm
+     * ColorModel cm
      * @throws IJImageIOException when enable to create ImagePlus.
      */
     public static ImagePlus create(final String title, final WritableRaster r, ColorModel cm)
