@@ -1,4 +1,4 @@
-﻿Building  ijp-ImageIO Plugin Bundle
+﻿Building  IJP-ImageIO Plugin Bundle
 ===================================
 
 Prerequisites

@@ -1,20 +1,19 @@
-﻿ ijp-ImageIO Plugin Bundle
-==========================
+﻿IJP-ImageIO Plugin Bundle for ImageJ
+====================================
 
 
 Overview
 --------
 
-ijp-ImageIO enable reading and writing images using Java ImageIO codecs. The core ImageIO formats: JPEG, PNG,
-BMP, WBMP, and GIF. ijp-ImageIO is also using JAI codes adding support for TIFF, JPEG200, PNM, and PCX.
-TIFF supports reading and writing using various compression schemes: LZW, JPEG, ZIP, and Deflate.
-For more detailed information see [ijp-ImageIO home page](http://ij-plugins.sf.net/plugins/imageio).
+IJP-ImageIO enable reading and writing images using Java ImageIO codecs. The core ImageIO formats: JPEG, JPEG-2000,
+PCX, PNG, PNM, BMP, WBMP, and GIF. TIFF supports reading and writing using various compression schemes: LZW, JPEG,
+ZLib, and Deflate. For more detailed information see [IJP-ImageIO home page](http://ij-plugins.sf.net/plugins/imageio).
 
 
 Plugins
 -------
 
-ijp-ImageIO install plugins under following ImageJ menu locations:
+IJP-ImageIO install plugins under following ImageJ menu locations:
 
 * File/Save As
   - PNG ...
@@ -28,8 +27,8 @@ ijp-ImageIO install plugins under following ImageJ menu locations:
   - Save as ...
   
 * Help/About Plugins
-  - ijp-ImageIO ...
-  - ijp-ImageIO readers & writers ...
+  - IJP-ImageIO ...
+  - IJP-ImageIO readers & writers ...
 
 
 System Requirements
@@ -41,9 +40,25 @@ Image I/O plugin bundle requires ImageJ 1.48v or newer and Java 1.8 or newer.
 Installation
 ------------
 
-The installation is as simple as unzipping ijp-ImageIO_bin_*.zip in the
-ImageJ plugins folder (or placing ijp-ImageIO_.jar in the plugins folder).
+The installation is as simple as unzipping ijp-imageio_bin_*.zip in the
+ImageJ plugins folder (or placing ijp-imageio_.jar in the plugins folder).
 
+
+Using as a Stand-alone Library
+------------------------------
+
+You IJP-ImageIO as a stand-alone library. You will need to add dependency on:
+
+```
+groupId   : net.sf.ij-plugins
+artifactId: ijp_imageio
+version   : 2.0.0
+```
+For instance, for [SBT] it would be:
+
+```
+"net.sf.ij-plugins" % "ijp_imageio" % "2.0.0"
+```
 
 License
 -------

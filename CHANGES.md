@@ -1,8 +1,8 @@
-ijp-ImageIO Changes
+IJP-ImageIO Changes
 ===================
 
 
-ijp-ImageIO v.2.m1
+IJP-ImageIO v.2.0
 ----------------------
 
 New & improved:
