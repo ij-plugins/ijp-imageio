@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -43,7 +43,7 @@ public class ImagePlusFactoryTest extends TestCase {
 
 
     public void testCreateProcessor1() throws Exception {
-        final File inFile = new File("../imageio/test/data/clown.png");
+        final File inFile = new File("test/data/clown.png");
         assertTrue("Input file exist: " + inFile.getAbsolutePath(), inFile.exists());
 
         final BufferedImage src = ImageIO.read(inFile);

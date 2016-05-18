@@ -2,7 +2,7 @@
 <!--
   ~ Image/J Plugins
   ~ Copyright (C) 2002-2016 Jarek Sacha
-  ~ Author's email: jsacha at users dot sourceforge dot net
+  ~ Author's email: jpsacha at gmail.com
   ~
   ~ This library is free software; you can redistribute it and/or
   ~ modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@
   ~ Latest release available at http://sourceforge.net/projects/ij-plugins/
   -->
 
-<project name="imageio" default="sbt-imagej-run" basedir=".">
+<project name="ijp-imageio" default="sbt-imagej-run" basedir=".">
     <description>Builds, tests, and runs the project imageio.</description>
 
     <!-- This project is using SBT (https://github.com/harrah/xsbt) as a build system                               -->

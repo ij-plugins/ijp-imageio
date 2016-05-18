@@ -1,21 +1,21 @@
 /***
  * Image/J Plugins
  * Copyright (C) 2002-2004 Jarek Sacha
- *
+ * <p>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- *
+ * <p>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * <p>
  * Latest release available at http://sourceforge.net/projects/ij-plugins/
  */
 package net.sf.ij_plugins.imageio;
@@ -57,9 +57,9 @@ public class ImageIOTest {
         for (int i = 0; i < writerNames.length; i++) {
             String writerName = writerNames[i];
             System.out.println(writerName + " writers:");
-            Iterator iterator = ImageIO.getImageWritersByFormatName(writerName);
+            Iterator<ImageWriter> iterator = ImageIO.getImageWritersByFormatName(writerName);
             while (iterator.hasNext()) {
-                ImageWriter writer = (ImageWriter) iterator.next();
+                ImageWriter writer = iterator.next();
                 System.out.println("\tClass name        : " + writer.getClass().getName());
                 String canWriteEmpty;
                 try {
@@ -113,10 +113,9 @@ public class ImageIOTest {
 
     private static String[] getUniqueWriterFormatNames() {
         String writerNames[] = ImageIO.getWriterFormatNames();
-        Map map = new TreeMap();
-        for (int i = 0; i < writerNames.length; i++) {
-            String writerName = writerNames[i];
-            Iterator iterator = ImageIO.getImageWritersByFormatName(writerName);
+        Map<String, String> map = new TreeMap<>();
+        for (String writerName : writerNames) {
+            Iterator<ImageWriter> iterator = ImageIO.getImageWritersByFormatName(writerName);
             while (iterator.hasNext()) {
                 String className = iterator.next().getClass().getName();
                 if (!map.containsKey(className)) {
@@ -125,14 +124,14 @@ public class ImageIOTest {
             }
         }
 
-        Collection values = map.values();
-        return (String[]) values.toArray(new String[values.size()]);
+        Collection<String> values = map.values();
+        return values.toArray(new String[values.size()]);
     }
 
     private static void printList(String title, String[] list) {
         System.out.println(title);
-        for (int i = 0; i < list.length; i++) {
-            System.out.println("\t" + list[i]);
+        for (String aList : list) {
+            System.out.println("\t" + aList);
         }
     }
 }

@@ -21,26 +21,35 @@
  */
 package net.sf.ij_plugins.imageio;
 
+import ij.IJ;
 import ij.ImagePlus;
-import junit.framework.TestCase;
+import ij.measure.Calibration;
+import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
+import org.junit.Test;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
+
+import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.*;
 
 /**
  * @author Jarek Sacha
  */
-public class IJImageIOTest extends TestCase {
+public class IJImageIOTest {
 
     final private static File DATA_DIR = new File("test/data");
 
-    public IJImageIOTest(String test) {
-        super(test);
-    }
 
+    @Test
     public void testRead() throws Exception {
         testRead("test/data/mri-stack.tif", 27, 186, 226);
         testRead("test/data/mri-stack-1.tif", 1, 186, 226);
@@ -49,16 +58,19 @@ public class IJImageIOTest extends TestCase {
         testRead("test/data/bug_1047736/totbm_C_131004_48_0048.tif", 1, 300, 300);
     }
 
+    @Test
     public void testDataBufferFloat() throws Exception {
         testRead("test/data/bug_DataBufferFloat/blobs_smooth_float.tif", 1, 256, 254);
     }
 
+    @Test
     public void testReadAdobeDeflate() throws Exception {
         // sun-jai-codec.1.1.1 cannot read TIFF images with compression: AdobeDeflate (created by
         // Adobe Photoshop 7). New jai-imageio can read it.
         testRead("test/data/bug_AdobeDeflate/baboon_AdobeDeflate.tif", 1, 512, 512);
     }
 
+    @Test
     public void testReadTwoSequences() throws Exception {
         final File inFile = new File(DATA_DIR, "two_stacks.tif");
         assertTrue(inFile.exists());
@@ -92,13 +104,14 @@ public class IJImageIOTest extends TestCase {
         //        imp.show();
     }
 
+    @Test
     public void testJPEG2000Writer() {
         final String formatName = "jpeg2000";
-        final Iterator writers = ImageIO.getImageWritersByFormatName(formatName);
+        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(formatName);
         assertNotNull(writers);
         assertTrue(writers.hasNext());
 
-        final ImageWriter writer = (ImageWriter) writers.next();
+        final ImageWriter writer = writers.next();
         final ImageWriteParam writerParam = writer.getDefaultWriteParam();
 
         writerParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
@@ -110,7 +123,138 @@ public class IJImageIOTest extends TestCase {
         print("compressionQualityDescriptions", compressionQualityDescriptions);
     }
 
-    void print(final String message, final String[] a) {
+    @Test
+    public void testBug1434311() throws Exception {
+
+        final String codecName = "TIFF";
+        final String compression = "CCITT T.6"; // CCITT Group 4
+
+
+        final String inFilePath = "test/data/bug_1434311/testG4.tif";
+        final File inFile = new File(inFilePath);
+
+
+        final ImagePlus imp;
+        {
+            final ImagePlus[] imps = IJImageIO.read(inFile);
+            assertNotNull(imps);
+            assertEquals(1, imps.length);
+            imp = imps[0];
+        }
+
+
+        final List<ImageWriter> writers = IJImageOUtils.getImageWritersByFormatName(codecName);
+        assertFalse("Assuming presence of ImageIO writer: " + codecName, writers.isEmpty());
+
+        final ImageWriter writer = writers.get(0);
+        final IIOMetadata metadata = TiffMetaDataFactory.createFrom(imp);
+        final ImageWriteParam writerParam = writer.getDefaultWriteParam();
+        if (writerParam.canWriteCompressed()) {
+            writerParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            writerParam.setCompressionType(compression);
+        }
+
+        final File outFile = File.createTempFile("testBug1434311_", ".tif");
+        outFile.deleteOnExit();
+
+        IJImageIO.write(imp, outFile, writer, metadata, writerParam, true);
+
+        final ImagePlus[] imps2 = IJImageIO.read(outFile);
+        assertNotNull(imps2);
+        assertEquals(1, imps2.length);
+
+        verifyEqual(imp, imps2[0]);
+    }
+
+    @Test
+    public void testWritingOfTIFFMetadata() throws IJImageIOException, IOException {
+
+        File file = new File("tmp", "metadata_test.tif");
+        if (file.exists()) file.delete();
+        assertFalse(file.exists());
+        file.getParentFile().mkdirs();
+
+        ImagePlus imp = new ImagePlus("my title", new ByteProcessor(64, 64));
+        Calibration cal = imp.getCalibration();
+        cal.setXUnit("a");
+        cal.setYUnit("B");
+        cal.xOrigin = 11;
+        cal.yOrigin = 13;
+        cal.pixelWidth = 17;
+        cal.pixelHeight = 23;
+        imp.setCalibration(cal);
+
+        IJImageIO.writeAsTiff(imp, file);
+
+        ImagePlus imp2 = IJ.openImage(file.getCanonicalPath());
+        Calibration cal2 = imp2.getCalibration();
+
+        assertEquals("a", cal2.getXUnit());
+        assertEquals("B", cal2.getYUnit());
+        assertEquals(11, cal2.xOrigin, 0.001);
+        assertEquals(13, cal2.yOrigin, 0.001);
+        assertEquals(17, cal2.pixelWidth, 0.001);
+        assertEquals(23, cal2.pixelHeight, 0.001);
+    }
+
+    @Test
+    public void testReadingOfTIFFMetadata() throws Exception {
+        final File inFile = new File(DATA_DIR, "metadata_test.tif");
+        assertTrue(inFile.exists());
+
+        final ImagePlus[] images = IJImageIO.read(inFile);
+        assertNotNull(images);
+        assertEquals(1, images.length);
+
+        ImagePlus imp0 = images[0];
+        Calibration cal0 = imp0.getCalibration();
+
+        assertEquals("a", cal0.getXUnit());
+        assertEquals("B", cal0.getYUnit());
+        assertEquals(11, cal0.xOrigin, 0.001);
+        assertEquals(13, cal0.yOrigin, 0.001);
+        assertEquals(17, cal0.pixelWidth, 0.001);
+        assertEquals(23, cal0.pixelHeight, 0.001);
+    }
+
+
+    private void verifyEqual(final ImagePlus expected, final ImagePlus actual) {
+        if (expected == actual) {
+            return;
+        }
+
+        if (expected == null) {
+            assertNull(actual);
+        }
+
+        assertEquals(expected.getType(), actual.getType());
+
+        verifyEquals(expected.getProcessor(), actual.getProcessor());
+
+    }
+
+    private void verifyEquals(final ImageProcessor expected, final ImageProcessor actual) {
+        if (expected == actual) {
+            return;
+        }
+
+        if (expected == null) {
+            assertNull(actual);
+        }
+
+        assertEquals(expected.getClass(), actual.getClass());
+
+        if (expected instanceof ByteProcessor) {
+            final byte[] expectedPixels = (byte[]) expected.getPixels();
+            final byte[] actualPixels = (byte[]) actual.getPixels();
+            assertTrue("Equal pixels", Arrays.equals(expectedPixels, actualPixels));
+        } else {
+            throw new UnsupportedOperationException("Comparison for image processor of type: "
+                    + expected.getClass() + " not implemented.");
+        }
+    }
+
+    private void print(final String message, final String[] a) {
         System.out.print(message + ": [");
         if (a != null) {
             for (final String anA : a) {

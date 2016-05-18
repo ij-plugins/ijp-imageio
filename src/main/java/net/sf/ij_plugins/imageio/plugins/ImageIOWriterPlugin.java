@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,24 +26,22 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.Macro;
 import ij.WindowManager;
-import ij.gui.GenericDialog;
 import ij.io.SaveDialog;
 import ij.plugin.PlugIn;
-import net.sf.ij_plugins.imageio.BufferedImageFactory;
+import net.sf.ij_plugins.imageio.IJImageOUtils;
 import net.sf.ij_plugins.imageio.IJImageIO;
 import net.sf.ij_plugins.imageio.IJImageIOException;
+import net.sf.ij_plugins.imageio.TiffMetaDataFactory;
 
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.stream.FileImageOutputStream;
-import javax.imageio.stream.ImageOutputStream;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+
+import static net.sf.ij_plugins.imageio.IJImageOUtils.isBinary;
+import static net.sf.ij_plugins.imageio.impl.ImageIOWriter.askForCompressionParams;
 
 
 /**
@@ -53,127 +51,112 @@ import java.util.Iterator;
  */
 public class ImageIOWriterPlugin implements PlugIn {
 
-    private static final String TITLE = "Image IO Save As";
+    private static final String TITLE = "IJP-ImageIO Save As";
 
     /**
      * Main processing method for the ImageIOWriterPlugin object.
      */
     public void run(final String codecName) {
 
-        if ("PNG".equalsIgnoreCase(codecName)) {
-            saveAs("Save As PNG", "PNG", ".png", null);
-        } else if ("PNM".equalsIgnoreCase(codecName)) {
-            saveAs("Save As PNM", "PNM", ".pnm", null);
-        } else if ("TIFF".equalsIgnoreCase(codecName)) {
-            saveAs("Save As TIFF", "TIFF", ".tif", "LZW");
-        } else if ("JPEG2000".equalsIgnoreCase(codecName)) {
-            saveAs("Save As JPEG 2000", "JPEG2000", ".jp2", "JPEG2000");
-        } else {
-            saveAs(codecName);
+        final ImagePlus imp = WindowManager.getCurrentImage();
+        if (imp == null) {
+            IJ.noImage();
+            return;
+        }
+
+        switch (codecName.toUpperCase()) {
+            case "PNG":
+                saveAs(imp, "Save As PNG", "PNG", ".png", null, null);
+                break;
+            case "PNM":
+                saveAs(imp, "Save As PNM", "PNM", ".pnm", null, null);
+                break;
+            case "TIFF":
+                saveAs(imp, "Save As TIFF", "TIFF", ".tif", "ZLib", TiffMetaDataFactory.createFrom(imp));
+                break;
+            case "JPEG2000":
+                saveAs(imp, "Save As JPEG 2000", "JPEG2000", ".jp2", "JPEG2000", null);
+                break;
+            default:
+                saveAs(codecName);
         }
     }
 
     private static void saveAs(final String codecName) {
         IJ.showStatus("Starting \"" + TITLE + "\" plugins...");
 
+        // Check if there is an image to save
         final ImagePlus imp = WindowManager.getCurrentImage();
         if (imp == null) {
             IJ.noImage();
             return;
         }
 
-        final File file = askForFile("Save As " + codecName + "...", imp.getTitle(), "." + codecName);
-        if (file == null) {
-            return;
+        final File file;
+        {
+            Optional<File> fileOpt = askForFile("Save As " + codecName + "...", imp.getTitle(), "." + codecName);
+            if (fileOpt.isPresent()) {
+                file = fileOpt.get();
+            } else {
+                return;
+            }
         }
 
         try {
-            // TODO support preference for binary images
-//            final boolean ok = IJImageIO.write(imp, codecName, file, true);
-//            if (!ok) {
-//                throw new IJImageIOException("Writer for format '" + codecName + "' not available.");
-//            }
             IJImageIO.write(imp, file, codecName);
         } catch (final IJImageIOException e) {
             IJ.error(TITLE, e.getMessage());
         }
     }
 
-    private static void saveAs(final String title,
+    private static void saveAs(final ImagePlus imp,
+                               final String title,
                                final String formatName, final String formatExtension,
-                               final String defaultCompression) {
+                               final String defaultCompression,
+                               final IIOMetadata metadata) {
 
         IJ.showStatus("Starting \"" + title + "\" plugins...");
 
-        final ImagePlus imp = WindowManager.getCurrentImage();
-        if (imp == null) {
-            IJ.noImage();
-            return;
-        }
 
-
-        final ImageWriter writer = findWriter(formatName);
-        if (writer == null) {
+        final List<ImageWriter> writers = IJImageOUtils.getImageWritersByFormatName(formatName);
+        if (writers.isEmpty()) {
             IJ.error("No " + formatName + " writers available");
             return;
         }
+
+        final ImageWriter writer = writers.get(0);
 
         if (!writer.canWriteSequence() && imp.getNSlices() > 1) {
             IJ.error(title, formatName + " can save only images with a single slice.");
             return;
         }
 
-        boolean useOneBitCompression = false;
-
-        final File file = askForFile(title, imp.getTitle(), formatExtension);
-        if (file == null) {
-            return;
-        }
-
-
-        final ImageWriteParam writerParam = writer.getDefaultWriteParam();
-        if (writerParam != null && writerParam.canWriteCompressed()) {
-            writerParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            final String[] compressionTypes = writerParam.getCompressionTypes();
-            if (compressionTypes != null && compressionTypes.length > 1) {
-                GenericDialog dialog = new GenericDialog(title);
-                dialog.addChoice("Compression type", compressionTypes, defaultCompression);
-                dialog.showDialog();
-
-                if (dialog.wasCanceled()) {
-                    return;
-                }
-
-                writerParam.setCompressionType(dialog.getNextChoice());
+        final File file;
+        {
+            final Optional<File> fileOpt = askForFile(title, imp.getTitle(), formatExtension);
+            if (fileOpt.isPresent()) {
+                file = fileOpt.get();
+            } else {
+                return;
             }
         }
 
+        final boolean useOneBitCompression;
+        useOneBitCompression = "TIFF".equalsIgnoreCase(formatName)
+                && isBinary(imp)
+                && IJ.showMessageWithCancel("Save as TIFF",
+                "Image seems to be two level binary. Do you want to save it using 1 bit per pixel?");
 
-        if (imp.getNSlices() <= 1) {
-            writeSingle(imp, writer, file, writerParam, useOneBitCompression, formatName, title);
-        } else {
-            writeSequence(imp, writer, file, writerParam, null, useOneBitCompression, title);
+        final Optional<ImageWriteParam> writerParamOpt = askForCompressionParams(writer, title, defaultCompression);
+        if (!writerParamOpt.isPresent()) {
+            return;
         }
+        final ImageWriteParam writerParam = writerParamOpt.get();
 
-
-    }
-
-    private static void writeSingle(final ImagePlus imp,
-                                    final ImageWriter writer,
-                                    final File file,
-                                    final ImageWriteParam parameters,
-                                    final boolean useOneBitCompression,
-                                    final String formatName,
-                                    final String title) {
-        final BufferedImage bi = BufferedImageFactory.createFrom(imp, 0, useOneBitCompression);
-
-        //
-        // Now ready to write the image to a file
-        //
+        // Write the image to a file
+        IJ.showStatus("Writing image as " + formatName + " to " + file.getAbsolutePath());
         try {
-            IJ.showStatus("Writing image as " + formatName + " to " + file.getAbsolutePath());
-//            write(imp, file, "PNG", null, useOneBitCompression);
-            IJImageIO.write(new BufferedImage[]{bi}, file, writer, null, parameters);
+            IJImageIO.write(imp, file, writer, metadata, writerParam, useOneBitCompression);
         } catch (final IJImageIOException e) {
             e.printStackTrace();
             Macro.abort();
@@ -182,50 +165,17 @@ public class ImageIOWriterPlugin implements PlugIn {
             IJ.showMessage(title, msg);
         }
 
+        IJ.showStatus("Done writing image as " + formatName + " to " + file.getAbsolutePath());
     }
 
-    private static void writeSequence(final ImagePlus imp,
-                                      final ImageWriter writer,
-                                      final File file,
-                                      final ImageWriteParam parameters,
-                                      final IIOMetadata metadata,
-                                      final boolean useOneBitCompression,
-                                      final String title) {
-        try {
-            final ImageOutputStream outputStream = new FileImageOutputStream(file);
-            try {
-                writer.setOutput(outputStream);
-                writer.prepareWriteSequence(metadata);
-                for (int i = 0; i < imp.getNSlices(); i++) {
-                    final BufferedImage bi = BufferedImageFactory.createFrom(imp, i, useOneBitCompression);
-
-                    final IIOImage iioImage = new IIOImage(bi, null, metadata);
-
-                    // Write image
-                    writer.writeToSequence(iioImage, parameters);
-                }
-                writer.endWriteSequence();
-            } finally {
-                outputStream.close();
-            }
-        } catch (final IOException e) {
-            e.printStackTrace();
-            Macro.abort();
-            String msg = "Error writing file: " + file.getAbsolutePath() + ".\n\n";
-            msg += (e.getMessage() == null) ? e.toString() : e.getMessage();
-            IJ.showMessage(title, msg);
-        }
-
-    }
-
-    private static File askForFile(final String title, final String defaultName, final String extension) {
+    private static Optional<File> askForFile(final String title, final String defaultName, final String extension) {
         final SaveDialog saveDialog = new SaveDialog(title, defaultName, extension);
 
         // Make only single call to saveDialog.getFileName(). When recording a macro,
         // each call records path in a macro (ImageJ 1.33k)
         final String saveDialogFileName = saveDialog.getFileName();
         if (saveDialogFileName == null) {
-            return null;
+            return Optional.empty();
         }
         final File file;
         final String directory = saveDialog.getDirectory();
@@ -235,21 +185,7 @@ public class ImageIOWriterPlugin implements PlugIn {
             file = new File(saveDialogFileName);
         }
 
-        return file;
-    }
-
-    private static ImageWriter findWriter(final String codecName) {
-
-        {
-            final Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(codecName);
-            while (writers.hasNext()) {
-                IJ.log("Writer: " + writers.next());
-
-            }
-        }
-        final Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName(codecName);
-        return writers.hasNext() ? writers.next() : null;
-
+        return Optional.of(file);
     }
 
 

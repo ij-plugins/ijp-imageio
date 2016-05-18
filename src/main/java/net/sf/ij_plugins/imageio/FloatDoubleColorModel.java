@@ -11,29 +11,34 @@
  */
 package net.sf.ij_plugins.imageio;
 
-import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.*;
 
 /**
+ * <p>
  * A <code>ColorModel</code> class that works with pixel values that
  * represent color and alpha information as separate samples, using
  * float or double elements.  This class can be used with an arbitrary
  * <code>ColorSpace</code>.  The number of color samples in the pixel
  * values must be same as the number of color components in the
  * <code>ColorSpace</code>.  There may be a single alpha sample.
- * <p>
- * <p> Sample values are taken as ranging from 0.0 to 1.0; that is,
- * when converting to 8-bit RGB, a multiplication by 255 is performed
+ * </p>
+ * <p> Sample values are taken as ranging from {@code blackPoint} (default 0)
+ * to {@code whitePoint} (default 1.0); that is,
+ * when converting value {@code v} to 8-bit RGB,
+ * a multiplication by {@code 255*(v-blackPoint)/(whitePoint-blackPoint)}
+ * is performed
  * and values outside of the range 0-255 are clamped at the closest
  * endpoint.
- * <p>
+ * </p>
  * <p> For maximum efficiency, pixel data being interpreted by this
  * class should be in the sRGB color space.  This will result in
- * only the trivial conversion (scaling by 255 and dividing by any
+ * only the trivial conversion (scaling by
+ * {@code 255*(v-blackPoint)/(whitePoint-blackPoint)}
+ * and dividing by any
  * premultiplied alpha) to be performed.  Other color spaces require
  * more general conversions.
- * <p>
+ * </p>
  * <p> For those methods that use a primitive array pixel
  * representation of type <code>transferType</code>, the array length
  * is the same as the number of color and alpha samples.  Color
@@ -45,23 +50,24 @@ import java.awt.image.*;
  * The transfer types supported are
  * <code>DataBuffer.TYPE_FLOAT</code>,
  * <code>DataBuffer.TYPE_DOUBLE</code>.
- * <p>
+ * </p>
  * <p> The translation from pixel values to color/alpha components for
  * display or processing purposes is a one-to-one correspondence of
  * samples to components.
- * <p>
+ * </p>
  * <p> Methods that use a single int pixel representation throw an
  * <code>IllegalArgumentException</code>.
- * <p>
+ * </p>
  * <p> A <code>FloatDoubleColorModel</code> can be used in
  * conjunction with a <code>ComponentSampleModelJAI</code>.
- * <p>
+ * </p>
  * This class was ported from the defunct "javax.media.jai.FloatDoubleColorModel".
  *
- * @see ColorModel
- * @see ColorSpace
- * @see ComponentSampleModel
+ * @see java.awt.image.ColorModel
+ * @see java.awt.color.ColorSpace
+ * @see java.awt.image.ComponentSampleModel
  */
+@SuppressWarnings("WeakerAccess")
 public class FloatDoubleColorModel extends ComponentColorModel {
 
     /**
@@ -117,6 +123,146 @@ public class FloatDoubleColorModel extends ComponentColorModel {
     protected boolean isAlphaPremultiplied;
 
     /**
+     * Black point value, must be less than {@link #whitePoint}.
+     */
+    protected double blackPoint = 0.0d;
+
+    /**
+     * White point value, must more than {@link #blackPoint}.
+     */
+    protected double whitePoint = 1.0d;
+
+    /**
+     * Lookup table for color mapping
+     */
+    protected byte[][] rgbLut = null;
+
+    /**
+     * set lookup table for color mapping.
+     * Array size is expected to be 256 for all color componennt arrays, otherwise IL
+     *
+     * @param r - array of red color components
+     * @param g - array of green color components
+     * @param b - array of blue color components
+     */
+    public void setRGBLut(final byte r[], final byte g[], final byte b[]) {
+
+        if (r.length != 256 || g.length != 256 || b.length != 256) {
+            throw new IllegalArgumentException("Expecting array size to be 256");
+        }
+
+        this.rgbLut = new byte[3][];
+        this.rgbLut[0] = r;
+        this.rgbLut[1] = g;
+        this.rgbLut[2] = b;
+    }
+
+
+    /**
+     * Returns the mapped color from the rgbLut array . If the array is null then returns the same value back
+     * if the color index is greater than 2 or less than 0 returns the same value back.
+     *
+     * @param pixelValue value
+     * @param colorIndex index
+     * @return
+     */
+
+    private int lookupColor(final int pixelValue, final int colorIndex) {
+        int lookupValue = pixelValue;
+        if (rgbLut != null) {
+            if (colorIndex >= 0 && colorIndex <= 2) {
+                if (pixelValue < 0) {
+                    lookupValue = rgbLut[colorIndex][0] & 0xff;
+                } else if (pixelValue > 255) {
+                    lookupValue = rgbLut[colorIndex][255] & 0xff;
+                } else {
+                    lookupValue = rgbLut[colorIndex][pixelValue] & 0xff;
+                }
+            } else {
+                lookupValue = 255;
+            }
+        }
+        return lookupValue;
+    }
+
+    /**
+     * Get black point value.
+     *
+     * @return black point value.
+     */
+    public double getWhitePoint() {
+        return whitePoint;
+    }
+
+    /**
+     * Set white point value, must be more than {@code blackPoint}.
+     *
+     * @param whitePoint value.
+     */
+    public void setWhitePoint(final double whitePoint) {
+        this.whitePoint = whitePoint;
+    }
+
+    /**
+     * Get black point value.
+     *
+     * @return the black point value.
+     */
+    public double getBlackPoint() {
+        return blackPoint;
+    }
+
+    /**
+     * Set black point value, must more than {@code whitePoint}.
+     *
+     * @param blackPoint the black point value.
+     */
+    public void setBlackPoint(final double blackPoint) {
+        this.blackPoint = blackPoint;
+    }
+
+
+    /**
+     * Converts {@code sampleValue} so range [blackPoint, whitePoint] is mapped to range [0.0, 1.0].
+     *
+     * @param sampleValue sample value
+     * @return mapped value
+     * @see #mapBlackWhite(double)
+     */
+    private float mapBlackWhite(final float sampleValue) {
+        final float d = (float) (whitePoint - blackPoint);
+        return (sampleValue - (float) blackPoint) / d;
+    }
+
+
+    /**
+     * Converts {@code sampleValue} so range [blackPoint, whitePoint] is mapped to range [0.0, 1.0].
+     *
+     * @param sampleValue sample value
+     * @return mapped value
+     */
+    private double mapBlackWhite(final double sampleValue) {
+        return (sampleValue - blackPoint) / (whitePoint - blackPoint);
+    }
+
+
+    private static int[] bitsHelper(final int transferType,
+                                    final ColorSpace colorSpace,
+                                    final boolean hasAlpha) {
+        final int numBits = (transferType == DataBuffer.TYPE_FLOAT) ? 32 : 64;
+        int numComponents = colorSpace.getNumComponents();
+        if (hasAlpha) {
+            ++numComponents;
+        }
+        final int[] bits = new int[numComponents];
+        for (int i = 0; i < numComponents; i++) {
+            bits[i] = numBits;
+        }
+
+        return bits;
+    }
+
+    /**
      * Constructs a <code>ComponentColorModel</code> from the
      * specified parameters. Color components will be in the specified
      * <code>ColorSpace</code>.  <code>hasAlpha</code> indicates
@@ -140,14 +286,14 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      *                             DataBuffer.TYPE_FLOAT or TYPE_DOUBLE.
      * @throws IllegalArgumentException If the transfer type is not
      *                                  DataBuffer.TYPE_FLOAT or TYPE_DOUBLE.
-     * @see ColorSpace
-     * @see Transparency
+     * @see java.awt.color.ColorSpace
+     * @see java.awt.Transparency
      */
-    public FloatDoubleColorModel(ColorSpace colorSpace,
-                                 boolean hasAlpha,
-                                 boolean isAlphaPremultiplied,
-                                 int transparency,
-                                 int transferType) {
+    public FloatDoubleColorModel(final ColorSpace colorSpace,
+                                 final boolean hasAlpha,
+                                 final boolean isAlphaPremultiplied,
+                                 final int transparency,
+                                 final int transferType) {
         super(colorSpace, bitsHelper(transferType, colorSpace, hasAlpha),
                 hasAlpha, isAlphaPremultiplied,
                 transparency,
@@ -171,27 +317,28 @@ public class FloatDoubleColorModel extends ComponentColorModel {
         this.isAlphaPremultiplied = isAlphaPremultiplied;
     }
 
-    private static int[] bitsHelper(int transferType,
-                                    ColorSpace colorSpace,
-                                    boolean hasAlpha) {
-        int numBits = (transferType == DataBuffer.TYPE_FLOAT) ? 32 : 64;
-        int numComponents = colorSpace.getNumComponents();
-        if (hasAlpha) {
-            ++numComponents;
-        }
-        int[] bits = new int[numComponents];
-        for (int i = 0; i < numComponents; i++) {
-            bits[i] = numBits;
-        }
-
-        return bits;
-    }
+//    private static int[] bitsHelper(int transferType,
+//                                    ColorSpace colorSpace,
+//                                    boolean hasAlpha) {
+//        int numBits = (transferType == DataBuffer.TYPE_FLOAT) ? 32 : 64;
+//        int numComponents = colorSpace.getNumComponents();
+//        if (hasAlpha) {
+//            ++numComponents;
+//        }
+//        int[] bits = new int[numComponents];
+//        for (int i = 0; i < numComponents; i++) {
+//            bits[i] = numBits;
+//        }
+//
+//        return bits;
+//    }
 
     /**
      * Throws an <code>IllegalArgumentException</code>, since pixel
      * values for this <code>ColorModel</code> are not conveniently
      * representable as a single <code>int</code>.
      */
+    @Override
     public int getRed(int pixel) {
 //        throw new IllegalArgumentException(JaiI18N.getString("FloatDoubleColorModel1"));
         throw new IllegalArgumentException("getRed(int) not supported by this ColorModel.");
@@ -202,6 +349,7 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      * values for this <code>ColorModel</code> are not conveniently
      * representable as a single <code>int</code>.
      */
+    @Override
     public int getGreen(int pixel) {
 //        throw new IllegalArgumentException(JaiI18N.getString("FloatDoubleColorModel2"));
         throw new IllegalArgumentException("getGreen(int) not supported by this ColorModel.");
@@ -212,6 +360,7 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      * values for this <code>ColorModel</code> are not conveniently
      * representable as a single <code>int</code>.
      */
+    @Override
     public int getBlue(int pixel) {
 //        throw new IllegalArgumentException(JaiI18N.getString("FloatDoubleColorModel3"));
         throw new IllegalArgumentException("getBlue(int) not supported by this ColorModel.");
@@ -222,6 +371,7 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      * values for this <code>ColorModel</code> are not conveniently
      * representable as a single <code>int</code>.
      */
+    @Override
     public int getAlpha(int pixel) {
 //        throw new IllegalArgumentException(JaiI18N.getString("FloatDoubleColorModel4"));
         throw new IllegalArgumentException("getAlpha(int) not supported by this ColorModel.");
@@ -232,28 +382,30 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      * values for this <code>ColorModel</code> are not conveniently
      * representable as a single <code>int</code>.
      */
+    @Override
     public int getRGB(int pixel) {
 //        throw new IllegalArgumentException(JaiI18N.getString("FloatDoubleColorModel5"));
         throw new IllegalArgumentException("getRGB(int) not supported by this ColorModel.");
     }
 
-    private final int clamp(float value) {
+    private final int clamp(final float value) {
         // Ensure NaN maps to 0
         return (value >= 0.0F) ? ((value > 255.0F) ? 255 : (int) value) : 0;
     }
 
-    private final int clamp(double value) {
+    private final int clamp(final double value) {
         // Ensure NaN maps to 0
         return (value >= 0.0) ? ((value > 255.0) ? 255 : (int) value) : 0;
     }
 
-    private int getSample(Object inData, int sample) {
-        boolean needAlpha = (hasAlpha && isAlphaPremultiplied);
-        int type = colorSpaceType;
-
+    private int getSample(final Object inData, int sample) {
+        final boolean needAlpha = (hasAlpha && isAlphaPremultiplied);
+        final int type = colorSpaceType;
+        final int colorIndex = sample;
         boolean is_sRGB = colorSpace.isCS_sRGB();
 
         if (type == ColorSpace.TYPE_GRAY) {
+
             sample = 0;
             is_sRGB = true;
         }
@@ -261,26 +413,30 @@ public class FloatDoubleColorModel extends ComponentColorModel {
 
         if (is_sRGB) {
             if (transferType == DataBuffer.TYPE_FLOAT) {
-                float[] fdata = (float[]) inData;
-                float fsample = fdata[sample] * 255;
+                final float[] fdata = (float[]) inData;
+                final float fsample = mapBlackWhite(fdata[sample]) * 255;
                 if (needAlpha) {
-                    float falp = fdata[numColorComponents];
-                    if (falp == 0.0) return 0;
-                    else
-                        return clamp(fsample / falp);
+                    final float falp = fdata[numColorComponents];
+                    if (falp == 0.0) {
+                        return lookupColor(0, sample);
+                    } else {
+                        return lookupColor(clamp(fsample / falp), sample);
+                    }
                 } else {
-                    return clamp(fsample);
+                    return lookupColor(clamp(fsample), colorIndex);
                 }
             } else {
-                double[] ddata = (double[]) inData;
-                double dsample = ddata[sample] * 255.0;
+                final double[] ddata = (double[]) inData;
+                final double dsample = mapBlackWhite(ddata[sample]) * 255.0;
                 if (needAlpha) {
-                    double dalp = ddata[numColorComponents];
-                    if (dalp == 0.0) return 0;
-                    else
-                        return clamp(dsample / dalp);
+                    final double dalp = ddata[numColorComponents];
+                    if (dalp == 0.0) {
+                        lookupColor(0, colorIndex);
+                    } else {
+                        return lookupColor(clamp(dsample / dalp), sample);
+                    }
                 } else {
-                    return clamp(dsample);
+                    return lookupColor(clamp(dsample), colorIndex);
                 }
             }
         }
@@ -289,10 +445,12 @@ public class FloatDoubleColorModel extends ComponentColorModel {
         float[] norm;
         float[] rgb;
         if (transferType == DataBuffer.TYPE_FLOAT) {
-            float[] fdata = (float[]) inData;
+            final float[] fdata = (float[]) inData;
             if (needAlpha) {
-                float falp = fdata[numColorComponents];
-                if (falp == 0.0) return 0;
+                final float falp = fdata[numColorComponents];
+                if (falp == 0.0) {
+                    return 0;
+                }
                 norm = new float[numColorComponents];
                 for (int i = 0; i < numColorComponents; i++) {
                     norm[i] = fdata[i] / falp;
@@ -303,11 +461,13 @@ public class FloatDoubleColorModel extends ComponentColorModel {
             }
             return (int) (rgb[sample] * 255 + 0.5F);
         } else {
-            double[] ddata = (double[]) inData;
+            final double[] ddata = (double[]) inData;
             norm = new float[numColorComponents];
             if (needAlpha) {
-                double dalp = ddata[numColorComponents];
-                if (dalp == 0.0) return 0;
+                final double dalp = ddata[numColorComponents];
+                if (dalp == 0.0) {
+                    return 0;
+                }
                 for (int i = 0; i < numColorComponents; i++) {
                     norm[i] = (float) (ddata[i] / dalp);
                 }
@@ -343,7 +503,8 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      *                                        is not large enough to hold a pixel value for this
      *                                        <code>ColorModel</code>.
      */
-    public int getRed(Object inData) {
+    @Override
+    public int getRed(final Object inData) {
         return getSample(inData, 0);
     }
 
@@ -368,7 +529,8 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      *                                        is not large enough to hold a pixel value for this
      *                                        <code>ColorModel</code>.
      */
-    public int getGreen(Object inData) {
+    @Override
+    public int getGreen(final Object inData) {
         return getSample(inData, 1);
     }
 
@@ -393,7 +555,8 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      *                                        is not large enough to hold a pixel value for this
      *                                        <code>ColorModel</code>.
      */
-    public int getBlue(Object inData) {
+    @Override
+    public int getBlue(final Object inData) {
         return getSample(inData, 2);
     }
 
@@ -418,21 +581,22 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      *                                        <code>ColorModel</code> and the <code>ColorModel</code> has
      *                                        alpha.
      */
-    public int getAlpha(Object inData) {
+    @Override
+    public int getAlpha(final Object inData) {
         if (inData == null) {
 //            throw new IllegalArgumentException(JaiI18N.getString("Generic0"));
             throw new IllegalArgumentException("The input argument(s) may not be null.");
         }
 
-        if (hasAlpha == false) {
+        if (!hasAlpha) {
             return 255;
         }
 
         if (transferType == DataBuffer.TYPE_FLOAT) {
-            float[] fdata = (float[]) inData;
+            final float[] fdata = (float[]) inData;
             return (int) (fdata[numColorComponents] * 255.0F + 0.5F);
         } else {
-            double[] ddata = (double[]) inData;
+            final double[] ddata = (double[]) inData;
             return (int) (ddata[numColorComponents] * 255.0 + 0.5);
         }
     }
@@ -457,106 +621,14 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      *                                        is not large enough to hold a pixel value for this
      *                                        <code>ColorModel</code>.
      */
-    public int getRGB(Object inData) {
-        boolean needAlpha = (hasAlpha && isAlphaPremultiplied);
+    @Override
+    public int getRGB(final Object inData) {
         int alpha = 255;
         int red, green, blue;
-
-        if (colorSpace.isCS_sRGB()) {
-            if (transferType == DataBuffer.TYPE_FLOAT) {
-                float[] fdata = (float[]) inData;
-                float fred = fdata[0];
-                float fgreen = fdata[1];
-                float fblue = fdata[2];
-                float fscale = 255.0F;
-                if (needAlpha) {
-                    float falpha = fdata[3];
-                    fscale /= falpha;
-                    alpha = clamp(255.0F * falpha);
-                }
-
-                red = clamp(fred * fscale);
-                green = clamp(fgreen * fscale);
-                blue = clamp(fblue * fscale);
-            } else {
-                double[] ddata = (double[]) inData;
-                double dred = ddata[0];
-                double dgreen = ddata[1];
-                double dblue = ddata[2];
-                double dscale = 255.0;
-                if (needAlpha) {
-                    double dalpha = ddata[3];
-                    dscale /= dalpha;
-                    alpha = clamp(255.0 * dalpha);
-                }
-
-                red = clamp(dred * dscale);
-                green = clamp(dgreen * dscale);
-                blue = clamp(dblue * dscale);
-            }
-        } else if (colorSpaceType == ColorSpace.TYPE_GRAY) {
-            if (transferType == DataBuffer.TYPE_FLOAT) {
-                float[] fdata = (float[]) inData;
-                float fgray = fdata[0];
-                if (needAlpha) {
-                    float falp = fdata[1];
-                    red = green = blue = clamp(fgray * 255.0F / falp);
-                    alpha = clamp(255.0F * falp);
-                } else {
-                    red = green = blue = clamp(fgray * 255.0F);
-                }
-            } else {
-                double[] ddata = (double[]) inData;
-                double dgray = ddata[0];
-                if (needAlpha) {
-                    double dalp = ddata[1];
-                    red = green = blue = clamp(dgray * 255.0 / dalp);
-                    alpha = clamp(255.0 * dalp);
-                } else {
-                    red = green = blue = clamp(dgray * 255.0);
-                }
-            }
-        } else {
-            // Not Gray or sRGB
-            float[] norm;
-            float[] rgb;
-            if (transferType == DataBuffer.TYPE_FLOAT) {
-                float[] fdata = (float[]) inData;
-                if (needAlpha) {
-                    float falp = fdata[numColorComponents];
-                    float invfalp = 1.0F / falp;
-                    norm = new float[numColorComponents];
-                    for (int i = 0; i < numColorComponents; i++) {
-                        norm[i] = fdata[i] * invfalp;
-                    }
-                    alpha = clamp(255.0F * falp);
-                } else {
-                    norm = fdata;
-                }
-            } else {
-                double[] ddata = (double[]) inData;
-                norm = new float[numColorComponents];
-                if (needAlpha) {
-                    double dalp = ddata[numColorComponents];
-                    double invdalp = 1.0 / dalp;
-                    for (int i = 0; i < numColorComponents; i++) {
-                        norm[i] = (float) (ddata[i] * invdalp);
-                    }
-                    alpha = clamp(255.0 * dalp);
-                } else {
-                    for (int i = 0; i < numColorComponents; i++) {
-                        norm[i] = (float) ddata[i];
-                    }
-                }
-            }
-
-            // Perform color conversion
-            rgb = colorSpace.toRGB(norm);
-
-            red = clamp(rgb[0] * 255.0F);
-            green = clamp(rgb[1] * 255.0F);
-            blue = clamp(rgb[2] * 255.0F);
-        }
+        alpha = getAlpha(inData);
+        red = getRed(inData);
+        green = getGreen(inData);
+        blue = getBlue(inData);
 
         return (alpha << 24) | (red << 16) | (green << 8) | blue;
     }
@@ -580,7 +652,8 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      *                                        not large enough to hold a pixel value for this
      *                                        <code>ColorModel</code>.
      */
-    public Object getDataElements(int rgb, Object pixel) {
+    @Override
+    public Object getDataElements(final int rgb, final Object pixel) {
         if (transferType == DataBuffer.TYPE_FLOAT) {
             float[] floatPixel;
 
@@ -598,12 +671,12 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                 }
             }
 
-            float inv255 = 1.0F / 255.0F;
+            final float inv255 = 1.0F / 255.0F;
             if (colorSpace.isCS_sRGB()) {
-                int alp = (rgb >> 24) & 0xff;
-                int red = (rgb >> 16) & 0xff;
-                int grn = (rgb >> 8) & 0xff;
-                int blu = (rgb) & 0xff;
+                final int alp = (rgb >> 24) & 0xff;
+                final int red = (rgb >> 16) & 0xff;
+                final int grn = (rgb >> 8) & 0xff;
+                final int blu = (rgb) & 0xff;
                 float norm = inv255;
                 if (isAlphaPremultiplied) {
                     norm *= alp;
@@ -615,14 +688,14 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                     floatPixel[3] = alp * inv255;
                 }
             } else if (colorSpaceType == ColorSpace.TYPE_GRAY) {
-                float gray = ((((rgb >> 16) & 0xff) * (.299F * inv255)) +
+                final float gray = ((((rgb >> 16) & 0xff) * (.299F * inv255)) +
                         (((rgb >> 8) & 0xff) * (.587F * inv255)) +
                         (((rgb) & 0xff) * (.114F * inv255)));
 
                 floatPixel[0] = gray;
 
                 if (hasAlpha) {
-                    int alpha = (rgb >> 24) & 0xff;
+                    final int alpha = (rgb >> 24) & 0xff;
                     floatPixel[1] = alpha * inv255;
                 }
             } else {
@@ -633,11 +706,9 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                 norm[2] = ((rgb) & 0xff) * inv255;
 
                 norm = colorSpace.fromRGB(norm);
-                for (int i = 0; i < numColorComponents; i++) {
-                    floatPixel[i] = norm[i];
-                }
+                System.arraycopy(norm, 0, floatPixel, 0, numColorComponents);
                 if (hasAlpha) {
-                    int alpha = (rgb >> 24) & 0xff;
+                    final int alpha = (rgb >> 24) & 0xff;
                     floatPixel[numColorComponents] = alpha * inv255;
                 }
             }
@@ -660,12 +731,12 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                 }
             }
 
-            double inv255 = 1.0 / 255.0;
+            final double inv255 = 1.0 / 255.0;
             if (colorSpace.isCS_sRGB()) {
-                int alp = (rgb >> 24) & 0xff;
-                int red = (rgb >> 16) & 0xff;
-                int grn = (rgb >> 8) & 0xff;
-                int blu = (rgb) & 0xff;
+                final int alp = (rgb >> 24) & 0xff;
+                final int red = (rgb >> 16) & 0xff;
+                final int grn = (rgb >> 8) & 0xff;
+                final int blu = (rgb) & 0xff;
                 double norm = inv255;
                 if (isAlphaPremultiplied) {
                     norm *= alp;
@@ -677,18 +748,18 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                     doublePixel[3] = alp * inv255;
                 }
             } else if (colorSpaceType == ColorSpace.TYPE_GRAY) {
-                double gray = ((((rgb >> 16) & 0xff) * (.299 * inv255)) +
+                final double gray = ((((rgb >> 16) & 0xff) * (.299 * inv255)) +
                         (((rgb >> 8) & 0xff) * (.587 * inv255)) +
                         (((rgb) & 0xff) * (.114 * inv255)));
 
                 doublePixel[0] = gray;
 
                 if (hasAlpha) {
-                    int alpha = (rgb >> 24) & 0xff;
+                    final int alpha = (rgb >> 24) & 0xff;
                     doublePixel[1] = alpha * inv255;
                 }
             } else {
-                float inv255F = 1.0F / 255.0F;
+                final float inv255F = 1.0F / 255.0F;
 
                 // Need to convert the color, need data in float form
                 float[] norm = new float[3];
@@ -698,10 +769,10 @@ public class FloatDoubleColorModel extends ComponentColorModel {
 
                 norm = colorSpace.fromRGB(norm);
                 for (int i = 0; i < numColorComponents; i++) {
-                    doublePixel[i] = (double) norm[i];
+                    doublePixel[i] = norm[i];
                 }
                 if (hasAlpha) {
-                    int alpha = (rgb >> 24) & 0xff;
+                    final int alpha = (rgb >> 24) & 0xff;
                     doublePixel[numColorComponents] = alpha * inv255;
                 }
             }
@@ -715,6 +786,7 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      * values for this <code>ColorModel</code> are not conveniently
      * representable as a single <code>int</code>.
      */
+    @Override
     public int[] getComponents(int pixel, int[] components, int offset) {
 //        throw new IllegalArgumentException(JaiI18N.getString("FloatDoubleColorModel9"));
         throw new IllegalArgumentException("Pixel values for FloatDoubleColorModel cannot be represented as a single integer.");
@@ -724,6 +796,7 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      * Throws an <code>IllegalArgumentException</code> since
      * the pixel values cannot be placed into an <code>int</code> array.
      */
+    @Override
     public int[] getComponents(Object pixel, int[] components, int offset) {
 //        throw new IllegalArgumentException(JaiI18N.getString("FloatDoubleColorModel9"));
         throw new IllegalArgumentException("Pixel values for FloatDoubleColorModel cannot be represented as a single integer.");
@@ -734,6 +807,7 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      * values for this <code>ColorModel</code> are not conveniently
      * representable as a single <code>int</code>.
      */
+    @Override
     public int getDataElement(int[] components, int offset) {
 //        throw new IllegalArgumentException(JaiI18N.getString("FloatDoubleColorModel9"));
         throw new IllegalArgumentException("Pixel values for FloatDoubleColorModel cannot be represented as a single integer.");
@@ -769,7 +843,8 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      *                                        not large enough to hold a pixel value for this
      *                                        <code>ColorModel</code>.
      */
-    public Object getDataElements(int[] components, int offset, Object obj) {
+    @Override
+    public Object getDataElements(final int[] components, final int offset, final Object obj) {
         if ((components.length - offset) < numComponents) {
 //            throw new IllegalArgumentException(numComponents + " " + JaiI18N.getString("FloatDoubleColorModel10"));
             throw new IllegalArgumentException(numComponents + " elements required in the components array.");
@@ -782,7 +857,7 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                 pixel = (float[]) obj;
             }
             for (int i = 0; i < numComponents; i++) {
-                pixel[i] = (float) (components[offset + i]);
+                pixel[i] = (components[offset + i]);
             }
 
             return pixel;
@@ -794,7 +869,7 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                 pixel = (double[]) obj;
             }
             for (int i = 0; i < numComponents; i++) {
-                pixel[i] = (double) (components[offset + i]);
+                pixel[i] = (components[offset + i]);
             }
 
             return pixel;
@@ -815,18 +890,19 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      *                                  <code>raster</code> is not the same as that of this
      *                                  <code>FloatDoubleColorModel</code>.
      */
-    public ColorModel coerceData(WritableRaster raster,
-                                 boolean isAlphaPremultiplied) {
-        if ((hasAlpha == false) ||
+    @Override
+    public ColorModel coerceData(final WritableRaster raster,
+                                 final boolean isAlphaPremultiplied) {
+        if ((!hasAlpha) ||
                 (this.isAlphaPremultiplied == isAlphaPremultiplied)) {
             // Nothing to do
             return this;
         }
 
-        int w = raster.getWidth();
-        int h = raster.getHeight();
-        int aIdx = raster.getNumBands() - 1;
-        int rminX = raster.getMinX();
+        final int w = raster.getWidth();
+        final int h = raster.getHeight();
+        final int aIdx = raster.getNumBands() - 1;
+        final int rminX = raster.getMinX();
         int rY = raster.getMinY();
         int rX;
 
@@ -844,7 +920,7 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                         for (int x = 0; x < w; x++, rX++) {
                             pixel = (float[]) raster.getDataElements(rX, rY,
                                     pixel);
-                            float fAlpha = pixel[aIdx];
+                            final float fAlpha = pixel[aIdx];
                             if (fAlpha != 0) {
                                 for (int c = 0; c < aIdx; c++) {
                                     pixel[c] *= fAlpha;
@@ -863,7 +939,7 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                         for (int x = 0; x < w; x++, rX++) {
                             pixel = (double[]) raster.getDataElements(rX, rY,
                                     pixel);
-                            double dAlpha = pixel[aIdx];
+                            final double dAlpha = pixel[aIdx];
                             if (dAlpha != 0) {
                                 for (int c = 0; c < aIdx; c++) {
                                     pixel[c] *= dAlpha;
@@ -893,9 +969,9 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                             float pixel[] = null;
                             pixel = (float[]) raster.getDataElements(rX, rY,
                                     pixel);
-                            float fAlpha = pixel[aIdx];
+                            final float fAlpha = pixel[aIdx];
                             if (fAlpha != 0) {
-                                float invFAlpha = 1.0F / fAlpha;
+                                final float invFAlpha = 1.0F / fAlpha;
                                 for (int c = 0; c < aIdx; c++) {
                                     pixel[c] *= invFAlpha;
                                 }
@@ -913,9 +989,9 @@ public class FloatDoubleColorModel extends ComponentColorModel {
                             double pixel[] = null;
                             pixel = (double[]) raster.getDataElements(rX, rY,
                                     pixel);
-                            double dAlpha = pixel[aIdx];
+                            final double dAlpha = pixel[aIdx];
                             if (dAlpha != 0) {
-                                double invDAlpha = 1.0 / dAlpha;
+                                final double invDAlpha = 1.0 / dAlpha;
                                 for (int c = 0; c < aIdx; c++) {
                                     pixel[c] *= invDAlpha;
                                 }
@@ -945,8 +1021,9 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      *
      * @param raster a <code>Raster</code>to be checked for compatibility.
      */
-    public boolean isCompatibleRaster(Raster raster) {
-        SampleModel sm = raster.getSampleModel();
+    @Override
+    public boolean isCompatibleRaster(final Raster raster) {
+        final SampleModel sm = raster.getSampleModel();
         return isCompatibleSampleModel(sm);
     }
 
@@ -959,15 +1036,14 @@ public class FloatDoubleColorModel extends ComponentColorModel {
 //     *
 //     * @param w The width of the <code>WritableRaster</code>
 //     * @param h The height of the <code>WritableRaster</code>
-//     *
 //     * @return A <code>WritableRaster</code> that is compatible with
-//     * this <code>ColorModel</code>.
-//     *
-//     * @see WritableRaster
-//     * @see SampleModel
+//     *         this <code>ColorModel</code>.
+//     * @see java.awt.image.WritableRaster
+//     * @see java.awt.image.SampleModel
 //     */
-//    public WritableRaster createCompatibleWritableRaster(int w, int h) {
-//        SampleModel sm = createCompatibleSampleModel(w, h);
+//    @Override
+//    public WritableRaster createCompatibleWritableRaster(final int w, final int h) {
+//        final SampleModel sm = createCompatibleSampleModel(w, h);
 //        return RasterFactory.createWritableRaster(sm, new Point(0, 0));
 //    }
 //
@@ -979,23 +1055,22 @@ public class FloatDoubleColorModel extends ComponentColorModel {
 //     *
 //     * @param w The width of the <code>SampleModel</code>.
 //     * @param h The height of the <code>SampleModel</code>.
-//     *
 //     * @return A <code>SampleModel</code> that is compatible with this
-//     * <code>ColorModel</code>.
-//     *
-//     * @see SampleModel
-//     * @see ComponentSampleModel
+//     *         <code>ColorModel</code>.
+//     * @see java.awt.image.SampleModel
+//     * @see java.awt.image.ComponentSampleModel
 //     */
-//    public SampleModel createCompatibleSampleModel(int w, int h) {
-//        int[] bandOffsets = new int[numComponents];
+//    @Override
+//    public SampleModel createCompatibleSampleModel(final int w, final int h) {
+//        final int[] bandOffsets = new int[numComponents];
 //        for (int i = 0; i < numComponents; i++) {
 //            bandOffsets[i] = i;
 //        }
 //        return new ComponentSampleModelJAI(transferType,
-//                                           w, h,
-//                                           numComponents,
-//                                           w*numComponents,
-//                                           bandOffsets);
+//                w, h,
+//                numComponents,
+//                w * numComponents,
+//                bandOffsets);
 //    }
 
     /**
@@ -1012,27 +1087,34 @@ public class FloatDoubleColorModel extends ComponentColorModel {
      * @return <code>true</code> if the <code>SampleModel</code> is
      * compatible with this <code>ColorModel</code>,
      * <code>false</code> if it is not.
-     * @see SampleModel
-     * @see ComponentSampleModel
+     * @see java.awt.image.SampleModel
+     * @see java.awt.image.ComponentSampleModel
      */
-    public boolean isCompatibleSampleModel(SampleModel sm) {
-        if (sm instanceof ComponentSampleModel) {
-            if (sm.getNumBands() != getNumComponents()) {
-                return false;
-            }
-            if (sm.getDataType() != transferType) {
-                return false;
-            }
-            return true;
-        } else {
-            return false;
-        }
+    @Override
+    public boolean isCompatibleSampleModel(final SampleModel sm) {
+        return sm instanceof ComponentSampleModel && sm.getNumBands() == getNumComponents() && sm.getDataType() == transferType;
     }
 
     /**
      * Returns a <code>String</code> containing the values of all valid fields.
      */
+    @Override
     public String toString() {
         return "FloatDoubleColorModel: " + super.toString();
     }
 }
+
+//class JaiI18N {
+//    static String packageName = "javax.media.jai";
+//
+//    public static String getString(final String key) {
+//       return PropertyUtil.getString(packageName, key);
+//    }
+//
+//    public static String formatMsg(final String key, final Object[] args) {
+//        final MessageFormat mf = new MessageFormat(getString(key));
+//        mf.setLocale(Locale.getDefault());
+//
+//        return mf.format(args);
+//    }
+//}

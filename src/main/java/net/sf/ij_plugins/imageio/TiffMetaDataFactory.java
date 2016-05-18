@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,14 +22,15 @@
 
 package net.sf.ij_plugins.imageio;
 
-import com.sun.media.imageio.plugins.tiff.*;
+import com.github.jaiimageio.plugins.tiff.*;
 import ij.ImagePlus;
-import ij.io.FileSaver;
 import ij.measure.Calibration;
 
 import javax.imageio.metadata.IIOMetadata;
 
 /**
+ * Convert ImagePLus metadata, like calibration, into TIFF metadata.
+ *
  * @author Jarek Sacha
  */
 public final class TiffMetaDataFactory {
@@ -38,9 +39,9 @@ public final class TiffMetaDataFactory {
         final Calibration calibration = image.getCalibration();
 
         final TIFFDirectory tIFFDirectory = new TIFFDirectory(new TIFFTagSet[]{BaselineTIFFTagSet.getInstance()}, null);
+        final TIFFTagSet tagSet = BaselineTIFFTagSet.getInstance();
         if (calibration != null) {
             if (calibration.scaled()) {
-                final TIFFTagSet tagSet = BaselineTIFFTagSet.getInstance();
                 final long[][] xRes = new long[1][2];
                 final long[][] yRes = new long[1][2];
                 final double xscale = 1.0 / calibration.pixelWidth;
@@ -75,23 +76,32 @@ public final class TiffMetaDataFactory {
                         tIFFDirectory.addTIFFField(new TIFFField(
                                 tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_NONE));
                         break;
+
+                    // TODO treat also: "mm", "micron", "um", "\u00B5m", m
                 }
 
-                //all other calibration information into image description
-                tIFFDirectory.addTIFFField(new TIFFField(
-                        tagSet.getTag(BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION),
-                        TIFFTag.TIFF_ASCII,
-                        1,
-                        new String[]{encodeDescriptionString(image)}));
             }
+
+            //all other calibration information into image description
+            tIFFDirectory.addTIFFField(new TIFFField(
+                    tagSet.getTag(BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION),
+                    TIFFTag.TIFF_ASCII,
+                    1,
+                    new String[]{DescriptionStringCoder.encode(image)}));
         }
 
         return tIFFDirectory.getAsMetadata();
 
     }
 
-    static private String encodeDescriptionString(final ImagePlus image) {
-        final FileSaver fileSaver = new FileSaver(image);
-        return fileSaver.getDescriptionString();
-    }
+//    static private String encodeDescriptionString(final ImagePlus image) {
+//        final FileSaver fileSaver = new FileSaver(image);
+//        final String desc = fileSaver.getDescriptionString();
+//        // ImageJ may append a null char et the end, check and remove.
+//        if (desc.charAt(desc.length() - 1) != (char) 0) {
+//            return desc;
+//        } else {
+//            return desc.substring(0, desc.length() - 1);
+//        }
+//    }
 }

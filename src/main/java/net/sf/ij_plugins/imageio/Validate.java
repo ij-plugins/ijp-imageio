@@ -18,15 +18,15 @@
 package net.sf.ij_plugins.imageio;
 
 /**
- * Based on org.apache.commons.lang3.Validate, duplicated to reduce dependencies.
+ * A few methods from org.apache.commons.lang3.Validate, duplicated to reduce runtime dependencies.
  */
-public interface Validate {
+interface Validate {
 
     /**
      * <p>Validate that the specified argument array is neither {@code null}
      * nor a length of zero (no elements); otherwise throwing an exception
      * with the specified message.
-     * <p>
+     * </p>
      * <pre>Validate.notEmpty(myArray, "The array must not be empty");</pre>
      *
      * @param <T>     the array type
@@ -36,7 +36,6 @@ public interface Validate {
      * @return the validated array (never {@code null} method for chaining)
      * @throws NullPointerException     if the array is {@code null}
      * @throws IllegalArgumentException if the array is empty
-     * @see #notEmpty(Object[])
      */
     static <T> T[] notEmpty(final T[] array, final String message, final Object... values) {
         if (array == null) {
@@ -52,7 +51,7 @@ public interface Validate {
     /**
      * <p>Validate that the specified argument is not {@code null};
      * otherwise throwing an exception.
-     * <p>
+     * </p>
      * <pre>Validate.notNull(myObject, "The object must not be null");</pre>
      *
      * <p>The message of the exception is &quot;The validated object is
@@ -71,7 +70,7 @@ public interface Validate {
     /**
      * <p>Validate that the specified argument is not {@code null};
      * otherwise throwing an exception with the specified message.
-     * <p>
+     * </p>
      * <pre>Validate.notNull(myObject, "The object must not be null");</pre>
      *
      * @param <T>     the object type
@@ -94,7 +93,6 @@ public interface Validate {
      * throwing an exception with the specified message. This method is useful when
      * validating according to an arbitrary boolean expression, such as validating a
      * primitive number or using your own custom validation expression.</p>
-     * <p>
      * <pre>
      * Validate.isTrue(i &gt;= min &amp;&amp; i &lt;= max, "The value must be between &#37;d and &#37;d", min, max);
      * Validate.isTrue(myObject.isOk(), "The object is not okay");</pre>

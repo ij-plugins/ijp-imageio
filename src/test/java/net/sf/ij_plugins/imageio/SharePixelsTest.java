@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -79,6 +79,7 @@ public final class SharePixelsTest extends TestCase {
         final IndexColorModel icm = new IndexColorModel(8, 256, rLUT, gLUT, bLUT);
         // Put all together into a buffered image
         final BufferedImage bi = new BufferedImage(icm, wr, true, null);
+        outputFile.getParentFile().mkdirs();
         ImageIO.write(bi, "png", outputFile);
     }
 

@@ -1,7 +1,7 @@
 /*
  * Image/J Plugins
  * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jsacha at users dot sourceforge dot net
+ * Author's email: jpsacha at gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,7 @@ import javax.imageio.*;
 import javax.imageio.event.IIOReadProgressListener;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.spi.IIORegistry;
+import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
@@ -44,11 +45,30 @@ import java.util.List;
 
 
 /**
- * Helper class that for reading images using {@code javax.imageio} into ImageJ representation.
+ * Helper class that for easy reading of images using {@code javax.imageio} into ImageJ representation.
+ * <p>
+ * For example:
+ * <pre>
+ *     ImagePlus[] imps = IJImageIO.read(file);
+ * </pre>
  *
  * @author Jarek Sacha
  */
 public class IJImageIO {
+
+    private final static boolean useOneBitCompressionDefault = false;
+
+    public static final String PREFERRED_SPI_VENDOR = "github.com/jai-imageio";
+
+    static class ImageAndMetadata {
+        public final BufferedImage image;
+        public final IIOMetadata metadata;
+
+        public ImageAndMetadata(BufferedImage bi, IIOMetadata md) {
+            this.image = bi;
+            this.metadata = md;
+        }
+    }
 
     // TODO: Simplify API of this class, there are too many very similar looking methods for 'write'
 
@@ -123,7 +143,8 @@ public class IJImageIO {
      * with stack size equal to the number of images in the input file.
      * @throws IJImageIOException when images cannot be read or represented as ImagePlus.
      */
-    public static ImagePlus[] read(final File file, final boolean combineStacks) throws IJImageIOException {
+    public static ImagePlus[] read(final File file,
+                                   final boolean combineStacks) throws IJImageIOException {
         return read(file, combineStacks, null);
     }
 
@@ -139,17 +160,21 @@ public class IJImageIO {
      * with stack size equal to the number of images in the input file.
      * @throws IJImageIOException when images cannot be read or represented as ImagePlus.
      */
-    public static ImagePlus[] read(final File file, final boolean combineStacks, final int[] pageIndex) throws IJImageIOException {
+    public static ImagePlus[] read(final File file,
+                                   final boolean combineStacks,
+                                   final int[] pageIndex) throws IJImageIOException {
+
+        // FIXME: for TIFF images read description and decode stored information, like calibration, etc.
 
         // Load images
-        final List<BufferedImage> bufferedImages = readAsBufferedImages(file, pageIndex);
+        final List<ImageAndMetadata> ims = readAsBufferedImages(file, pageIndex);
 
         // Convert to ImageJ representation
-        final List<ImagePlus> images = new ArrayList<ImagePlus>();
-        for (final BufferedImage bi : bufferedImages) {
+        final List<ImagePlus> images = new ArrayList<>();
+        for (final ImageAndMetadata im : ims) {
             final ImagePlus imp;
             try {
-                imp = ImagePlusFactory.create(file.getName(), bi);
+                imp = ImagePlusFactory.create(file.getName(), im);
             } catch (final IJImageIOException e) {
                 throw new IJImageIOException("Unable to convert loaded image to ImagePlus. " + e.getMessage(), e);
             }
@@ -190,7 +215,7 @@ public class IJImageIO {
      * with stack size equal to the number of images in the input file.
      * @throws IJImageIOException when I/O error occurs.
      */
-    public static List<BufferedImage> readAsBufferedImages(final File file) throws IJImageIOException {
+    public static List<ImageAndMetadata> readAsBufferedImages(final File file) throws IJImageIOException {
         return readAsBufferedImages(file, null);
     }
 
@@ -205,7 +230,8 @@ public class IJImageIO {
      * with stack size equal to the number of images in the input file.
      * @throws IJImageIOException when I/O error occurs.
      */
-    public static List<BufferedImage> readAsBufferedImages(final File file, final int[] pageIndex) throws IJImageIOException {
+    public static List<ImageAndMetadata> readAsBufferedImages(final File file,
+                                                              final int[] pageIndex) throws IJImageIOException {
 
         if (file == null) {
             throw new IllegalArgumentException("Argument 'file' cannot be null.");
@@ -215,11 +241,11 @@ public class IJImageIO {
 
         try {
             // Locate all available readers
-            final List<ImageReader> readerList = getImageReaderList(iis);
+            final List<ImageReader> readerList = getImageReaders(iis);
 
             // Try available readers till one of them reads images with no errors
             final StringBuilder errorBuffer = new StringBuilder();
-            List<BufferedImage> bufferedImages = null;
+            List<ImageAndMetadata> bufferedImages = null;
             for (int i = 0; bufferedImages == null && i < readerList.size(); i++) {
                 final ImageReader reader = readerList.get(i);
                 IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
@@ -246,20 +272,6 @@ public class IJImageIO {
         }
     }
 
-    private static List<ImageReader> getImageReaderList(ImageInputStream iis) throws IJImageIOException {
-        final Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
-        final List<ImageReader> readerList = new ArrayList<ImageReader>();
-        while (readers.hasNext()) {
-            final ImageReader reader = readers.next();
-            readerList.add(reader);
-        }
-
-        // Verify that there is at least one reader available.
-        if (readerList.isEmpty()) {
-            throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.");
-        }
-        return readerList;
-    }
 
     /**
      * IJImageIOException
@@ -280,10 +292,10 @@ public class IJImageIO {
 
         try {
             // Locate all available readers
-            final List<ImageReader> readerList = getImageReaderList(iis);
+            final List<ImageReader> readerList = getImageReaders(iis);
 
             // Try available readers till one of them reads images with no errors
-            final StringBuffer errorBuffer = new StringBuffer();
+            final StringBuilder errorBuffer = new StringBuilder();
             List<BufferedImage> bufferedImages = null;
             ImageInfo imageInfo = null;
             for (int i = 0; bufferedImages == null && i < readerList.size(); i++) {
@@ -313,28 +325,25 @@ public class IJImageIO {
 
     }
 
-    private static ImageInputStream createImageInputStream(File file) throws IJImageIOException {
-        final ImageInputStream iis;
-        try {
-            iis = ImageIO.createImageInputStream(file);
-        } catch (final IOException e) {
-            throw new IJImageIOException("Failed to create image input stream for file: " + file.getAbsolutePath() + ". "
-                    + e.getMessage(), e);
-        }
-        if (iis == null) {
-            throw new IJImageIOException("Failed to create image input stream for file: " + file.getAbsolutePath() + ".");
-        }
-        return iis;
+
+    public static void write(final ImagePlus imp,
+                             final File file,
+                             final ImageWriterSpi imageWriterSpi) throws IJImageIOException {
+
+        write(imp, file, imageWriterSpi, useOneBitCompressionDefault);
     }
 
 
-    public static void write(final ImagePlus imp, final File file, final ImageWriterSpi imageWriterSpi) throws IJImageIOException {
+    public static void write(final ImagePlus imp,
+                             final File file,
+                             final ImageWriterSpi imageWriterSpi,
+                             final boolean useOneBitCompression) throws IJImageIOException {
 
 
         final ImageStack stack = imp.getStack();
         final BufferedImage[] images = new BufferedImage[stack.getSize()];
         for (int i = 0; i < images.length; ++i) {
-            images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1));
+            images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1), useOneBitCompression);
         }
         write(images, file, imageWriterSpi, null);
     }
@@ -354,14 +363,32 @@ public class IJImageIO {
         write(images, file, writer, metadata, parameters);
     }
 
-    public static void write(ImagePlus imp, File file, String format) throws IJImageIOException {
-        Optional<ImageWriterSpi> spi = IJIOUtils.writerSpiByFormatName(format);
+    public static void write(final ImagePlus imp,
+                             final File file,
+                             final ImageWriter writer,
+                             final IIOMetadata metadata,
+                             final ImageWriteParam parameters,
+                             final boolean useOneBitCompression) throws IJImageIOException {
 
-        if (!spi.isPresent()) {
-            throw new IJImageIOException("Cannot find writer for format: '" + format + "'.");
+        final BufferedImage[] bis = new BufferedImage[imp.getNSlices()];
+        for (int s = 0; s < imp.getNSlices(); s++) {
+            bis[s] = BufferedImageFactory.createFrom(imp, s, useOneBitCompression);
         }
+        write(bis, file, writer, metadata, parameters);
+    }
 
-        write(imp, file, spi.get());
+    public static void write(ImagePlus imp,
+                             File file,
+                             String format) throws IJImageIOException {
+        write(imp, file, format, useOneBitCompressionDefault);
+    }
+
+    public static void write(ImagePlus imp,
+                             File file,
+                             String format,
+                             final boolean useOneBitCompression) throws IJImageIOException {
+        List<ImageWriterSpi> spis = IJImageOUtils.writerSpiByFormatName(format);
+        write(imp, file, spis.get(0), useOneBitCompression);
 
     }
 
@@ -377,7 +404,9 @@ public class IJImageIO {
      * @param format image format (extension)
      * @throws IJImageIOException writing fails or file format is not supported.
      */
-    public static void write(final BufferedImage image, final File file, final String format) throws IJImageIOException {
+    public static void write(final BufferedImage image,
+                             final File file,
+                             final String format) throws IJImageIOException {
         write(image, file, format, null);
     }
 
@@ -394,23 +423,29 @@ public class IJImageIO {
      * @param metadata image meta data
      * @throws IJImageIOException writing fails or file format is not supported.
      */
-    public static void write(final BufferedImage[] images, final File file, final String format, final IIOMetadata metadata)
+    public static void write(final BufferedImage[] images,
+                             final File file,
+                             final String format,
+                             final IIOMetadata metadata)
             throws IJImageIOException {
 
         Validate.notEmpty(images, "Argument 'image' cannot be null");
         Validate.notNull(file, "Argument 'file' cannot be null");
         Validate.notNull(format, "Argument 'format' cannot be null");
 
-        Optional<ImageWriterSpi> spi = IJIOUtils.writerSpiByFormatName(format);
+        List<ImageWriterSpi> spis = IJImageOUtils.writerSpiByFormatName(format);
 
-        if (!spi.isPresent()) {
+        if (spis.isEmpty()) {
             throw new IJImageIOException("Cannot find writer for format: '" + format + "'.");
         }
 
-        write(images, file, spi.get(), metadata);
+        write(images, file, spis.get(0), metadata);
     }
 
-    public static void write(final BufferedImage[] images, final File file, final ImageWriterSpi imageWriterSpi, final IIOMetadata metadata)
+    public static void write(final BufferedImage[] images,
+                             final File file,
+                             final ImageWriterSpi imageWriterSpi,
+                             final IIOMetadata metadata)
             throws IJImageIOException {
         Validate.notEmpty(images, "Argument 'image' cannot be null");
         Validate.notNull(file, "Argument 'file' cannot be null");
@@ -447,8 +482,10 @@ public class IJImageIO {
 
             if (images.length <= 0) {
                 throw new IllegalArgumentException("There are no input images to write");
-            } else if (images.length == 1) {
+            }
 
+
+            if (images.length == 1) {
                 final IIOImage iioImage = new IIOImage(images[0], null, metadata);
                 writer.write(null, iioImage, parameters);
             } else {
@@ -486,7 +523,10 @@ public class IJImageIO {
      * @param metadata image meta data
      * @throws IJImageIOException writing fails or file format is not supported.
      */
-    public static void write(final BufferedImage image, final File file, final String format, final IIOMetadata metadata)
+    public static void write(final BufferedImage image,
+                             final File file,
+                             final String format,
+                             final IIOMetadata metadata)
             throws IJImageIOException {
         write(new BufferedImage[]{image}, file, format, metadata);
     }
@@ -499,7 +539,8 @@ public class IJImageIO {
      * @param image Image to save.
      * @throws IJImageIOException writing fails or file format is not supported.
      */
-    public static void writeAsTiff(final ImagePlus image, final File file) throws IJImageIOException {
+    public static void writeAsTiff(final ImagePlus image,
+                                   final File file) throws IJImageIOException {
 
         final String format = "tif";
         final IIOMetadata metadata = TiffMetaDataFactory.createFrom(image);
@@ -529,10 +570,54 @@ public class IJImageIO {
         write(BufferedImageFactory.createFrom(ip), file, format);
     }
 
+    private static ImageInputStream createImageInputStream(File file) throws IJImageIOException {
+        final ImageInputStream iis;
+        try {
+            iis = ImageIO.createImageInputStream(file);
+        } catch (final IOException e) {
+            throw new IJImageIOException("Failed to create image input stream for file: " + file.getAbsolutePath() + ". "
+                    + e.getMessage(), e);
+        }
+        if (iis == null) {
+            throw new IJImageIOException("Failed to create image input stream for file: " + file.getAbsolutePath() + ".");
+        }
+        return iis;
+    }
 
-    private static List<BufferedImage> read(final ImageReader reader,
-                                            final ImageInputStream iis,
-                                            int[] pageIndex)
+    /**
+     * Return list of all currently registered readers that  that claim to be able to decode the supplied ImageInputStream.
+     * Preferred readers are returned at the beginning on=f the list.
+     *
+     * @param iis input stream.
+     * @return list of readers claiming to be able to decode the input stream.
+     * @throws IJImageIOException if no readers are found.
+     */
+    public static List<ImageReader> getImageReaders(ImageInputStream iis) throws IJImageIOException {
+        final Iterator<ImageReader> readers = ImageIO.getImageReaders(iis);
+        final List<ImageReader> preferredReaders = new ArrayList<>();
+        final List<ImageReader> otherReaders = new ArrayList<>();
+        while (readers.hasNext()) {
+            final ImageReader reader = readers.next();
+            ImageReaderSpi spi = reader.getOriginatingProvider();
+            if (spi != null && spi.getVendorName().toLowerCase().contains(PREFERRED_SPI_VENDOR)) {
+                preferredReaders.add(reader);
+            } else {
+                otherReaders.add(reader);
+            }
+        }
+
+        preferredReaders.addAll(otherReaders);
+
+        // Verify that there is at least one reader available.
+        if (preferredReaders.isEmpty()) {
+            throw new IJImageIOException("Input file format not supported: Cannot find proper image reader.");
+        }
+        return preferredReaders;
+    }
+
+    private static List<ImageAndMetadata> read(final ImageReader reader,
+                                               final ImageInputStream iis,
+                                               int[] pageIndex)
             throws IJImageIOException {
 
         //                iis.reset();
@@ -561,13 +646,15 @@ public class IJImageIO {
         }
 
         // Read each image and add it to list 'images'
-        final List<BufferedImage> images = new ArrayList<BufferedImage>();
+        final List<ImageAndMetadata> images = new ArrayList<>();
         for (int i = 0; i < pageIndex.length; i++) {
             IJ.showProgress(i, pageIndex.length);
 
             final BufferedImage bi;
+            final IIOMetadata md;
             try {
                 bi = reader.read(i);
+                md = reader.getImageMetadata(i);
             } catch (final IOException e) {
                 throw new IJImageIOException("Error reading image with internal index " + i
                         + ". Min internal index is " + minIndex + ". ", e);
@@ -578,7 +665,8 @@ public class IJImageIO {
 //            final IIOImage a = reader.readAll(j, imageReadParam);
 //            final IIOMetadata metadata = a.getMetadata();
 
-            images.add(bi);
+            md.getController();
+            images.add(new ImageAndMetadata(bi, md));
             IJ.showProgress(i + 1, pageIndex.length);
         }
 
@@ -623,7 +711,7 @@ public class IJImageIO {
      */
     private static ImagePlus[] attemptToCombineStacks(final List<ImagePlus> imageList) {
 
-        final List<ImagePlus> result = new ArrayList<ImagePlus>();
+        final List<ImagePlus> result = new ArrayList<>();
         int sourceIndex = 0;
         while (sourceIndex < imageList.size()) {
             // Test how many images can be combined
