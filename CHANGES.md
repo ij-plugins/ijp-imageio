@@ -6,17 +6,21 @@ IJP-ImageIO v.2.0
 ----------------------
 
 New & improved:
-* Removing dependency on old SUN libraries, moving to javax.imageio and
-  "standard" JAI codecs.
-* Distribution of "standard" JAI codecs: TIFF, JPEG2000, ...
+* Removing dependency on old SUN libraries, moving to javax.imageio.
+* Using codecs from jai-imageio-core, now maintained on GitHub [jai-imageio-core](https://github.com/jai-imageio/jai-imageio-core)
+* Several improvements to plugins user interface.
+* Library binaries published on Sonatype.
 
 Bug fix:
-* BUG-1434311: Problem saving 1 bit TIFF images
-* Correct how multi image files are corrected into stacks
-* numerous small big fixes
+* BUG-1434311: Problem saving 1 bit TIFF images.
+* Correct how multi image files are combined into stacks.
+* Numerous small big fixes.
 
 Code level:
 * Added unit tests.
+* Major rewrite of the code.
+* Build system changed to SBT.
+* Source code moved to GitHub [ijp-imageio](https://github.com/ij-plugins/ijp-imageio)
 
 
 IJ-ImageIO v.1.2.4

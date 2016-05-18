@@ -1,19 +1,20 @@
+// @formatter:off
 import java.net.URL
 
-name := "ijp_imageio"
+name         := "ijp_imageio"
 organization := "net.sf.ij-plugins"
-version := "2.0.0-SNAPSHOT"
+version      := "2.0.0-SNAPSHOT"
 
-homepage := Some(new URL("https://github.com/ij-plugins/ijp-imageio"))
+homepage     := Some(new URL("https://github.com/ij-plugins/ijp-imageio"))
 organizationHomepage := Some(url("http://ij-plugins.sf.net"))
-startYear := Some(2002)
-licenses := Seq(("LGPL-2.1", new URL("http://opensource.org/licenses/LGPL-2.1")))
-description := "ijp-ImageIO enable reading and writing images using Java ImageIO codecs. " +
+startYear    := Some(2002)
+licenses     := Seq(("LGPL-2.1", new URL("http://opensource.org/licenses/LGPL-2.1")))
+description  := "ijp-ImageIO enable reading and writing images using Java ImageIO codecs. " +
   "The core ImageIO formats: JPEG, PNG, BMP, WBMP, and GIF. IJP-ImageIO is also using JAI codes adding support for " +
   "TIFF, JPEG200, PNM, and PCX. TIFF supports reading and writing using various compression schemes: LZW, JPEG, ZIP, " +
   "and Deflate. For more detailed information see IJP-ImageIO home page: http://ij-plugins.sf.net/plugins/imageio."
 
-// @formatter:off
+
 libraryDependencies ++= Seq(
   "com.github.jai-imageio" % "jai-imageio-core"     % "1.3.1",
   "com.github.jai-imageio" % "jai-imageio-jpeg2000" % "1.3.0",
