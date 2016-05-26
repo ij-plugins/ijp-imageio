@@ -1,6 +1,14 @@
 IJP-ImageIO Changes
 ===================
 
+IJP-ImageIO v.2.0.1
+-------------------
+
+Bug fix:
+* [Issue #1]: java.lang.IllegalAccessError: tried to access class net.sf.ij_plugins.imageio.IJImageIO$ImageAndMetadata
+
+[Issue #1]: https://github.com/ij-plugins/ijp-imageio/issues/1
+
 
 IJP-ImageIO v.2.0
 ----------------------
