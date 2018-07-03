@@ -3,7 +3,7 @@ import java.net.URL
 
 name         := "ijp_imageio"
 organization := "net.sf.ij-plugins"
-version      := "2.0.1"
+version      := "2.0.2-SNAPSHOT"
 
 homepage     := Some(new URL("https://github.com/ij-plugins/ijp-imageio"))
 organizationHomepage := Some(url("http://ij-plugins.sf.net"))
@@ -16,7 +16,7 @@ description  := "ijp-ImageIO enable reading and writing images using Java ImageI
 
 
 libraryDependencies ++= Seq(
-  "com.github.jai-imageio" % "jai-imageio-core"     % "1.3.1",
+  "com.github.jai-imageio" % "jai-imageio-core"     % "1.4.0",
   "com.github.jai-imageio" % "jai-imageio-jpeg2000" % "1.3.0",
   "net.imagej"             % "ij"                   % "1.49v",
   "junit"                  % "junit"                % "4.12"  % "test",
@@ -63,13 +63,13 @@ publishArtifact in(Test, packageBin) := false
 publishArtifact in(Test, packageDoc) := false
 publishArtifact in(Test, packageSrc) := false
 
-publishTo <<= version {
+publishTo := version {
   version: String =>
     if (version.contains("-SNAPSHOT"))
       Some("Sonatype Nexus Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots")
     else
       Some("Sonatype Nexus Releases"  at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
-}
+}.value
 
 // @formatter:on
 
