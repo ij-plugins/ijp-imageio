@@ -18,8 +18,8 @@ description  := "ijp-ImageIO enable reading and writing images using Java ImageI
 libraryDependencies ++= Seq(
   "com.github.jai-imageio" % "jai-imageio-core"     % "1.4.0",
   "com.github.jai-imageio" % "jai-imageio-jpeg2000" % "1.3.0",
-  "net.imagej"             % "ij"                   % "1.49v",
-  "junit"                  % "junit"                % "4.12"  % "test",
+  "net.imagej"             % "ij"                   % "1.52t",
+  "junit"                  % "junit"                % "4.13"  % "test",
   "com.novocode"           % "junit-interface"      % "0.11"  % "test->default"
 )
 
