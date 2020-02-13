@@ -136,6 +136,37 @@ public class IJImageIOTest {
         print("compressionQualityDescriptions", compressionQualityDescriptions);
     }
 
+    /**
+     * Do not assume unit 'pixels' if no unit is present
+     */
+    @Test
+    public void testIssue5() throws Exception {
+        // Read image using ImageJ
+        final File inFile = new File("test/data/issue_5/0001A00M.tif");
+        final ImagePlus expImage = IJ.openImage(inFile.getCanonicalPath());
+        assertNotNull(expImage);
+
+        final ImagePlus[] actualImages = IJImageIO.read(inFile);
+        assertEquals(1, actualImages.length);
+
+        final double tolerance = 0.000001;
+        final Calibration expCalib = expImage.getCalibration();
+        final Calibration actualCalib = actualImages[0].getCalibration();
+        assertEquals("pixelHeight", expCalib.pixelHeight, actualCalib.pixelHeight, tolerance);
+        assertEquals("pixelWidth", expCalib.pixelWidth, actualCalib.pixelWidth, tolerance);
+        assertEquals("Unit", expCalib.getUnit(), actualCalib.getUnit());
+        assertEquals("function", expCalib.getFunction(), actualCalib.getFunction());
+        if (expCalib.getFunction() != Calibration.NONE) {
+            final double[] expCoeff = expCalib.getCoefficients();
+            final double[] actualCoeff = actualCalib.getCoefficients();
+            assertEquals("Number of coefficients", expCoeff.length, actualCoeff.length);
+            for (int i = 0; i < expCoeff.length; i++) {
+                assertEquals("coefficients " + i, expCoeff[i], actualCoeff[i], tolerance);
+            }
+            assertEquals("valueUnit", expCalib.getValueUnit(), actualCalib.getValueUnit());
+        }
+    }
+
     @Test
     public void testBug1434311() throws Exception {
 

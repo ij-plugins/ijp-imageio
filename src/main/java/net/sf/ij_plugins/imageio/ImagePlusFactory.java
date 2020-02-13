@@ -195,6 +195,25 @@ public class ImagePlusFactory {
                 imp.setCalibration(cal);
             }
 
+            TIFFField resolutionUnitField = tmd.getTIFFField(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT);
+            if (resolutionUnitField != null) {
+                Calibration cal = imp.getCalibration();
+                switch (resolutionUnitField.getAsInt(0)) {
+                    case 1:
+                        cal.setUnit(" ");
+                        break;
+                    case 2:
+                        cal.setUnit("inch");
+                        break;
+                    case 3:
+                        cal.setUnit("cm");
+                        break;
+                    default:
+                        throw new IJImageIOException("Unsupported resolution unit field value: " + resolutionUnitField.getAsInt(0));
+                }
+                imp.setCalibration(cal);
+            }
+
             {
                 TIFFField field = tmd.getTIFFField(BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION);
                 if (field != null && field.getCount() > 0) {
@@ -202,6 +221,7 @@ public class ImagePlusFactory {
                     DescriptionStringCoder.decode(description, imp);
                 }
             }
+
         }
 
         return imp;
