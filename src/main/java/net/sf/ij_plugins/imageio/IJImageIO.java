@@ -1,6 +1,6 @@
 /*
  *  IJ Plugins
- *  Copyright (C) 2002-2016 Jarek Sacha
+ *  Copyright (C) 2002-2020 Jarek Sacha
  *  Author's email: jpsacha at gmail.com
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,10 +17,11 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *  Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 package net.sf.ij_plugins.imageio;
 
+import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -40,8 +41,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 
 /**
@@ -333,17 +334,29 @@ public class IJImageIO {
         write(imp, file, imageWriterSpi, useOneBitCompressionDefault);
     }
 
+    public static boolean isColorComposite(ImagePlus imp) {
+        return imp.isComposite()
+                && imp.getNChannels() == 3
+                && imp.getStackSize() == 3
+                && (imp instanceof CompositeImage);
+    }
 
     public static void write(final ImagePlus imp,
                              final File file,
                              final ImageWriterSpi imageWriterSpi,
                              final boolean useOneBitCompression) throws IJImageIOException {
 
+        final int stackSize = imp.getStackSize();
 
-        final ImageStack stack = imp.getStack();
-        final BufferedImage[] images = new BufferedImage[stack.getSize()];
-        for (int i = 0; i < images.length; ++i) {
-            images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1), useOneBitCompression);
+        final BufferedImage[] images;
+        if (isColorComposite(imp) && imp.getType() == ImagePlus.GRAY16) {
+            images = new BufferedImage[1];
+        } else {
+            final ImageStack stack = imp.getStack();
+            images = new BufferedImage[stack.getSize()];
+            for (int i = 0; i < images.length; ++i) {
+                images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1), useOneBitCompression);
+            }
         }
         write(images, file, imageWriterSpi, null);
     }
@@ -502,11 +515,11 @@ public class IJImageIO {
 
         } catch (final FileNotFoundException ex) {
             throw new IJImageIOException("Error creating file output stream '" + file.getAbsolutePath() + ". "
-                    + Objects.toString(ex.getMessage()), ex);
+                    + ex.getMessage(), ex);
 
         } catch (final IOException ex) {
             throw new IJImageIOException("Error writing image to file '" + file.getAbsolutePath() + ". "
-                    + Objects.toString(ex.getMessage()), ex);
+                    + ex.getMessage(), ex);
         }
 
     }
@@ -657,7 +670,7 @@ public class IJImageIO {
                 md = reader.getImageMetadata(i);
             } catch (final IOException e) {
                 throw new IJImageIOException("Error reading image with internal index " + i
-                        + ". Min internal index is " + minIndex + ". ", e);
+                        + ". Min internal index is " + minIndex + ". " + e.getMessage(), e);
             }
 
 //            // Read metadata for this image
