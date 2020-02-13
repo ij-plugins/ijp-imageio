@@ -1,6 +1,10 @@
 ﻿IJP-ImageIO Plugin Bundle for ImageJ
 ====================================
 
+[![Build Status](https://travis-ci.org/ij-plugins/ijp-imageio.svg?branch=master)](https://travis-ci.org/ij-plugins/ijp-imageio) 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sf.ij-plugins/ijp_imageio/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sf.ij-plugins/ijp_imageio)
+[![javadoc](https://javadoc-badge.appspot.com/net.sf.ij-plugins/ijp_imageio.svg?label=javadoc)](https://javadoc-badge.appspot.com/net.sf.ij-plugins/ijp_imageio)
+
 
 Overview
 --------
@@ -52,12 +56,12 @@ You IJP-ImageIO as a stand-alone library. You will need to add dependency on:
 ```
 groupId   : net.sf.ij-plugins
 artifactId: ijp_imageio
-version   : 2.0.0
+version   : <version>
 ```
 For instance, for [SBT] it would be:
 
 ```
-"net.sf.ij-plugins" % "ijp_imageio" % "2.0.0"
+"net.sf.ij-plugins" % "ijp_imageio" % "<version>"
 ```
 
 License
