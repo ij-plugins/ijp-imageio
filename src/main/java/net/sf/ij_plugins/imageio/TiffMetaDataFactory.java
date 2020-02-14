@@ -42,10 +42,50 @@ public final class TiffMetaDataFactory {
         final TIFFTagSet tagSet = BaselineTIFFTagSet.getInstance();
         if (calibration != null) {
             if (calibration.scaled()) {
+                // Resolution unit
+                double resolutionScale = 1;
+                switch (calibration.getUnit().toLowerCase()) {
+                    case "inch":
+                        tIFFDirectory.addTIFFField(new TIFFField(
+                                tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_INCH));
+                        break;
+                    case "cm":
+                    case "centimeter":
+                        tIFFDirectory.addTIFFField(new TIFFField(
+                                tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_CENTIMETER));
+                        break;
+                    case "mm":
+                    case "milimeter":
+                        resolutionScale = 1 / 1000d;
+                        tIFFDirectory.addTIFFField(new TIFFField(
+                                tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_CENTIMETER));
+                        break;
+
+                    case "micron":
+                    case "um":
+                    case "\u00B5m":
+                        resolutionScale = 1 / 1000d / 1000d;
+                        tIFFDirectory.addTIFFField(new TIFFField(
+                                tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_CENTIMETER));
+                        break;
+
+                    case "m":
+                    case "meter":
+                        resolutionScale = 1000;
+                        tIFFDirectory.addTIFFField(new TIFFField(
+                                tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_CENTIMETER));
+                        break;
+
+                    default:
+                        tIFFDirectory.addTIFFField(new TIFFField(
+                                tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_NONE));
+                        break;
+                }
+
                 final long[][] xRes = new long[1][2];
                 final long[][] yRes = new long[1][2];
-                final double xScale = 1.0 / calibration.pixelWidth;
-                final double yScale = 1.0 / calibration.pixelHeight;
+                final double xScale = 1.0 / calibration.pixelWidth * resolutionScale;
+                final double yScale = 1.0 / calibration.pixelHeight * resolutionScale;
                 double scale = 1000000.0;
                 if (xScale > 1000.0) {
                     scale = 1000.0;
@@ -55,6 +95,7 @@ public final class TiffMetaDataFactory {
                 yRes[0][1] = (long) scale;
                 yRes[0][0] = (long) (yScale * scale);
 
+
                 // X resolution
                 tIFFDirectory.addTIFFField(new TIFFField(
                         tagSet.getTag(BaselineTIFFTagSet.TAG_X_RESOLUTION), TIFFTag.TIFF_RATIONAL, 1, xRes));
@@ -62,23 +103,7 @@ public final class TiffMetaDataFactory {
                 // Y resolution
                 tIFFDirectory.addTIFFField(new TIFFField(
                         tagSet.getTag(BaselineTIFFTagSet.TAG_Y_RESOLUTION), TIFFTag.TIFF_RATIONAL, 1, yRes));
-                // Resolution unit
-                switch (calibration.getUnit()) {
-                    case "inch":
-                        tIFFDirectory.addTIFFField(new TIFFField(
-                                tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_INCH));
-                        break;
-                    case "cm":
-                        tIFFDirectory.addTIFFField(new TIFFField(
-                                tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_CENTIMETER));
-                        break;
-                    default:
-                        tIFFDirectory.addTIFFField(new TIFFField(
-                                tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_NONE));
-                        break;
 
-                    // TODO treat also: "mm", "micron", "um", "\u00B5m", m
-                }
 
             }
 
