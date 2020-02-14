@@ -1,23 +1,23 @@
 /*
- * Image/J Plugins
- * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jpsacha at gmail.com
+ *  IJ Plugins
+ *  Copyright (C) 2002-2020 Jarek Sacha
+ *  Author's email: jpsacha at gmail.com
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 
 package net.sf.ij_plugins.imageio.plugins;
@@ -28,9 +28,9 @@ import ij.Macro;
 import ij.WindowManager;
 import ij.io.SaveDialog;
 import ij.plugin.PlugIn;
-import net.sf.ij_plugins.imageio.IJImageOUtils;
 import net.sf.ij_plugins.imageio.IJImageIO;
 import net.sf.ij_plugins.imageio.IJImageIOException;
+import net.sf.ij_plugins.imageio.IJImageOUtils;
 import net.sf.ij_plugins.imageio.TiffMetaDataFactory;
 
 import javax.imageio.ImageWriteParam;
@@ -104,6 +104,7 @@ public class ImageIOWriterPlugin implements PlugIn {
 
         try {
             IJImageIO.write(imp, file, codecName);
+            imp.setTitle(file.getName());
         } catch (final IJImageIOException e) {
             IJ.error(TITLE, e.getMessage());
         }
@@ -148,7 +149,7 @@ public class ImageIOWriterPlugin implements PlugIn {
                 "Image seems to be two level binary. Do you want to save it using 1 bit per pixel?");
 
         final Optional<ImageWriteParam> writerParamOpt = askForCompressionParams(writer, title, defaultCompression);
-        if (!writerParamOpt.isPresent()) {
+        if (writerParamOpt.isEmpty()) {
             return;
         }
         final ImageWriteParam writerParam = writerParamOpt.get();
@@ -157,6 +158,7 @@ public class ImageIOWriterPlugin implements PlugIn {
         IJ.showStatus("Writing image as " + formatName + " to " + file.getAbsolutePath());
         try {
             IJImageIO.write(imp, file, writer, metadata, writerParam, useOneBitCompression);
+            imp.setTitle(file.getName());
         } catch (final IJImageIOException e) {
             e.printStackTrace();
             Macro.abort();

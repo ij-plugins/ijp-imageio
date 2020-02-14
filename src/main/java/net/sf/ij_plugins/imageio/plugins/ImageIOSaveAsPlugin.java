@@ -1,23 +1,23 @@
 /*
- * Image/J Plugins
- * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jpsacha at gmail.com
+ *  IJ Plugins
+ *  Copyright (C) 2002-2020 Jarek Sacha
+ *  Author's email: jpsacha at gmail.com
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 
 package net.sf.ij_plugins.imageio.plugins;
@@ -45,7 +45,6 @@ import javax.swing.filechooser.FileFilter;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 
 import static net.sf.ij_plugins.imageio.IJImageOUtils.isBinary;
@@ -101,7 +100,7 @@ public final class ImageIOSaveAsPlugin implements PlugIn {
             final WriterOptions writerOptions;
             {
                 final Optional<WriterOptions> writerOptionsOpt = askForWriterOptions(imp, writer);
-                if (!writerOptionsOpt.isPresent()) {
+                if (writerOptionsOpt.isEmpty()) {
                     return;
                 } else {
                     writerOptions = writerOptionsOpt.get();
@@ -118,9 +117,10 @@ public final class ImageIOSaveAsPlugin implements PlugIn {
                 }
                 IJImageIO.write(imp, file, writer, writerOptions.metadata, writerOptions.param,
                         writerOptions.useOneBitCompression);
+                imp.setTitle(file.getName());
             } catch (final IJImageIOException e) {
                 throw new IJImageIOException(
-                        "Error writing file: " + file.getAbsolutePath() + ".\n\n" + Objects.toString(e.getMessage()),
+                        "Error writing file: " + file.getAbsolutePath() + ".\n\n" + e.getMessage(),
                         e);
             }
         } catch (IJImageIOException ex) {
@@ -208,7 +208,7 @@ public final class ImageIOSaveAsPlugin implements PlugIn {
             metadata = TiffMetaDataFactory.createFrom(imp);
         } else {
             final Optional<ImageWriteParam> writerParamOpt = askForCompressionParams(writer, TITLE, null);
-            if (!writerParamOpt.isPresent()) {
+            if (writerParamOpt.isEmpty()) {
                 return Optional.empty();
             }
             writerParam = writerParamOpt.get();
@@ -219,7 +219,7 @@ public final class ImageIOSaveAsPlugin implements PlugIn {
         return Optional.of(new WriterOptions(writerParam, useOneBitCompression, metadata));
     }
 
-    private class FileChooserResult {
+    private static class FileChooserResult {
         final public File file;
         final public ImageWriterSpi spi;
 
@@ -229,7 +229,7 @@ public final class ImageIOSaveAsPlugin implements PlugIn {
         }
     }
 
-    private class WriterOptions {
+    private static class WriterOptions {
         final ImageWriteParam param;
         final boolean useOneBitCompression;
         final IIOMetadata metadata;
