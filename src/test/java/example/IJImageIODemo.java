@@ -20,9 +20,11 @@
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 
-package net.sf.ij_plugins.imageio;
+package example;
 
-import static net.sf.ij_plugins.imageio.ImageIODemo.printList;
+import net.sf.ij_plugins.imageio.IJImageIO;
+
+import static example.ImageIODemo.printList;
 
 public class IJImageIODemo {
 

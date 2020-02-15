@@ -71,7 +71,7 @@ public class ReadWrite48BitColorTIFFTest extends TestCase {
         assertReadRGB48(dstFile, 3072, 2048);
     }
 
-    static CompositeImage assertReadRGB48(File file, int width, int height) throws IOException {
+    public static CompositeImage assertReadRGB48(File file, int width, int height) throws IOException {
         ImagePlus imp = IJ.openImage(file.getCanonicalPath());
         assertTrue(isRGB48(imp));
         assertEquals(width, imp.getWidth());

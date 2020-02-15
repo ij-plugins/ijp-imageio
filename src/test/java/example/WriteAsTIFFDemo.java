@@ -20,9 +20,11 @@
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 
-package net.sf.ij_plugins.imageio;
+package example;
 
 import ij.CompositeImage;
+import net.sf.ij_plugins.imageio.IJImageIO;
+import net.sf.ij_plugins.imageio.IJImageIOException;
 
 import java.io.File;
 import java.io.IOException;

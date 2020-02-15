@@ -19,7 +19,7 @@
  *
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
-package net.sf.ij_plugins.imageio;
+package example;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
