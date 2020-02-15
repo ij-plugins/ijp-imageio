@@ -703,7 +703,6 @@ public class IJImageIO {
 //            final IIOImage a = reader.readAll(j, imageReadParam);
 //            final IIOMetadata metadata = a.getMetadata();
 
-            md.getController();
             images.add(new ImageAndMetadata(bi, md));
             IJ.showProgress(i + 1, pageIndex.length);
         }
