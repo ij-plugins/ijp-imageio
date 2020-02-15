@@ -74,7 +74,9 @@ Building
 ### Building
 
 To rebuild and start included version of ImageJ type:
-  $ sbt ijRun
+```
+$ sbt ijRun
+```
 
 Support of Additional File Formats
 ----------------------------------
