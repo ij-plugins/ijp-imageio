@@ -1,6 +1,25 @@
 IJP-ImageIO Changes
 ===================
 
+IJP-ImageIO v.2.1.0
+-------------------
+
+This release moves away from Java 8, assuming Java 9 or better. A major new feature is better support for RGB48 TIFF images.
+
+New features:
+* Support saving of composite color images (48bit color TIFF) [Issue #3](https://github.com/ij-plugins/ijp-imageio/issues/3)
+* Support reading of composite color images (48bit color TIFF) [Issue #4](https://github.com/ij-plugins/ijp-imageio/issues/4)
+* Use new ImageIO (with TIFF etc) in Java 9+ [Issue #6](https://github.com/ij-plugins/ijp-imageio/issues/6)
+
+Bug fixes:
+* Image Title should be updated when image is saved [Issue #2](https://github.com/ij-plugins/ijp-imageio/issues/2)
+* Do not assume unit 'pixels' if no unit is present [Issue #3](https://github.com/ij-plugins/ijp-imageio/issues/3)
+
+IJP-ImageIO v.2.0.2
+-------------------
+
+Fixes for Java 9: use updated `jai-imageio-core` and remove dependency on `sun.misc.Service`.
+
 IJP-ImageIO v.2.0.1
 -------------------
 
