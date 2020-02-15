@@ -3,7 +3,7 @@ import java.net.URL
 
 name         := "ijp_imageio"
 organization := "net.sf.ij-plugins"
-version      := "2.0.3-SNAPSHOT"
+version      := "2.0.3.2-SNAPSHOT"
 
 homepage     := Some(new URL("https://github.com/ij-plugins/ijp-imageio"))
 organizationHomepage := Some(url("http://ij-plugins.sf.net"))
@@ -16,8 +16,6 @@ description  := "ijp-ImageIO enable reading and writing images using Java ImageI
 
 
 libraryDependencies ++= Seq(
-  "com.github.jai-imageio" % "jai-imageio-core"     % "1.4.0",
-  "com.github.jai-imageio" % "jai-imageio-jpeg2000" % "1.3.0",
   "net.imagej"             % "ij"                   % "1.52t",
   "junit"                  % "junit"                % "4.13"  % "test",
   "com.novocode"           % "junit-interface"      % "0.11"  % "test->default"

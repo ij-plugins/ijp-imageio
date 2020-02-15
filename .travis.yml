@@ -4,8 +4,9 @@ scala:
   - 2.13.1
 
 jdk:
-  - openjdk8
+  - openjdk11
   - oraclejdk11
+  - openjdk13
 
 install: true
 

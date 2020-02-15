@@ -27,6 +27,7 @@ import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -117,6 +118,7 @@ public class IJImageIOTest {
         return imps[0];
     }
 
+    @Ignore
     @Test
     public void testJPEG2000Writer() {
         final String formatName = "jpeg2000";

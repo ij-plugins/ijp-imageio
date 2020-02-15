@@ -21,15 +21,16 @@
  */
 package net.sf.ij_plugins.imageio;
 
-import com.github.jaiimageio.impl.plugins.tiff.TIFFImageMetadata;
-import com.github.jaiimageio.plugins.tiff.BaselineTIFFTagSet;
-import com.github.jaiimageio.plugins.tiff.TIFFField;
 import ij.CompositeImage;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.measure.Calibration;
 import ij.process.*;
 
+import javax.imageio.metadata.IIOInvalidTreeException;
+import javax.imageio.plugins.tiff.BaselineTIFFTagSet;
+import javax.imageio.plugins.tiff.TIFFDirectory;
+import javax.imageio.plugins.tiff.TIFFField;
 import java.awt.image.*;
 
 import static java.awt.image.DataBuffer.TYPE_USHORT;
@@ -176,8 +177,9 @@ public class ImagePlusFactory {
     public static ImagePlus create(final String title, final IJImageIO.ImageAndMetadata mi) throws IJImageIOException {
         ImagePlus imp = create(title, mi.image.getRaster(), mi.image.getColorModel());
 
-        if (mi.metadata instanceof TIFFImageMetadata) {
-            TIFFImageMetadata tmd = (TIFFImageMetadata) mi.metadata;
+        try {
+            // WE will assume that this is a TIFF file, if it not an exception from the fallowing will get us out of here
+            TIFFDirectory tmd = TIFFDirectory.createFromMetadata(mi.metadata);
 
             TIFFField xResField = tmd.getTIFFField(BaselineTIFFTagSet.TAG_X_RESOLUTION);
             if (xResField != null) {
@@ -221,9 +223,9 @@ public class ImagePlusFactory {
                     DescriptionStringCoder.decode(description, imp);
                 }
             }
-
+        } catch (IIOInvalidTreeException ex) {
+            // Ignore attempt to treat this as a TIFF file
         }
-
         return imp;
     }
 

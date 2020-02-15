@@ -181,7 +181,7 @@ public final class ImageIOSaveAsPlugin implements PlugIn {
         return _fileChooser;
     }
 
-    private Optional<WriterOptions> askForWriterOptions(final ImagePlus imp, final ImageWriter writer) {
+    private Optional<WriterOptions> askForWriterOptions(final ImagePlus imp, final ImageWriter writer) throws IJImageIOException {
 
         final String spiPluginClassName = writer.getOriginatingProvider().getPluginClassName();
         final ImageWriteParam writerParam;
