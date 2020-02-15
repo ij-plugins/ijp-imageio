@@ -62,6 +62,20 @@ For instance, for [SBT] it would be:
 "net.sf.ij-plugins" % "ijp_imageio" % "<version>"
 ```
 
+Building
+-----------------------------------
+
+### Prerequisites:
+  * Java compiler, tested with Oracle Java 11 (http://java.oracle.com)
+
+  * [SBT build tool](https://www.scala-sbt.org/)
+    - tested with 1.3.8
+    
+### Building
+
+To rebuild and start included version of ImageJ type:
+  $ sbt ijRun
+
 Support of Additional File Formats
 ----------------------------------
 
