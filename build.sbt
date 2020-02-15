@@ -30,7 +30,10 @@ javacOptions in(Compile, compile) ++= Seq("-Xlint")
 javacOptions in(Compile, doc    ) ++= Seq(
   "-windowtitle", "IJP-ImageIO API v." + version.value,
   "-header",      "IJP-ImageIO API v." + version.value,
-  "-exclude",     "net.sf.ij_plugins.imageio.impl"
+  "-sourcepath",  (baseDirectory.value / "src/main/java").getAbsolutePath,
+  "-subpackages", "net.sf.ij_plugins.imageio",
+  "-exclude",     "net.sf.ij_plugins.imageio.impl:net.sf.ij_plugins.imageio.plugins",
+  "-verbose"
 )
 
 // Set the prompt (for this build) to include the project id.
