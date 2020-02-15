@@ -14,7 +14,6 @@ description  := "ijp-ImageIO enable reading and writing images using Java ImageI
   "TIFF, JPEG200, PNM, and PCX. TIFF supports reading and writing using various compression schemes: LZW, JPEG, ZIP, " +
   "and Deflate. For more detailed information see IJP-ImageIO home page: http://ij-plugins.sf.net/plugins/imageio."
 
-
 libraryDependencies ++= Seq(
   "net.imagej"             % "ij"                   % "1.52t",
   "junit"                  % "junit"                % "4.13"  % "test",
@@ -59,30 +58,13 @@ publishMavenStyle := true
 crossPaths        := false
 // This forbids including Scala related libraries into the dependency
 autoScalaLibrary  := false
+publishTo         := sonatypePublishToBundle.value
+import xerial.sbt.Sonatype._
+sonatypeProjectHosting := Some(GitHubHosting("ij-plugins", "ijp-imageio", "jpsacha@gmail.com"))
+developers := List(
+  Developer(id="jpsacha", name="Jarek Sacha", email="jpsacha@gmail.com", url=url("https://github.com/jpsacha"))
+)
 
 publishArtifact in(Test, packageBin) := false
 publishArtifact in(Test, packageDoc) := false
 publishArtifact in(Test, packageSrc) := false
-
-publishTo := version {
-  version: String =>
-    if (version.contains("-SNAPSHOT"))
-      Some("Sonatype Nexus Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots")
-    else
-      Some("Sonatype Nexus Releases"  at "https://oss.sonatype.org/service/local/staging/deploy/maven2")
-}.value
-
-// @formatter:on
-
-pomExtra :=
-  <scm>
-    <url>https://github.com/ij-plugins/ijp-imageio</url>
-    <connection>https://github.com/ij-plugins/ijp-imageio.git</connection>
-  </scm>
-    <developers>
-      <developer>
-        <id>jpsacha</id>
-        <name>Jarek Sacha</name>
-        <url>https://github.com/jpsacha</url>
-      </developer>
-    </developers>
