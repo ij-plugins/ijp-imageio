@@ -1,34 +1,39 @@
 /*
- * Image/J Plugins
- * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jpsacha at gmail.com
+ *  IJ Plugins
+ *  Copyright (C) 2002-2020 Jarek Sacha
+ *  Author's email: jpsacha at gmail.com
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 package net.sf.ij_plugins.imageio;
 
-import com.github.jaiimageio.impl.plugins.tiff.TIFFImageMetadata;
-import com.github.jaiimageio.plugins.tiff.BaselineTIFFTagSet;
-import com.github.jaiimageio.plugins.tiff.TIFFField;
+import ij.CompositeImage;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.measure.Calibration;
 import ij.process.*;
 
+import javax.imageio.metadata.IIOInvalidTreeException;
+import javax.imageio.plugins.tiff.BaselineTIFFTagSet;
+import javax.imageio.plugins.tiff.TIFFDirectory;
+import javax.imageio.plugins.tiff.TIFFField;
 import java.awt.image.*;
+
+import static java.awt.image.DataBuffer.TYPE_USHORT;
 
 /**
  * Creates/converts Image/J's image objects from Java2D/JAI representation.
@@ -88,7 +93,7 @@ public class ImagePlusFactory {
         switch (buffer.getDataType()) {
             case DataBuffer.TYPE_BYTE:
                 return new ByteProcessor(w, h, ((DataBufferByte) buffer).getData(), cm);
-            case DataBuffer.TYPE_USHORT:
+            case TYPE_USHORT:
                 return new ShortProcessor(w, h, ((DataBufferUShort) buffer).getData(), cm);
             case DataBuffer.TYPE_SHORT:
                 final short[] pixels = ((DataBufferShort) buffer).getData();
@@ -136,7 +141,7 @@ public class ImagePlusFactory {
 
         final SampleModel sm = raster.getSampleModel();
         if (numBanks > 1 || sm.getNumBands() > 1
-                ) {
+        ) {
             // If image has multiple banks or multiple color components, assume that it
             // is a color image and relay on AWT for proper decoding.
             return new ColorProcessor(src);
@@ -172,8 +177,9 @@ public class ImagePlusFactory {
     public static ImagePlus create(final String title, final IJImageIO.ImageAndMetadata mi) throws IJImageIOException {
         ImagePlus imp = create(title, mi.image.getRaster(), mi.image.getColorModel());
 
-        if (mi.metadata instanceof TIFFImageMetadata) {
-            TIFFImageMetadata tmd = (TIFFImageMetadata) mi.metadata;
+        try {
+            // WE will assume that this is a TIFF file, if it not an exception from the fallowing will get us out of here
+            TIFFDirectory tmd = TIFFDirectory.createFromMetadata(mi.metadata);
 
             TIFFField xResField = tmd.getTIFFField(BaselineTIFFTagSet.TAG_X_RESOLUTION);
             if (xResField != null) {
@@ -191,6 +197,25 @@ public class ImagePlusFactory {
                 imp.setCalibration(cal);
             }
 
+            TIFFField resolutionUnitField = tmd.getTIFFField(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT);
+            if (resolutionUnitField != null) {
+                Calibration cal = imp.getCalibration();
+                switch (resolutionUnitField.getAsInt(0)) {
+                    case 1:
+                        cal.setUnit(" ");
+                        break;
+                    case 2:
+                        cal.setUnit("inch");
+                        break;
+                    case 3:
+                        cal.setUnit("cm");
+                        break;
+                    default:
+                        throw new IJImageIOException("Unsupported resolution unit field value: " + resolutionUnitField.getAsInt(0));
+                }
+                imp.setCalibration(cal);
+            }
+
             {
                 TIFFField field = tmd.getTIFFField(BaselineTIFFTagSet.TAG_IMAGE_DESCRIPTION);
                 if (field != null && field.getCount() > 0) {
@@ -198,8 +223,9 @@ public class ImagePlusFactory {
                     DescriptionStringCoder.decode(description, imp);
                 }
             }
+        } catch (IIOInvalidTreeException ex) {
+            // Ignore attempt to treat this as a TIFF file
         }
-
         return imp;
     }
 
@@ -226,12 +252,37 @@ public class ImagePlusFactory {
 
         final SampleModel sm = r.getSampleModel();
         final ImagePlus result;
-        if (numBanks > 1 || sm.getNumBands() > 1
-                ) {
-            // If image has multiple banks or multiple color components, assume that it
-            // is a color image and relay on AWT for proper decoding.
-            final BufferedImage bi = new BufferedImage(cm, r, false, null);
-            result = new ImagePlus(title, new ColorProcessor(bi));
+        if (numBanks > 1 || sm.getNumBands() > 1) {
+            if (sm.getNumBands() == 3 && sm.getDataType() == DataBuffer.TYPE_USHORT) {
+                // Assume we have RGB48 image, so interpret it as a composite color image
+                int width = r.getWidth();
+                int height = r.getHeight();
+                ShortProcessor red = new ShortProcessor(width, height);
+                ShortProcessor green = new ShortProcessor(width, height);
+                ShortProcessor blue = new ShortProcessor(width, height);
+                int[] iArray = new int[3];
+                for (int y = 0; y < height; y++) {
+                    for (int x = 0; x < width; x++) {
+                        sm.getPixel(x, y, iArray, db);
+                        red.set(x, y, iArray[0]);
+                        green.set(x, y, iArray[1]);
+                        blue.set(x, y, iArray[2]);
+                    }
+                }
+                ImageStack stack = new ImageStack(width, height);
+                stack.addSlice(red);
+                stack.addSlice(green);
+                stack.addSlice(blue);
+                stack.setSliceLabel("Red", 1);
+                stack.setSliceLabel("Green", 2);
+                stack.setSliceLabel("Blue", 3);
+                result = new CompositeImage(new ImagePlus(title, stack), CompositeImage.COMPOSITE);
+            } else {
+                // If image has multiple banks or multiple color components, assume that it
+                // is a color image and relay on AWT for proper decoding.
+                final BufferedImage bi = new BufferedImage(cm, r, false, null);
+                result = new ImagePlus(title, new ColorProcessor(bi));
+            }
         } else if (sm.getSampleSize(0) < 8) {
             // Temporary fix for less then 8 bit images
             final BufferedImage bi = new BufferedImage(cm, r, false, null);

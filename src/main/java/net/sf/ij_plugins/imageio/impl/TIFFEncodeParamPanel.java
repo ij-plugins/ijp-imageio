@@ -1,36 +1,38 @@
 /*
- * Image/J Plugins
- * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jpsacha at gmail.com
+ *  IJ Plugins
+ *  Copyright (C) 2002-2020 Jarek Sacha
+ *  Author's email: jpsacha at gmail.com
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 
 package net.sf.ij_plugins.imageio.impl;
 
-import com.github.jaiimageio.plugins.tiff.TIFFImageWriteParam;
+import net.sf.ij_plugins.imageio.IJImageIOException;
 
 import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Locale;
+
+import static net.sf.ij_plugins.imageio.IJImageIO.getTIFFWriter;
 
 //
 // TODO: Selection of deflation level.
@@ -101,34 +103,37 @@ class TIFFEncodeParamPanel extends JPanel {
      * @param blackWhite Description of the Parameter
      * @return The imageEncodeParam value
      */
-    ImageWriteParam getImageWriteParam(final boolean blackWhite) {
-        final TIFFImageWriteParam param = new TIFFImageWriteParam(Locale.US);
-        param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+    ImageWriteParam getImageWriteParam(final boolean blackWhite) throws IJImageIOException {
+        final ImageWriter imageWriter = getTIFFWriter();
+
+        // Set compression parameters
+        final ImageWriteParam writerParam = imageWriter.getDefaultWriteParam();
+        writerParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
         if (blackWhite) {
             if (rleRadioButton.isSelected()) {
-                param.setCompressionType("CCITT RLE");
+                writerParam.setCompressionType("CCITT RLE");
             } else if (faxT4RadioButton.isSelected()) {
-                param.setCompressionType("CCITT T.4");
+                writerParam.setCompressionType("CCITT T.4");
             } else if (faxT6RadioButton.isSelected()) {
-                param.setCompressionType("CCITT T.6");
+                writerParam.setCompressionType("CCITT T.6");
             }
         } else {
             if (noneRadioButton.isSelected()) {
-                param.setCompressionMode(ImageWriteParam.MODE_DISABLED);
+                writerParam.setCompressionMode(ImageWriteParam.MODE_DISABLED);
             } else if (packbitRadioButton.isSelected()) {
-                param.setCompressionType("PackBits");
+                writerParam.setCompressionType("PackBits");
             } else if (lzwRadioButton.isSelected()) {
-                param.setCompressionType("LZW");
+                writerParam.setCompressionType("LZW");
             } else if (jpegRadioButton.isSelected()) {
-                param.setCompressionType("JPEG");
-                param.setCompressionQuality(1);
+                writerParam.setCompressionType("JPEG");
+                writerParam.setCompressionQuality(1);
             } else if (zipRadioButton.isSelected()) {
-                param.setCompressionType("ZLib");
+                writerParam.setCompressionType("ZLib");
             } else if (deflateRadioButton.isSelected()) {
-                param.setCompressionType("Deflate");
+                writerParam.setCompressionType("Deflate");
             }
         }
-        return param;
+        return writerParam;
     }
 
 

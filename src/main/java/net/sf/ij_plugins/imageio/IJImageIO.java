@@ -1,6 +1,6 @@
 /*
  *  IJ Plugins
- *  Copyright (C) 2002-2016 Jarek Sacha
+ *  Copyright (C) 2002-2020 Jarek Sacha
  *  Author's email: jpsacha at gmail.com
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *  Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 package net.sf.ij_plugins.imageio;
 
@@ -40,8 +40,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 
 /**
@@ -56,7 +56,7 @@ import java.util.List;
  */
 public class IJImageIO {
 
-    private final static boolean useOneBitCompressionDefault = false;
+    private final static boolean useOneBitCompressionDefault = BufferedImageFactory.useOneBitCompressionDefault;
 
     public static final String PREFERRED_SPI_VENDOR = "github.com/jai-imageio";
 
@@ -106,7 +106,7 @@ public class IJImageIO {
             }
         }
 
-        return extensions.toArray(new String[extensions.size()]);
+        return extensions.toArray(new String[0]);
     }
 
 
@@ -128,7 +128,7 @@ public class IJImageIO {
             }
         }
 
-        return extensions.toArray(new String[extensions.size()]);
+        return extensions.toArray(new String[0]);
     }
 
 
@@ -184,7 +184,7 @@ public class IJImageIO {
 
         return combineStacks
                 ? attemptToCombineStacks(images)
-                : images.toArray(new ImagePlus[images.size()]);
+                : images.toArray(new ImagePlus[0]);
     }
 
 
@@ -296,10 +296,8 @@ public class IJImageIO {
 
             // Try available readers till one of them reads images with no errors
             final StringBuilder errorBuffer = new StringBuilder();
-            List<BufferedImage> bufferedImages = null;
             ImageInfo imageInfo = null;
-            for (int i = 0; bufferedImages == null && i < readerList.size(); i++) {
-                final ImageReader reader = readerList.get(i);
+            for (final ImageReader reader : readerList) {
                 IJImageIO.logDebug("Using reader: " + reader.getClass().getName());
                 try {
                     imageInfo = readInfo(reader, iis);
@@ -333,18 +331,13 @@ public class IJImageIO {
         write(imp, file, imageWriterSpi, useOneBitCompressionDefault);
     }
 
-
     public static void write(final ImagePlus imp,
                              final File file,
                              final ImageWriterSpi imageWriterSpi,
                              final boolean useOneBitCompression) throws IJImageIOException {
 
 
-        final ImageStack stack = imp.getStack();
-        final BufferedImage[] images = new BufferedImage[stack.getSize()];
-        for (int i = 0; i < images.length; ++i) {
-            images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1), useOneBitCompression);
-        }
+        final BufferedImage[] images = BufferedImageFactory.createFrom(imp, useOneBitCompression);
         write(images, file, imageWriterSpi, null);
     }
 
@@ -355,11 +348,7 @@ public class IJImageIO {
                              final ImageWriteParam parameters) throws IJImageIOException {
 
 
-        final ImageStack stack = imp.getStack();
-        final BufferedImage[] images = new BufferedImage[stack.getSize()];
-        for (int i = 0; i < images.length; ++i) {
-            images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1));
-        }
+        final BufferedImage[] images = BufferedImageFactory.createFrom(imp);
         write(images, file, writer, metadata, parameters);
     }
 
@@ -370,10 +359,7 @@ public class IJImageIO {
                              final ImageWriteParam parameters,
                              final boolean useOneBitCompression) throws IJImageIOException {
 
-        final BufferedImage[] bis = new BufferedImage[imp.getNSlices()];
-        for (int s = 0; s < imp.getNSlices(); s++) {
-            bis[s] = BufferedImageFactory.createFrom(imp, s, useOneBitCompression);
-        }
+        final BufferedImage[] bis = BufferedImageFactory.createFrom(imp, useOneBitCompression);
         write(bis, file, writer, metadata, parameters);
     }
 
@@ -389,15 +375,12 @@ public class IJImageIO {
                              final boolean useOneBitCompression) throws IJImageIOException {
         List<ImageWriterSpi> spis = IJImageOUtils.writerSpiByFormatName(format);
         write(imp, file, spis.get(0), useOneBitCompression);
-
     }
 
 
     /**
      * Write image to a file using specified format.
      * Supported formats can be obtained calling {@link #supportedImageWriterExtensions()}.
-     * <p>
-     * TIFF images will be saved with LZW compression.
      *
      * @param image  image to be saved.
      * @param file   file where to save the image.
@@ -414,8 +397,6 @@ public class IJImageIO {
     /**
      * Write image to a file using specified format and also save the metadata if provided.
      * Supported formats can be obtained calling {@link #supportedImageWriterExtensions()}.
-     * <p>
-     * TIFF images will be saved with LZW compression.
      *
      * @param images   images to be saved.
      * @param file     file where to save the image.
@@ -434,7 +415,6 @@ public class IJImageIO {
         Validate.notNull(format, "Argument 'format' cannot be null");
 
         List<ImageWriterSpi> spis = IJImageOUtils.writerSpiByFormatName(format);
-
         if (spis.isEmpty()) {
             throw new IJImageIOException("Cannot find writer for format: '" + format + "'.");
         }
@@ -502,11 +482,11 @@ public class IJImageIO {
 
         } catch (final FileNotFoundException ex) {
             throw new IJImageIOException("Error creating file output stream '" + file.getAbsolutePath() + ". "
-                    + Objects.toString(ex.getMessage()), ex);
+                    + ex.getMessage(), ex);
 
         } catch (final IOException ex) {
             throw new IJImageIOException("Error writing image to file '" + file.getAbsolutePath() + ". "
-                    + Objects.toString(ex.getMessage()), ex);
+                    + ex.getMessage(), ex);
         }
 
     }
@@ -514,8 +494,6 @@ public class IJImageIO {
     /**
      * Write image to a file using specified format and also save the metadata if provided.
      * Supported formats can be obtained calling {@link #supportedImageWriterExtensions()}.
-     * <p>
-     * TIFF images will be saved with LZW compression.
      *
      * @param image    image to be saved.
      * @param file     file where to save the image.
@@ -533,7 +511,7 @@ public class IJImageIO {
 
 
     /**
-     * Write image in TIFF format with  LZW compression using ImageIO
+     * Write image in TIFF format with ZLib compression using ImageIO
      *
      * @param file  File to save to.
      * @param image Image to save.
@@ -542,32 +520,92 @@ public class IJImageIO {
     public static void writeAsTiff(final ImagePlus image,
                                    final File file) throws IJImageIOException {
 
-        final String format = "tif";
+        writeAsTiff(image, file, "ZLib");
+    }
+
+    /**
+     * Write image in TIFF format using ImageIO
+     *
+     * @param file        File to save to.
+     * @param image       Image to save.
+     * @param compression TIFF compression type, for instance, "ZLib", "LZW".
+     *                    If empty or {@code none}, no compression is used
+     * @throws IJImageIOException writing fails or file format is not supported.
+     * @see IJImageIO#getTIFFCompressionTypes()
+     */
+    public static void writeAsTiff(final ImagePlus image,
+                                   final File file,
+                                   final String compression) throws IJImageIOException {
+
+        final BufferedImage[] images = BufferedImageFactory.createFrom(image);
         final IIOMetadata metadata = TiffMetaDataFactory.createFrom(image);
-        if (image.getStackSize() == 1) {
-            write(BufferedImageFactory.createFrom(image.getProcessor()), file, format, metadata);
-        } else {
-            final ImageStack stack = image.getStack();
-            final BufferedImage[] images = new BufferedImage[stack.getSize()];
-            for (int i = 0; i < images.length; ++i) {
-                images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1));
+        writeAsTiff(images, file, compression, metadata);
+    }
+
+    /**
+     * Write image in TIFF format using ImageIO
+     *
+     * @param file        File to save to.
+     * @param images      Images to save.
+     * @param compression TIFF compression type, for instance, "ZLib", "LZW".
+     *                    If empty or {@code none}, no compression is used
+     * @throws IJImageIOException writing fails or file format is not supported.
+     * @see IJImageIO#getTIFFCompressionTypes()
+     */
+    public static void writeAsTiff(final BufferedImage[] images,
+                                   final File file,
+                                   final String compression,
+                                   IIOMetadata metadata
+    ) throws IJImageIOException {
+
+        final ImageWriter imageWriter = getTIFFWriter();
+
+        // Set compression parameters
+        final ImageWriteParam writerParam = imageWriter.getDefaultWriteParam();
+        if (compression != null && !compression.isEmpty()) {
+            if (writerParam.canWriteCompressed()) {
+                writerParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                final String[] compressionTypes = writerParam.getCompressionTypes();
+                if (!Arrays.asList(compressionTypes).contains(compression)) {
+                    throw new IllegalArgumentException("Unsupported TIFF compression type: \"" + compression + "\", " +
+                            "valid types: " + Arrays.toString(compressionTypes));
+                }
+                writerParam.setCompressionType(compression);
             }
-            write(images, file, format, metadata);
         }
+        write(images, file, imageWriter, metadata, writerParam);
     }
 
 
     /**
-     * Write image in TIFF format with  LZW compression using ImageIO
+     * Write image in TIFF format with ZLib compression using ImageIO
      *
      * @param file File to save to.
      * @param ip   Image to save.
      * @throws IJImageIOException writing fails or file format is not supported.
      */
     public static void writeAsTiff(final ImageProcessor ip, final File file) throws IJImageIOException {
+        writeAsTiff(new ImagePlus("", ip), file);
+    }
 
+    public static ImageWriter getTIFFWriter() throws IJImageIOException {
         final String format = "tif";
-        write(BufferedImageFactory.createFrom(ip), file, format);
+        List<ImageWriterSpi> spis = IJImageOUtils.writerSpiByFormatName(format);
+        if (spis.isEmpty()) {
+            throw new IJImageIOException("Cannot find writer for format: '" + format + "'.");
+        }
+        final ImageWriterSpi imageWriterSpi = spis.get(0);
+        final ImageWriter imageWriter;
+        try {
+            imageWriter = imageWriterSpi.createWriterInstance();
+        } catch (IOException e) {
+            throw new IJImageIOException("Failed to create image writer. " + e.getMessage(), e);
+        }
+        return imageWriter;
+    }
+
+    public static String[] getTIFFCompressionTypes() throws IJImageIOException {
+        return getTIFFWriter().getDefaultWriteParam().getCompressionTypes();
     }
 
     private static ImageInputStream createImageInputStream(File file) throws IJImageIOException {
@@ -657,7 +695,7 @@ public class IJImageIO {
                 md = reader.getImageMetadata(i);
             } catch (final IOException e) {
                 throw new IJImageIOException("Error reading image with internal index " + i
-                        + ". Min internal index is " + minIndex + ". ", e);
+                        + ". Min internal index is " + minIndex + ". " + e.getMessage(), e);
             }
 
 //            // Read metadata for this image
@@ -665,7 +703,6 @@ public class IJImageIO {
 //            final IIOImage a = reader.readAll(j, imageReadParam);
 //            final IIOMetadata metadata = a.getMetadata();
 
-            md.getController();
             images.add(new ImageAndMetadata(bi, md));
             IJ.showProgress(i + 1, pageIndex.length);
         }
@@ -735,7 +772,7 @@ public class IJImageIO {
             sourceIndex += chainLength;
         }
 
-        return result.toArray(new ImagePlus[result.size()]);
+        return result.toArray(new ImagePlus[0]);
     }
 
 

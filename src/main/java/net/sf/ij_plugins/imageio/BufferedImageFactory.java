@@ -1,28 +1,30 @@
 /*
- * Image/J Plugins
- * Copyright (C) 2002-2016 Jarek Sacha
- * Author's email: jpsacha at gmail.com
+ *  IJ Plugins
+ *  Copyright (C) 2002-2020 Jarek Sacha
+ *  Author's email: jpsacha at gmail.com
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Latest release available at http://sourceforge.net/projects/ij-plugins/
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 
 package net.sf.ij_plugins.imageio;
 
+import ij.CompositeImage;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.process.*;
 
 import java.awt.*;
@@ -30,6 +32,7 @@ import java.awt.color.ColorSpace;
 import java.awt.image.*;
 
 import static net.sf.ij_plugins.imageio.IJImageOUtils.isBinary;
+import static net.sf.ij_plugins.imageio.IJImageOUtils.isRGB48;
 
 
 /**
@@ -40,6 +43,9 @@ import static net.sf.ij_plugins.imageio.IJImageOUtils.isBinary;
  */
 @SuppressWarnings("WeakerAccess")
 public class BufferedImageFactory {
+
+    final static boolean useOneBitCompressionDefault = false;
+
 
     private static final byte[][] grayIndexCmaps = {
             null,
@@ -62,6 +68,74 @@ public class BufferedImageFactory {
     private BufferedImageFactory() {
     }
 
+    /**
+     * Create {@link BufferedImage} from an image assumed to be a RGB48 image (RGB with 16 bits per channel)
+     *
+     * @param image input image
+     * @return {@code true} is image look like an RGB48 image.
+     * @throws IllegalArgumentException if image is not RGB48
+     * @see IJImageOUtils#isRGB48(ij.ImagePlus)
+     */
+    public static BufferedImage createRGB48(final CompositeImage image) throws IllegalArgumentException {
+        if (!isRGB48(image)) {
+            throw new IllegalArgumentException("Input image must be RBg48 image.");
+        }
+
+        ColorSpace colorSpace = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+        int dataType = DataBuffer.TYPE_USHORT;
+        boolean hasAlpha = false;
+        boolean isAlphaPremultiplied = false;
+
+        ColorModel colorModel = createComponentColorModel(colorSpace, 3, dataType, hasAlpha, isAlphaPremultiplied);
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+        int numPixels = width * height;
+        final WritableRaster writableRaster = colorModel.createCompatibleWritableRaster(width, height);
+        DataBuffer db = writableRaster.getDataBuffer();
+        short[] pixelsRed = (short[]) image.getStack().getProcessor(1).getPixels();
+        short[] pixelsGreen = (short[]) image.getStack().getProcessor(2).getPixels();
+        short[] pixelsBue = (short[]) image.getStack().getProcessor(3).getPixels();
+        for (int i = 0; i < numPixels; i++) {
+            db.setElem(i * 3, pixelsRed[i]);
+            db.setElem(i * 3 + 1, pixelsGreen[i]);
+            db.setElem(i * 3 + 2, pixelsBue[i]);
+        }
+
+        return new BufferedImage(colorModel, writableRaster, false, null);
+    }
+
+    public static BufferedImage[] createFrom(final ImagePlus src) {
+        return createFrom(src, useOneBitCompressionDefault);
+    }
+
+    public static BufferedImage[] createFrom(final ImagePlus src, final boolean preferBinary) {
+        final BufferedImage[] images;
+        if (isRGB48(src)) {
+            CompositeImage ci = (CompositeImage) src;
+            images = new BufferedImage[1];
+            images[0] = BufferedImageFactory.createRGB48(ci);
+        } else {
+            final ImageStack stack = src.getStack();
+            images = new BufferedImage[stack.getSize()];
+            for (int i = 0; i < images.length; ++i) {
+                images[i] = BufferedImageFactory.createFrom(stack.getProcessor(i + 1), preferBinary);
+            }
+        }
+        return images;
+    }
+
+    /**
+     * Create BufferedImage from a slice <code>sliceNb</code> in image <code>src</code> . Indexing
+     * starts at 0. New image has a copy of pixels in the source image.
+     *
+     * @param src     Source image.
+     * @param sliceNb Slice number, numbering starts at 0.
+     * @return New BufferedImage.
+     */
+    public static BufferedImage createFrom(final ImagePlus src, final int sliceNb) {
+        return createFrom(src, sliceNb, useOneBitCompressionDefault);
+    }
 
     /**
      * Create BufferedImage from a slice <code>sliceNb</code> in image <code>src</code> . Indexing
@@ -214,12 +288,12 @@ public class BufferedImageFactory {
      * Create BufferedImage from ByteProcessor, use IndexColorModel with uniform gray level distribution from 0 to 255.
      * Share pixels with source.
      * <p>
-     * Alternative approach is to use {@link ij.process.ByteProcessor#createBufferedImage()} which uses color model
+     * Alternative approach is to use {@link ij.process.ByteProcessor#getBufferedImage()} which uses color model
      * currently assigned to source ByteProcessor.
      *
      * @param src ByteProcessor source.
      * @return BufferedImage.
-     * @see ij.process.ByteProcessor#createBufferedImage()
+     * @see ij.process.ByteProcessor#getBufferedImage()
      */
     public static BufferedImage createFrom(final ByteProcessor src) {
         return createFrom(src, false);
@@ -469,6 +543,29 @@ public class BufferedImageFactory {
         return result;
     }
 
+    static ColorModel createComponentColorModel(ColorSpace colorSpace,
+                                                int numBands,
+                                                int dataType,
+                                                boolean hasAlpha,
+                                                boolean isAlphaPremultiplied) {
+        int transparency =
+                hasAlpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE;
+
+        int[] numBits = new int[numBands];
+        int bits = DataBuffer.getDataTypeSize(dataType);
+
+        for (int i = 0; i < numBands; i++) {
+            numBits[i] = bits;
+        }
+
+        return new ComponentColorModel(colorSpace,
+                numBits,
+                hasAlpha,
+                isAlphaPremultiplied,
+                transparency,
+                dataType);
+    }
+
     /**
      * A convenience methods to create an instance of
      * <code>IndexColorModel</code> suitable for the given 1-banded
@@ -485,7 +582,7 @@ public class BufferedImageFactory {
         }
         int sampleSize = sm.getSampleSize(0);
 
-        byte[] cmap = null;
+        byte[] cmap;
         if (sampleSize < 8) {
             cmap = grayIndexCmaps[sampleSize];
             if (!blackIsZero) {

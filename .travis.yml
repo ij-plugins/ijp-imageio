@@ -1,0 +1,15 @@
+sudo: false
+language: scala
+scala:
+  - 2.13.1
+
+jdk:
+  - openjdk11
+  - oraclejdk11
+  - openjdk13
+
+install: true
+
+script:
+  - java -version
+  - sbt test

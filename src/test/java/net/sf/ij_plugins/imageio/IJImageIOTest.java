@@ -1,31 +1,33 @@
 /*
- * Image/J Plugins
- * Copyright (C) 2002-2008 Jarek Sacha
+ *  IJ Plugins
+ *  Copyright (C) 2002-2020 Jarek Sacha
+ *  Author's email: jpsacha at gmail.com
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Latest release available at http://sourceforge.net/projects/ij-plugins/
- *
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 package net.sf.ij_plugins.imageio;
 
+import ij.CompositeImage;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 import ij.process.ByteProcessor;
 import ij.process.ImageProcessor;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.imageio.ImageIO;
@@ -82,7 +84,17 @@ public class IJImageIOTest {
         assertEquals(3, images[1].getNSlices());
     }
 
-    private void testRead(final String fileName, final int stackSize, final int width, final int height)
+    @Test
+    public void testReadRGB48TIFF() throws Exception {
+        ImagePlus imp = testRead("test/data/DeltaE_16bit_gamma1.0.tif", 3, 3072, 2048);
+        assertEquals(ImagePlus.GRAY16, imp.getType());
+        assertTrue(imp instanceof CompositeImage);
+
+        CompositeImage ci = (CompositeImage) imp;
+        assertEquals(CompositeImage.COMPOSITE, ci.getMode());
+    }
+
+    private ImagePlus testRead(final String fileName, final int stackSize, final int width, final int height)
             throws Exception {
         final File file = new File(fileName);
 
@@ -102,8 +114,11 @@ public class IJImageIOTest {
         //        assertTrue("Image name length larger than 0", imp.getTitle().trim().length() > 0);
 
         //        imp.show();
+
+        return imps[0];
     }
 
+    @Ignore
     @Test
     public void testJPEG2000Writer() {
         final String formatName = "jpeg2000";
@@ -121,6 +136,37 @@ public class IJImageIOTest {
         writerParam.setCompressionType(compressionTypes[0]);
         final String[] compressionQualityDescriptions = writerParam.getCompressionQualityDescriptions();
         print("compressionQualityDescriptions", compressionQualityDescriptions);
+    }
+
+    /**
+     * Do not assume unit 'pixels' if no unit is present
+     */
+    @Test
+    public void testIssue5() throws Exception {
+        // Read image using ImageJ
+        final File inFile = new File("test/data/issue_5/0001A00M.tif");
+        final ImagePlus expImage = IJ.openImage(inFile.getCanonicalPath());
+        assertNotNull(expImage);
+
+        final ImagePlus[] actualImages = IJImageIO.read(inFile);
+        assertEquals(1, actualImages.length);
+
+        final double tolerance = 0.000001;
+        final Calibration expCalib = expImage.getCalibration();
+        final Calibration actualCalib = actualImages[0].getCalibration();
+        assertEquals("pixelHeight", expCalib.pixelHeight, actualCalib.pixelHeight, tolerance);
+        assertEquals("pixelWidth", expCalib.pixelWidth, actualCalib.pixelWidth, tolerance);
+        assertEquals("Unit", expCalib.getUnit(), actualCalib.getUnit());
+        assertEquals("function", expCalib.getFunction(), actualCalib.getFunction());
+        if (expCalib.getFunction() != Calibration.NONE) {
+            final double[] expCoeff = expCalib.getCoefficients();
+            final double[] actualCoeff = actualCalib.getCoefficients();
+            assertEquals("Number of coefficients", expCoeff.length, actualCoeff.length);
+            for (int i = 0; i < expCoeff.length; i++) {
+                assertEquals("coefficients " + i, expCoeff[i], actualCoeff[i], tolerance);
+            }
+            assertEquals("valueUnit", expCalib.getValueUnit(), actualCalib.getValueUnit());
+        }
     }
 
     @Test

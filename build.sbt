@@ -3,7 +3,7 @@ import java.net.URL
 
 name         := "ijp_imageio"
 organization := "net.sf.ij-plugins"
-version      := "2.0.2"
+version      := "2.0.3.2-SNAPSHOT"
 
 homepage     := Some(new URL("https://github.com/ij-plugins/ijp-imageio"))
 organizationHomepage := Some(url("http://ij-plugins.sf.net"))
@@ -16,10 +16,8 @@ description  := "ijp-ImageIO enable reading and writing images using Java ImageI
 
 
 libraryDependencies ++= Seq(
-  "com.github.jai-imageio" % "jai-imageio-core"     % "1.4.0",
-  "com.github.jai-imageio" % "jai-imageio-jpeg2000" % "1.3.0",
-  "net.imagej"             % "ij"                   % "1.49v",
-  "junit"                  % "junit"                % "4.12"  % "test",
+  "net.imagej"             % "ij"                   % "1.52t",
+  "junit"                  % "junit"                % "4.13"  % "test",
   "com.novocode"           % "junit-interface"      % "0.11"  % "test->default"
 )
 
@@ -32,7 +30,10 @@ javacOptions in(Compile, compile) ++= Seq("-Xlint")
 javacOptions in(Compile, doc    ) ++= Seq(
   "-windowtitle", "IJP-ImageIO API v." + version.value,
   "-header",      "IJP-ImageIO API v." + version.value,
-  "-exclude",     "net.sf.ij_plugins.imageio.impl"
+  "-sourcepath",  (baseDirectory.value / "src/main/java").getAbsolutePath,
+  "-subpackages", "net.sf.ij_plugins.imageio",
+  "-exclude",     "net.sf.ij_plugins.imageio.impl:net.sf.ij_plugins.imageio.plugins",
+  "-verbose"
 )
 
 // Set the prompt (for this build) to include the project id.

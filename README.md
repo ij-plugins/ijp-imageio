@@ -1,12 +1,15 @@
 ﻿IJP-ImageIO Plugin Bundle for ImageJ
 ====================================
 
+[![Build Status](https://travis-ci.org/ij-plugins/ijp-imageio.svg?branch=master)](https://travis-ci.org/ij-plugins/ijp-imageio) 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sf.ij-plugins/ijp_imageio/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sf.ij-plugins/ijp_imageio)
+[![javadoc](https://javadoc-badge.appspot.com/net.sf.ij-plugins/ijp_imageio.svg?label=javadoc)](https://javadoc-badge.appspot.com/net.sf.ij-plugins/ijp_imageio)
+
 
 Overview
 --------
 
-IJP-ImageIO enable reading and writing images using Java ImageIO codecs. The core ImageIO formats: JPEG, JPEG-2000,
-PCX, PNG, PNM, BMP, WBMP, and GIF. TIFF supports reading and writing using various compression schemes: LZW, JPEG,
+IJP-ImageIO enable reading and writing images using Java ImageIO codecs. The core ImageIO formats: JPEG, PCX, PNG, PNM, BMP, WBMP, and GIF. TIFF supports reading and writing using various compression schemes: LZW, JPEG,
 ZLib, and Deflate. For more detailed information see [IJP-ImageIO home page](http://ij-plugins.sf.net/plugins/imageio).
 
 
@@ -18,7 +21,6 @@ IJP-ImageIO install plugins under following ImageJ menu locations:
 * File/Save As
   - PNG ...
   - PNM ...
-  - JPEG2000 ...
   - Compressed TIFF ...
   
 * Plugins/Image IO:
@@ -34,7 +36,7 @@ IJP-ImageIO install plugins under following ImageJ menu locations:
 System Requirements
 -------------------
 
-Image I/O plugin bundle requires ImageJ 1.48v or newer and Java 1.8 or newer.
+Image I/O plugin bundle requires ImageJ 1.48v or newer and Java 9 or newer.
 
 
 Installation
@@ -52,18 +54,23 @@ You IJP-ImageIO as a stand-alone library. You will need to add dependency on:
 ```
 groupId   : net.sf.ij-plugins
 artifactId: ijp_imageio
-version   : 2.0.0
+version   : <version>
 ```
 For instance, for [SBT] it would be:
 
 ```
-"net.sf.ij-plugins" % "ijp_imageio" % "2.0.0"
+"net.sf.ij-plugins" % "ijp_imageio" % "<version>"
 ```
+
+Support of Additional File Formats
+----------------------------------
+
+You can use additional image codecs that support Java ImageIO API and service registration. The JAR with the additional codec will need to be added to application class path. For instance you can get JPEG2000 support by adding JAR from [jai-imageio-jpeg2000](https://github.com/jai-imageio/jai-imageio-jpeg2000) project.
 
 License
 -------
 
-Copyright (C) 2002-2016 Jarek Sacha
+Copyright (C) 2002-2020 Jarek Sacha
 
 This library is free software; you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by
