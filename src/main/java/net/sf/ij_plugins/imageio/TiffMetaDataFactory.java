@@ -22,11 +22,11 @@
 
 package net.sf.ij_plugins.imageio;
 
-import com.github.jaiimageio.plugins.tiff.*;
 import ij.ImagePlus;
 import ij.measure.Calibration;
 
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.plugins.tiff.*;
 
 /**
  * Convert ImagePLus metadata, like calibration, into TIFF metadata.
@@ -55,7 +55,7 @@ public final class TiffMetaDataFactory {
                                 tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_CENTIMETER));
                         break;
                     case "mm":
-                    case "milimeter":
+                    case "millimeter":
                         resolutionScale = 1 / 1000d;
                         tIFFDirectory.addTIFFField(new TIFFField(
                                 tagSet.getTag(BaselineTIFFTagSet.TAG_RESOLUTION_UNIT), BaselineTIFFTagSet.RESOLUTION_UNIT_CENTIMETER));
@@ -121,17 +121,5 @@ public final class TiffMetaDataFactory {
         }
 
         return tIFFDirectory.getAsMetadata();
-
     }
-
-//    static private String encodeDescriptionString(final ImagePlus image) {
-//        final FileSaver fileSaver = new FileSaver(image);
-//        final String desc = fileSaver.getDescriptionString();
-//        // ImageJ may append a null char et the end, check and remove.
-//        if (desc.charAt(desc.length() - 1) != (char) 0) {
-//            return desc;
-//        } else {
-//            return desc.substring(0, desc.length() - 1);
-//        }
-//    }
 }
