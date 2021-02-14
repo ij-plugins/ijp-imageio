@@ -72,3 +72,4 @@ project/boot/
 # Created by .ignore support plugin (hsz.mobi)
 /sandbox/
 /tmp/
+/.bsp/
