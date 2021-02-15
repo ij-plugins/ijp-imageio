@@ -19,17 +19,29 @@
  *
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
  */
+package ij_plugins.imageio;
 
-package example;
+/**
+ * Exception specific to package net.sf.ij_plugins.imageio.
+ *
+ * @author Jarek Sacha
+ * @version $Revision: 1.1 $
+ */
+public class IJImageIOException extends Exception {
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-import ij_plugins.imageio.IJImageIO;
+    public IJImageIOException(final String message) {
+        super(message);
+    }
 
-import static example.ImageIODemo.printList;
+    public IJImageIOException(final Throwable cause) {
+        super(cause);
+    }
 
-public class IJImageIODemo {
-
-    public static void main(String[] args) {
-        printList("supportedImageReaderExtensions:", IJImageIO.supportedImageReaderExtensions());
-        printList("supportedImageWriterExtensions:", IJImageIO.supportedImageWriterExtensions());
+    public IJImageIOException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

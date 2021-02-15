@@ -19,23 +19,47 @@
  *
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
  */
-
-package example;
+package ij_plugins.imageio;
 
 import ij.CompositeImage;
-import ij_plugins.imageio.IJImageIO;
-import ij_plugins.imageio.IJImageIOException;
+import ij.IJ;
+import ij.ImagePlus;
+import junit.framework.TestCase;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
-import static ij_plugins.imageio.ReadWrite48BitColorTIFFTest.assertReadRGB48;
-import static org.junit.Assert.assertFalse;
+import static ij_plugins.imageio.IJImageOUtils.isRGB48;
 
-public class WriteAsTIFFDemo {
+/**
+ *
+ */
+public class ReadWrite48BitColorTIFFTest extends TestCase {
+    public ReadWrite48BitColorTIFFTest(String test) {
+        super(test);
+    }
+
+    public void testRead() throws Exception {
+        BufferedImage bi = ImageIO.read(new File("test/data/DeltaE_16bit_gamma1.0.tif"));
+        assertNotNull(bi);
+        assertEquals(3072, bi.getWidth());
+        assertEquals(2048, bi.getHeight());
+
+        WritableRaster wr = bi.getRaster();
+        assertEquals(3, wr.getNumBands());
+
+        DataBuffer db = wr.getDataBuffer();
+        assertEquals(1, db.getNumBanks());
+
+        assertEquals(DataBuffer.TYPE_USHORT, db.getDataType());
+    }
+
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public static void main(String[] args) throws IOException, IJImageIOException {
+    public void testWrite() throws Exception {
         File srcFile = new File("test/data/DeltaE_16bit_gamma1.0.tif");
         CompositeImage src = assertReadRGB48(srcFile, 3072, 2048);
 
@@ -45,13 +69,14 @@ public class WriteAsTIFFDemo {
 
         IJImageIO.write(src, dstFile, "tif");
         assertReadRGB48(dstFile, 3072, 2048);
-
-        IJImageIO.write(src, new File("tmp/DeltaE_16bit_gamma1.0-jio-1.png"), "png");
-
-        System.out.println(Arrays.toString(IJImageIO.getTIFFCompressionTypes()));
-        IJImageIO.writeAsTiff(src, new File("tmp/DeltaE_16bit_gamma1.0-jio-1_default.tif"));
-        IJImageIO.writeAsTiff(src, new File("tmp/DeltaE_16bit_gamma1.0-jio-1_LZW.tif"), "LZW");
-        IJImageIO.writeAsTiff(src, new File("tmp/DeltaE_16bit_gamma1.0-jio-1_ZLib.tif"), "ZLib");
     }
 
+    public static CompositeImage assertReadRGB48(File file, int width, int height) throws IOException {
+        ImagePlus imp = IJ.openImage(file.getCanonicalPath());
+        assertTrue(isRGB48(imp));
+        assertEquals(width, imp.getWidth());
+        assertEquals(height, imp.getHeight());
+        assertEquals(ImagePlus.GRAY16, imp.getType());
+        return (CompositeImage) imp;
+    }
 }

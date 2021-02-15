@@ -19,17 +19,32 @@
  *
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
  */
+package ij_plugins.imageio.impl;
 
-package example;
+import java.awt.*;
 
-import ij_plugins.imageio.IJImageIO;
 
-import static example.ImageIODemo.printList;
+/**
+ * @author Jarek Sacha
+ */
+public class SwingUtils {
 
-public class IJImageIODemo {
+    /**
+     * Center window on screen.
+     *
+     * @param window    window to be centered.
+     * @param packFrame if <code>true</code> call window's <code>pack()</code>
+     *                  method before centering.
+     */
+    public static void centerOnScreen(final Window window, final boolean packFrame) {
+        //Validate frames that have preset sizes
+        //Pack frames that have useful preferred size info, e.g. from their layout
+        if (packFrame) {
+            window.pack();
+        } else {
+            window.validate();
+        }
 
-    public static void main(String[] args) {
-        printList("supportedImageReaderExtensions:", IJImageIO.supportedImageReaderExtensions());
-        printList("supportedImageWriterExtensions:", IJImageIO.supportedImageWriterExtensions());
+        window.setLocationRelativeTo(null);
     }
 }

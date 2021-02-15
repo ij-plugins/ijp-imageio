@@ -20,16 +20,36 @@
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
  */
 
-package example;
+package ij_plugins.imageio.mypackage;
 
 import ij_plugins.imageio.IJImageIO;
+import org.junit.Test;
 
-import static example.ImageIODemo.printList;
+import java.io.File;
+import java.util.List;
 
-public class IJImageIODemo {
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-    public static void main(String[] args) {
-        printList("supportedImageReaderExtensions:", IJImageIO.supportedImageReaderExtensions());
-        printList("supportedImageWriterExtensions:", IJImageIO.supportedImageWriterExtensions());
+
+public class ImageAndMetadataAccessTest {
+
+
+    @Test
+    public void readAndAccess() throws Exception {
+
+        // Test if ImageAndMetadata is accessible outside of its own package
+        // This test must be in package different from package containing ImageAndMetadata
+
+        final File file = new File("test/data/blobs.png");
+
+        assertTrue("Exist: " + file.getAbsolutePath(), file.exists());
+
+        final List<IJImageIO.ImageAndMetadata> images = IJImageIO.readAsBufferedImages(file);
+        assertTrue(images.size() == 1);
+
+        assertNotNull(images.get(0));
+        assertNotNull(images.get(0).image);
+
     }
 }

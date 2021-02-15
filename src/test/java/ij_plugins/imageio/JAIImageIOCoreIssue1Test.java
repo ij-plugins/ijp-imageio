@@ -19,17 +19,31 @@
  *
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
  */
+package ij_plugins.imageio;
 
-package example;
+import junit.framework.TestCase;
 
-import ij_plugins.imageio.IJImageIO;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
-import static example.ImageIODemo.printList;
+/**
+ * jai-imageio-core had bug preventig it from reading uncompressed TIFF images. It was reported to
+ * https://jai-imageio-core.dev.java.net as Issue 1. For more info see
+ * https://jai-imageio-core.dev.java.net/issues/show_bug.cgi?id=1
+ *
+ * @author Jarek Sacha
+ * @version $Revision: 1.1 $
+ */
+public class JAIImageIOCoreIssue1Test extends TestCase {
+    public JAIImageIOCoreIssue1Test(String test) {
+        super(test);
+    }
 
-public class IJImageIODemo {
-
-    public static void main(String[] args) {
-        printList("supportedImageReaderExtensions:", IJImageIO.supportedImageReaderExtensions());
-        printList("supportedImageWriterExtensions:", IJImageIO.supportedImageWriterExtensions());
+    public void testRead() throws Exception {
+        BufferedImage bi = ImageIO.read(new File("test/data/mri-stack-1.tif"));
+        assertNotNull(bi);
+        assertEquals(186, bi.getWidth());
+        assertEquals(226, bi.getHeight());
     }
 }
