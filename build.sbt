@@ -15,9 +15,9 @@ description  := "ijp-ImageIO enable reading and writing images using Java ImageI
   "and Deflate. For more detailed information see IJP-ImageIO home page: http://ij-plugins.sf.net/plugins/imageio."
 
 libraryDependencies ++= Seq(
-  "net.imagej"             % "ij"                   % "1.52t",
-  "junit"                  % "junit"                % "4.13"  % "test",
-  "com.novocode"           % "junit-interface"      % "0.11"  % "test->default"
+  "net.imagej"             % "ij"                   % "1.53g",
+  "junit"                  % "junit"                % "4.13.2"  % "test",
+  "com.novocode"           % "junit-interface"      % "0.11"    % "test->default"
 )
 
 // fork a new JVM for 'run' and 'test:run'
