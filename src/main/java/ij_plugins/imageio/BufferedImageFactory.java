@@ -457,7 +457,7 @@ public class BufferedImageFactory {
         } else {
             throw new UnsupportedOperationException("Unable to properly decode this image (color map).\n" +
                     "Please report this problem at http://ij-plugins.sf.net\n" +
-                    "or by sending email to 'jsacha at users.sourceforge.net'\n" +
+                    "or by sending email to 'jpsacha at gmail.com'\n" +
                     "  Map size    = " + mapSize + ".");
         }
 
@@ -654,7 +654,7 @@ public class BufferedImageFactory {
 //            // FIX: deal with all bit packing schemes
 //            throw new UnsupportedOperationException("Unable to properly decode this image (color map).\n" +
 //                    "Please report this problem at http://ij-plugins.sf.net\n" +
-//                    "or by sending email to 'jsacha at users.sourceforge.net'\n" +
+//                    "or by sending email to 'jpsacha at gmail.com'\n" +
 //                    "  Map size    = " + mapSize + "\n" +
 //                    "  Src pixels  = " + srcPixels.length + "\n" +
 //                    "  Dest pixels = " + destPixels.length);
