@@ -39,7 +39,7 @@ public class AboutImageIO implements PlugIn {
             "</p>" +
             "<p>" +
             "For more detailed information see IJP-ImageIO home page at:\n" +
-            "<a href=\"http://ij-plugins.sf.net/plugins/imageio\">http://ij-plugins.sf.net/plugins/imageio</a>" +
+            "<a href=\"https://github.com/ij-plugins/ijp-imageio\">https://github.com/ij-plugins/ijp-imageio</a>" +
             "</p>" +
             "<br>" +
             "<br>" +

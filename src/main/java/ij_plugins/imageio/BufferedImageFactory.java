@@ -456,7 +456,7 @@ public class BufferedImageFactory {
             icm256 = new IndexColorModel(8, 256, r, g, b);
         } else {
             throw new UnsupportedOperationException("Unable to properly decode this image (color map).\n" +
-                    "Please report this problem at http://ij-plugins.sf.net\n" +
+                    "Please report this problem at https://github.com/ij-plugins/ijp-imageio/issues\n" +
                     "or by sending email to 'jpsacha at gmail.com'\n" +
                     "  Map size    = " + mapSize + ".");
         }
@@ -653,7 +653,7 @@ public class BufferedImageFactory {
 //        } else {
 //            // FIX: deal with all bit packing schemes
 //            throw new UnsupportedOperationException("Unable to properly decode this image (color map).\n" +
-//                    "Please report this problem at http://ij-plugins.sf.net\n" +
+//                    "Please report this problem at https://github.com/ij-plugins/ijp-imageio/issuesn" +
 //                    "or by sending email to 'jpsacha at gmail.com'\n" +
 //                    "  Map size    = " + mapSize + "\n" +
 //                    "  Src pixels  = " + srcPixels.length + "\n" +
