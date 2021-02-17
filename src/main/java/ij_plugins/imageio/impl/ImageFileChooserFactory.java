@@ -20,16 +20,38 @@
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
  */
 
-package example;
+package ij_plugins.imageio.impl;
 
-import ij_plugins.imageio.IJImageIO;
+import javax.swing.*;
+import java.io.File;
 
-import static example.ImageIODemo.printList;
+/**
+ * Factory for creation of JAI IO customized file choosers.
+ *
+ * @author Jarek Sacha
+ */
 
-public class IJImageIODemo {
+public class ImageFileChooserFactory {
 
-    public static void main(String[] args) {
-        printList("supportedImageReaderExtensions:", IJImageIO.supportedImageReaderExtensions());
-        printList("supportedImageWriterExtensions:", IJImageIO.supportedImageWriterExtensions());
+    /**
+     * Creates an image file open chooser with an image preview. File filters correspond to
+     * registered JAI decoders.
+     *
+     * @return Description of the Returned Value
+     */
+    public static OpenImageFileChooser createJAIOpenChooser() {
+        return new OpenImageFileChooser(new File(".").getAbsoluteFile());
+    }
+
+
+    /**
+     * Creates file save chooser with file filters corresponding to JAI codecs supporting writing
+     * (encoders).
+     *
+     * @return Description of the Returned Value
+     */
+    public static JFileChooser createJAISaveChooser() {
+
+        return new SaveImageFileChooser(new File(".").getAbsoluteFile());
     }
 }

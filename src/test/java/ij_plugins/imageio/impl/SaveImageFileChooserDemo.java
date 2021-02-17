@@ -20,16 +20,25 @@
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
  */
 
-package example;
+package ij_plugins.imageio.impl;
 
-import ij_plugins.imageio.IJImageIO;
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
 
-import static example.ImageIODemo.printList;
-
-public class IJImageIODemo {
-
+/**
+ * @author Jarek Sacha
+ */
+final public class SaveImageFileChooserDemo {
     public static void main(String[] args) {
-        printList("supportedImageReaderExtensions:", IJImageIO.supportedImageReaderExtensions());
-        printList("supportedImageWriterExtensions:", IJImageIO.supportedImageWriterExtensions());
+        SwingUtilities.invokeLater(() -> {
+            SaveImageFileChooser chooser = new SaveImageFileChooser(new File("."));
+            int ok = chooser.showSaveDialog(null);
+            if (ok == JFileChooser.APPROVE_OPTION) {
+                FileFilter fileFilter = chooser.getFileFilter();
+                ImageIOWriterFileFilter imageFileFilter = (ImageIOWriterFileFilter) fileFilter;
+                System.out.println("SPI: " + imageFileFilter.getSPI());
+            }
+        });
     }
 }

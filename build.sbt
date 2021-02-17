@@ -6,18 +6,18 @@ organization := "net.sf.ij-plugins"
 version      := "2.2.0"
 
 homepage     := Some(new URL("https://github.com/ij-plugins/ijp-imageio"))
-organizationHomepage := Some(url("http://ij-plugins.sf.net"))
+organizationHomepage := Some(url("https://github.com/ij-plugins"))
 startYear    := Some(2002)
 licenses     := Seq(("LGPL-2.1", new URL("http://opensource.org/licenses/LGPL-2.1")))
 description  := "ijp-ImageIO enable reading and writing images using Java ImageIO codecs. " +
   "The core ImageIO formats: JPEG, PNG, BMP, WBMP, and GIF. IJP-ImageIO is also using JAI codes adding support for " +
   "TIFF, JPEG200, PNM, and PCX. TIFF supports reading and writing using various compression schemes: LZW, JPEG, ZIP, " +
-  "and Deflate. For more detailed information see IJP-ImageIO home page: http://ij-plugins.sf.net/plugins/imageio."
+  "and Deflate. For more detailed information see IJP-ImageIO home page: https://github.com/ij-plugins/ijp-imageio/wiki."
 
 libraryDependencies ++= Seq(
-  "net.imagej"             % "ij"                   % "1.52t",
-  "junit"                  % "junit"                % "4.13"  % "test",
-  "com.novocode"           % "junit-interface"      % "0.11"  % "test->default"
+  "net.imagej"             % "ij"                   % "1.53g",
+  "junit"                  % "junit"                % "4.13.2"  % "test",
+  "com.novocode"           % "junit-interface"      % "0.11"    % "test->default"
 )
 
 // fork a new JVM for 'run' and 'test:run'

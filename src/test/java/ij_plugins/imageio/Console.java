@@ -19,17 +19,21 @@
  *
  *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
  */
+package ij_plugins.imageio;
 
-package example;
+/**
+ * @author Jarek Sacha
+ * @since 11/20/10 8:34 AM
+ */
+final class Console {
+    private Console() {
+    }
 
-import ij_plugins.imageio.IJImageIO;
+    public static void print(final String x) {
+        System.out.print(x);
+    }
 
-import static example.ImageIODemo.printList;
-
-public class IJImageIODemo {
-
-    public static void main(String[] args) {
-        printList("supportedImageReaderExtensions:", IJImageIO.supportedImageReaderExtensions());
-        printList("supportedImageWriterExtensions:", IJImageIO.supportedImageWriterExtensions());
+    public static void println(final String x) {
+        System.out.println(x);
     }
 }
