@@ -3,7 +3,7 @@ import java.net.URL
 
 name         := "ijp_imageio"
 organization := "net.sf.ij-plugins"
-version      := "2.1.0.1-SNAPSHOT"
+version      := "2.2.0"
 
 homepage     := Some(new URL("https://github.com/ij-plugins/ijp-imageio"))
 organizationHomepage := Some(url("https://github.com/ij-plugins"))
@@ -25,13 +25,17 @@ fork := true
 
 // add a JVM option to use when forking a JVM for 'run'
 javaOptions ++= Seq("-Xmx2G", "-server")
-javacOptions in(Compile, compile) ++= Seq("-Xlint")
+javacOptions in(Compile, compile) ++= Seq(
+  "-Xlint",
+  "-target", "1.8",
+  "-source", "1.8"
+)
 javacOptions in(Compile, doc    ) ++= Seq(
   "-windowtitle", "IJP-ImageIO API v." + version.value,
   "-header",      "IJP-ImageIO API v." + version.value,
   "-sourcepath",  (baseDirectory.value / "src/main/java").getAbsolutePath,
-  "-subpackages", "net.sf.ij_plugins.imageio",
-  "-exclude",     "net.sf.ij_plugins.imageio.impl:net.sf.ij_plugins.imageio.plugins",
+  "-subpackages", "ij_plugins.imageio",
+  "-exclude",     "ij_plugins.imageio.impl:ij_plugins.imageio.plugins",
   "-verbose"
 )
 
