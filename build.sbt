@@ -3,7 +3,7 @@ import java.net.URL
 
 name         := "ijp_imageio"
 organization := "net.sf.ij-plugins"
-version      := "2.2.0.1-SNAPSHOT"
+version      := "2.2.0.2-SNAPSHOT"
 
 homepage     := Some(new URL("https://github.com/ij-plugins/ijp-imageio"))
 organizationHomepage := Some(url("https://github.com/ij-plugins"))
@@ -15,7 +15,7 @@ description  := "ijp-ImageIO enable reading and writing images using Java ImageI
   "and Deflate. For more detailed information see IJP-ImageIO home page: https://github.com/ij-plugins/ijp-imageio/wiki."
 
 libraryDependencies ++= Seq(
-  "net.imagej"             % "ij"                   % "1.53g",
+  "net.imagej"             % "ij"                   % "1.53s",
   "junit"                  % "junit"                % "4.13.2"  % "test",
   "com.novocode"           % "junit-interface"      % "0.11"    % "test->default"
 )
