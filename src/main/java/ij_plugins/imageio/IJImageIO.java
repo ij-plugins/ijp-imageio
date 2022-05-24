@@ -1,7 +1,7 @@
 /*
- *  IJ-Plugins ImageIO
- *  Copyright (C) 2002-2021 Jarek Sacha
- *  Author's email: jpsacha at gmail dot com
+ *  IJ Plugins
+ *  Copyright (C) 2002-2022 Jarek Sacha
+ *  Author's email: jpsacha at gmail.com
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 package ij_plugins.imageio;
 
@@ -56,26 +56,15 @@ import java.util.*;
  */
 public class IJImageIO {
 
-    private final static boolean useOneBitCompressionDefault = BufferedImageFactory.useOneBitCompressionDefault;
-
     public static final String PREFERRED_SPI_VENDOR = "github.com/jai-imageio";
-
-    public static class ImageAndMetadata {
-        public final BufferedImage image;
-        public final IIOMetadata metadata;
-
-        public ImageAndMetadata(BufferedImage bi, IIOMetadata md) {
-            this.image = bi;
-            this.metadata = md;
-        }
-    }
-
-    // TODO: Simplify API of this class, there are too many very similar looking methods for 'write'
+    private final static boolean useOneBitCompressionDefault = BufferedImageFactory.useOneBitCompressionDefault;
 
     static {
         // Try to register all available ImageIO SPIs
         IIORegistry.getDefaultInstance().registerApplicationClasspathSpis();
     }
+
+    // TODO: Simplify API of this class, there are too many very similar looking methods for 'write'
 
     /**
      * Default constructor intentionally made private to prevent instantiation of the class.
@@ -109,7 +98,6 @@ public class IJImageIO {
         return extensions.toArray(new String[0]);
     }
 
-
     public static String[] supportedImageWriterExtensions() {
         final String[] formatNames = ImageIO.getWriterFormatNames();
         final Set<String> extensions = new TreeSet<>();
@@ -130,7 +118,6 @@ public class IJImageIO {
 
         return extensions.toArray(new String[0]);
     }
-
 
     /**
      * Read image from file using using {@code javax.imageio} and convert it to ImageJ representation. All
@@ -187,7 +174,6 @@ public class IJImageIO {
                 : images.toArray(new ImagePlus[0]);
     }
 
-
     /**
      * Read image from file using using javax.imageio and convert it to ImageJ representation. All
      * images contained in the file will be read, and stacks combined.
@@ -203,7 +189,6 @@ public class IJImageIO {
     public static ImagePlus[] read(final File file) throws IJImageIOException {
         return read(file, true);
     }
-
 
     /**
      * Read image from file using using {@code javax.imageio} and convert it to ImageJ representation. All
@@ -259,7 +244,7 @@ public class IJImageIO {
             if (bufferedImages != null) {
                 return bufferedImages;
             } else {
-                throw new IJImageIOException("Unable to read images from file: " + file.getAbsoluteFile() + ". " + errorBuffer.toString());
+                throw new IJImageIOException("Unable to read images from file: " + file.getAbsoluteFile() + ". " + errorBuffer);
             }
         } finally {
             try {
@@ -271,7 +256,6 @@ public class IJImageIO {
             }
         }
     }
-
 
     /**
      * IJImageIOException
@@ -309,7 +293,7 @@ public class IJImageIO {
             if (imageInfo != null) {
                 return imageInfo;
             } else {
-                throw new IJImageIOException("Unable to read images from file: " + file.getAbsoluteFile() + ". " + errorBuffer.toString());
+                throw new IJImageIOException("Unable to read images from file: " + file.getAbsoluteFile() + ". " + errorBuffer);
             }
         } finally {
             try {
@@ -322,7 +306,6 @@ public class IJImageIO {
         }
 
     }
-
 
     public static void write(final ImagePlus imp,
                              final File file,
@@ -377,7 +360,6 @@ public class IJImageIO {
         write(imp, file, spis.get(0), useOneBitCompression);
     }
 
-
     /**
      * Write image to a file using specified format.
      * Supported formats can be obtained calling {@link #supportedImageWriterExtensions()}.
@@ -392,7 +374,6 @@ public class IJImageIO {
                              final String format) throws IJImageIOException {
         write(image, file, format, null);
     }
-
 
     /**
      * Write image to a file using specified format and also save the metadata if provided.
@@ -471,8 +452,11 @@ public class IJImageIO {
             } else {
 
                 writer.prepareWriteSequence(metadata);
+                boolean firstImage = true;
                 for (BufferedImage image : images) {
-                    final IIOImage iioImage = new IIOImage(image, null, metadata);
+                    IIOMetadata m = firstImage ? metadata : null;
+                    final IIOImage iioImage = new IIOImage(image, null, m);
+                    firstImage = false;
 
                     // Write image
                     writer.writeToSequence(iioImage, parameters);
@@ -508,7 +492,6 @@ public class IJImageIO {
             throws IJImageIOException {
         write(new BufferedImage[]{image}, file, format, metadata);
     }
-
 
     /**
      * Write image in TIFF format with ZLib compression using ImageIO
@@ -575,7 +558,6 @@ public class IJImageIO {
         }
         write(images, file, imageWriter, metadata, writerParam);
     }
-
 
     /**
      * Write image in TIFF format with ZLib compression using ImageIO
@@ -738,7 +720,6 @@ public class IJImageIO {
         return imageInfo;
     }
 
-
     /**
      * Attempts to combine images on the list into a stack.
      * Images cannot be combined if they are of different types or different sizes.
@@ -775,7 +756,6 @@ public class IJImageIO {
         return result.toArray(new ImagePlus[0]);
     }
 
-
     private static int stackableChain(final List<ImagePlus> imageList, final int startIndex) {
         if (imageList.size() <= startIndex || startIndex < 0) {
             return 0;
@@ -803,7 +783,6 @@ public class IJImageIO {
         return count;
     }
 
-
     /**
      * Helper method to print log message using {@link ij.IJ#log} when {@link ij.IJ#debugMode} is
      * set to <code>true</code>.
@@ -816,6 +795,15 @@ public class IJImageIO {
         }
     }
 
+    public static class ImageAndMetadata {
+        public final BufferedImage image;
+        public final IIOMetadata metadata;
+
+        public ImageAndMetadata(BufferedImage bi, IIOMetadata md) {
+            this.image = bi;
+            this.metadata = md;
+        }
+    }
 
     private static final class ProgressListener implements IIOReadProgressListener {
 
