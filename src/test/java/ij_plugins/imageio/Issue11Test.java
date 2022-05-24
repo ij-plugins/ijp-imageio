@@ -26,6 +26,8 @@ import org.junit.Test;
 
 import java.io.File;
 
+import static org.junit.Assert.assertTrue;
+
 
 public class Issue11Test {
 
@@ -57,7 +59,10 @@ public class Issue11Test {
         //unit=mm
 
         // Write image
-        var outFile = new File("test/out/" + imageName + ".tif");
+        var outFile = new File("tmp/" + imageName + ".tif");
+        if (!outFile.getParentFile().exists()) {
+            assertTrue(outFile.getParentFile().mkdirs());
+        }
         IJImageIO.writeAsTiff(inImageIJ, outFile);
 
         //Validate
