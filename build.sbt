@@ -27,8 +27,7 @@ fork := true
 javaOptions ++= Seq("-Xmx2G", "-server")
 Compile / compile / javacOptions ++= Seq(
   "-Xlint",
-  "-target", "1.8",
-  "-source", "1.8"
+  "--release", "11"
 )
 Compile / doc / javacOptions ++= Seq(
   "-windowtitle", "IJP-ImageIO API v." + version.value,
