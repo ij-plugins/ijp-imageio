@@ -102,6 +102,17 @@ public final class TiffMetaDataFactory {
                     tagSet.getTag(BaselineTIFFTagSet.TAG_SOFTWARE),
                     TIFFTag.TIFF_ASCII, 1, new String[]{"ij-plugins/ijp-imageio"}));
 
+            // Set Photometric Interpretation
+            var photometricInterpretation =
+                    image.getType() == ImagePlus.COLOR_256
+                            ? BaselineTIFFTagSet.PHOTOMETRIC_INTERPRETATION_RGB
+                            : BaselineTIFFTagSet.PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO;
+
+            var photometricInterpretationField =
+                    new TIFFField(tagSet.getTag(BaselineTIFFTagSet.TAG_PHOTOMETRIC_INTERPRETATION),
+                            photometricInterpretation);
+            dir.addTIFFField(photometricInterpretationField);
+
         }
 
         return dir.getAsMetadata();
