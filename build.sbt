@@ -25,12 +25,12 @@ fork := true
 
 // add a JVM option to use when forking a JVM for 'run'
 javaOptions ++= Seq("-Xmx2G", "-server")
-javacOptions in(Compile, compile) ++= Seq(
+Compile / compile / javacOptions ++= Seq(
   "-Xlint",
   "-target", "1.8",
   "-source", "1.8"
 )
-javacOptions in(Compile, doc    ) ++= Seq(
+Compile / doc / javacOptions ++= Seq(
   "-windowtitle", "IJP-ImageIO API v." + version.value,
   "-header",      "IJP-ImageIO API v." + version.value,
   "-sourcepath",  (baseDirectory.value / "src/main/java").getAbsolutePath,
@@ -38,9 +38,6 @@ javacOptions in(Compile, doc    ) ++= Seq(
   "-exclude",     "ij_plugins.imageio.impl:ij_plugins.imageio.plugins",
   "-verbose"
 )
-
-// Set the prompt (for this build) to include the project id.
-shellPrompt in ThisBuild := { state => "sbt:" + Project.extract(state).currentRef.project + "> " }
 
 //
 // Setup sbt-imagej plugins
@@ -51,7 +48,7 @@ ijPluginsSubDir         := "ij-plugins"
 ijCleanBeforePrepareRun := true
 cleanFiles              += ijPluginsDir.value
 
-baseDirectory in run := baseDirectory.value / "sandbox"
+run / baseDirectory := baseDirectory.value / "sandbox"
 
 //
 // Customize Java style publishing
@@ -69,6 +66,6 @@ developers := List(
   Developer(id="jpsacha", name="Jarek Sacha", email="jpsacha@gmail.com", url=url("https://github.com/jpsacha"))
 )
 
-publishArtifact in(Test, packageBin) := false
-publishArtifact in(Test, packageDoc) := false
-publishArtifact in(Test, packageSrc) := false
+Test / packageBin / publishArtifact := false
+Test / packageDoc / publishArtifact := false
+Test / packageSrc / publishArtifact := false
