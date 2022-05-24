@@ -38,39 +38,27 @@ public class Issue11Test {
     @Test
     public void testWriteImagesPlusAsTiff() throws Exception {
 
-        var imageName = "1001-1-L-T0-crop-8bit_ij";
+        var imageName = "test_35mm";
 
         // Read image using ImageJ
-        var inFile = new File("test/data/issue_x/" + imageName + ".tif");
+        var inFile = new File("test/data/issue_11/" + imageName + ".tif");
         var inImageIJ = TestUtils.readImageIJ(inFile);
         //TIFF Directory at offset 0x8 (8)
         //  Subfile Type: (0 = 0x0)
-        //  Image Width: 219 Image Length: 218
+        //  Image Width: 256 Image Length: 256
         //  Resolution: 31.25, 31.25 (unitless)
         //  Bits/Sample: 8
         //  Compression Scheme: None
         //  Photometric Interpretation: min-is-black
         //  Samples/Pixel: 1
-        //  Rows/Strip: 218
+        //  Rows/Strip: 256
         //  Planar Configuration: single image plane
-        //  ImageDescription: ImageJ=1.52v
+        //  ImageDescription: ImageJ=1.53s
         //unit=mm
 
         // Write image
         var outFile = new File("test/out/" + imageName + ".tif");
         IJImageIO.writeAsTiff(inImageIJ, outFile);
-        //TIFF Directory at offset 0x8 (8)
-        //  Image Width: 219 Image Length: 218
-        //  Resolution: 0.03125, 0.03125 pixels/cm
-        //  Bits/Sample: 8
-        //  Compression Scheme: AdobeDeflate
-        //  Photometric Interpretation: palette color (RGB from colormap)
-        //  Samples/Pixel: 1
-        //  Rows/Strip: 37
-        //  Planar Configuration: single image plane
-        //  Color Map: (present)
-        //  ImageDescription: ImageJ=1.53g
-        //unit=mm
 
         //Validate
         var outImage = TestUtils.readImageIJ(outFile);
