@@ -1,9 +1,9 @@
 ﻿IJP-ImageIO Plugin Bundle for ImageJ
 ====================================
 
-[![Build Status](https://travis-ci.org/ij-plugins/ijp-imageio.svg?branch=master)](https://travis-ci.org/ij-plugins/ijp-imageio) 
+[![Scala CI](https://github.com/ij-plugins/ijp-imageio/actions/workflows/scala.yml/badge.svg)](https://github.com/ij-plugins/ijp-imageio/actions/workflows/scala.yml)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sf.ij-plugins/ijp_imageio/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sf.ij-plugins/ijp_imageio)
-[![javadoc](https://javadoc-badge.appspot.com/net.sf.ij-plugins/ijp_imageio.svg?label=javadoc)](https://javadoc-badge.appspot.com/net.sf.ij-plugins/ijp_imageio)
+[![javadoc](https://javadoc.io/badge2/net.sf.ij-plugins/ijp_imageio/javadoc.svg)](https://javadoc.io/doc/net.sf.ij-plugins/ijp_imageio)
 
 
 Overview
@@ -73,10 +73,9 @@ Building
 -----------------------------------
 
 ### Prerequisites:
-  * Java compiler, tested with Oracle Java 11 (http://java.oracle.com)
 
-  * [SBT build tool](https://www.scala-sbt.org/)
-    - tested with 1.3.8
+* Java compiler, tested with Oracle Java 11 (http://java.oracle.com). Java 9+ is required for TIFF support.
+* [SBT build tool](https://www.scala-sbt.org/)
     
 ### Building
 
@@ -88,7 +87,9 @@ $ sbt ijRun
 Support of Additional File Formats
 ----------------------------------
 
-You can use additional image codecs that support Java ImageIO API and service registration. The JAR with the additional codec will need to be added to application class path. For instance you can get JPEG2000 support by adding JAR from [jai-imageio-jpeg2000](https://github.com/jai-imageio/jai-imageio-jpeg2000) project.
+You can use additional image codecs that support Java ImageIO API and service registration. The JAR with the additional
+codec will need to be added to application class path. For instance, you can get JPEG2000 support by adding JAR
+from [jai-imageio-jpeg2000](https://github.com/jai-imageio/jai-imageio-jpeg2000) project.
 
 License
 -------
