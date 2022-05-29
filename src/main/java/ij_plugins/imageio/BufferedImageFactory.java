@@ -1,7 +1,7 @@
 /*
- *  IJ-Plugins ImageIO
- *  Copyright (C) 2002-2021 Jarek Sacha
- *  Author's email: jpsacha at gmail dot com
+ *  IJ Plugins
+ *  Copyright (C) 2002-2022 Jarek Sacha
+ *  Author's email: jpsacha at gmail.com
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 
 package ij_plugins.imageio;
@@ -326,18 +326,10 @@ public class BufferedImageFactory {
 //                    }
         } else {
 
-            final byte[] r = new byte[256];
-            final byte[] g = new byte[256];
-            final byte[] b = new byte[256];
-            for (int i = 0; i < 256; ++i) {
-                r[i] = g[i] = b[i] = (byte) (i & 0xff);
-            }
-            final IndexColorModel icm = new IndexColorModel(8, 256, r, g, b);
-
-            return createFrom(src, icm);
+            var cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
+            var cm = new ComponentColorModel(cs, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
+            return createFrom(src, cm);
         }
-
-
     }
 
 
@@ -435,7 +427,7 @@ public class BufferedImageFactory {
      * @param src ByteProcessor source.
      * @param icm Color model.
      * @return BufferedImage.
-     * @see #createFrom(ij.process.ByteProcessor, java.awt.image.IndexColorModel)
+     * @see #createFrom(ij.process.ByteProcessor, java.awt.image.ColorModel)
      */
     private static BufferedImage createFromExp(final ByteProcessor src, final IndexColorModel icm) {
 
@@ -469,10 +461,10 @@ public class BufferedImageFactory {
      * Create BufferedImage from an 256 indexed color image. Share pixels with source.
      *
      * @param src ByteProcessor source.
-     * @param icm Color model.
+     * @param cm  Color model.
      * @return new BufferedImage.
      */
-    public static BufferedImage createFrom(final ByteProcessor src, final IndexColorModel icm) {
+    public static BufferedImage createFrom(final ByteProcessor src, final ColorModel cm) {
 
         final int width = src.getWidth();
         final int height = src.getHeight();
@@ -485,7 +477,7 @@ public class BufferedImageFactory {
         final WritableRaster wr = Raster.createWritableRaster(sampleModel, dataBuffer, null);
 
         // Put all together into a buffered image
-        return new BufferedImage(icm, wr, true, null);
+        return new BufferedImage(cm, wr, true, null);
     }
 
 
