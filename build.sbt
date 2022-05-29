@@ -3,7 +3,7 @@ import java.net.URL
 
 name         := "ijp_imageio"
 organization := "net.sf.ij-plugins"
-version      := "2.3.0"
+version      := "2.3.0.1-SNAPSHOT"
 
 homepage     := Some(new URL("https://github.com/ij-plugins/ijp-imageio"))
 organizationHomepage := Some(url("https://github.com/ij-plugins"))
