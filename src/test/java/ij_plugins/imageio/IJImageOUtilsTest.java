@@ -1,0 +1,42 @@
+/*
+ *  IJ Plugins
+ *  Copyright (C) 2002-2024 Jarek Sacha
+ *  Author's email: jpsacha at gmail.com
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
+ */
+
+package ij_plugins.imageio;
+
+import ij.ImagePlus;
+import ij.process.ColorProcessor;
+import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
+
+public class IJImageOUtilsTest {
+
+    @Test
+    public void isRGB48() {
+        // Create a color image
+        var cp = new ColorProcessor(256, 256);
+        var imp = new ImagePlus("", cp);
+
+        assertTrue(IJImageOUtils.isRGB48(imp));
+    }
+
+}
