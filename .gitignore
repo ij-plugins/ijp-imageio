@@ -74,3 +74,4 @@ project/boot/
 /tmp/
 /.bsp/
 /null/
+.DS_Store

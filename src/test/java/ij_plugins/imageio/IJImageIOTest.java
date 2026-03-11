@@ -1,7 +1,7 @@
 /*
- *  IJ-Plugins ImageIO
- *  Copyright (C) 2002-2021 Jarek Sacha
- *  Author's email: jpsacha at gmail dot com
+ *  IJ Plugins
+ *  Copyright (C) 2002-2023 Jarek Sacha
+ *  Author's email: jpsacha at gmail.com
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,7 +17,7 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *  Latest release available at https://github.com/ij-plugins/ijp-imageio/
+ *  Latest release available at https://github.com/ij-plugins/ijp-imageio
  */
 package ij_plugins.imageio;
 
@@ -36,6 +36,7 @@ import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -200,7 +201,7 @@ public class IJImageIOTest {
             writerParam.setCompressionType(compression);
         }
 
-        final File outFile = File.createTempFile("testBug1434311_", ".tif");
+        final File outFile = Files.createTempFile("testBug1434311_", ".tif").toFile();
         outFile.deleteOnExit();
 
         IJImageIO.write(imp, outFile, writer, metadata, writerParam, true);
