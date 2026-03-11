@@ -1,6 +1,6 @@
 /*
  *  IJ Plugins
- *  Copyright (C) 2002-2024 Jarek Sacha
+ *  Copyright (C) 2002-2026 Jarek Sacha
  *  Author's email: jpsacha at gmail.com
  *
  *  This library is free software; you can redistribute it and/or
@@ -26,7 +26,7 @@ import ij.ImagePlus;
 import ij.process.ColorProcessor;
 import org.junit.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class IJImageOUtilsTest {
 
@@ -36,7 +36,8 @@ public class IJImageOUtilsTest {
         var cp = new ColorProcessor(256, 256);
         var imp = new ImagePlus("", cp);
 
-        assertTrue(IJImageOUtils.isRGB48(imp));
+        // This is a RGB24 image, not RGB48
+        assertFalse(IJImageOUtils.isRGB48(imp));
     }
 
 }
